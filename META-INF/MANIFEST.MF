@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Class-Path: cglib-3.2.4.jar snakeyaml-1.17.jar asm-5.1.jar mysql-conne
+ ctor-java-5.1.38.jar ant-launcher-1.9.6.jar
+Main-Class: com.zhukai.spring.integration.Application
+
