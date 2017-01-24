@@ -5,7 +5,7 @@
 webserver、springmvc的部分功能、spring的IOC和AOP、spring-data-jpa的部分功能。
 ## 目前存在问题：
 1. springmvc的@PathVariable注解不知道如何实现；
-2. [Issue #1](https://github.com/zhukai-git/integration/issues/1)
+2. [Issue #1](https://github.com/zhukai-git/integration/issues/1)  
 ## 项目描述：
 1. 项目启动入口是Application的main函数
 2. 数据库配置和启动端口配置在resources下的application.yml文件
