@@ -1,7 +1,6 @@
 package com.zhukai.spring.integration.web;
 
 
-import com.zhukai.spring.integration.commons.annotation.PathVariable;
 import com.zhukai.spring.integration.commons.annotation.RequestMapping;
 import com.zhukai.spring.integration.commons.annotation.RequestParam;
 import com.zhukai.spring.integration.commons.annotation.RestController;
@@ -16,9 +15,9 @@ public class TestController {
     public Integer testRequestParam(@RequestParam("age") Integer age) {
         return age;
     }
-
-    @RequestMapping(value = "/path/{name}")
-    public String testPath(@PathVariable String name) {
-        return name;
-    }
+//TODO
+//    @RequestMapping(value = "/path/{name}")
+//    public String testPath(@PathVariable String name) {
+//        return name;
+//    }
 }

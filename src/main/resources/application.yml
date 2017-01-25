@@ -1,11 +1,11 @@
 #数据源配置
-datasource:
-  driverClass: com.mysql.jdbc.Driver
-  url: jdbc:mysql://localhost/test
-  username: root
-  password:
-  minConn: 3
-  maxConn: 200
+#datasource:
+#  driverClass: com.mysql.jdbc.Driver
+#  url: jdbc:mysql://localhost/test
+#  username: root
+#  password:
+#  minConn: 3
+#  maxConn: 200
 #服务启动配置
 server:
   port: 9001

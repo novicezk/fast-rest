@@ -25,30 +25,7 @@ public class HelloController {
     @RequestMapping(value = "/hello")
 
     public String hello() throws SQLException {
-//        Connection conn = DBConnectionPool.getConnection();
-//        try {
-//            PreparedStatement statement = conn.prepareStatement("SELECT * from user");
-//            ResultSet resultSet = statement.executeQuery();
-//            while (resultSet.next()) {
-//                System.out.println(resultSet.getString("login_name"));
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        singletonTest.test();
-//        RoleBean roleBean = new RoleBean();
-//        roleBean.setId(2);
-//        roleBean.setRoleName("Tester");
-//        roleBean.setLevel(2);
-//        UserBean userBean = new UserBean();
-//        userBean.setRole(roleBean);
-//        userBean.setUsername("zhukai");
-//        userBean.setPassword("123");
-//        DBUtil.save(userBean);
-        //DBUtil.delete(UserBean.class, 1);
-        //    UserBean roleBean = DBUtil.getBean(UserBean.class, 2);
         userRepository.findOne(23);
-        // return roleBean == null ? "null" : roleBean.toString();
         return "";
     }
 

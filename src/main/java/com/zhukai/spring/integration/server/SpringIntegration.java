@@ -153,7 +153,7 @@ public class SpringIntegration {
                 String methodPath = method.getAnnotation(RequestMapping.class).value();
                 Matcher matcher = methodPattern.matcher(methodPath);
                 if (matcher.find()) {
-                    methodPath = methodPath.replaceAll("\\{[^}]*\\}", "*");
+                    methodPath = methodPath.replaceAll("\\{[^}]*}", "*");
                     webMethods.put(webPath + methodPath, method);
                 } else {
                     webMethods.put(webPath + methodPath, method);
