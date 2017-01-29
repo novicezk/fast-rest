@@ -4,6 +4,7 @@ package com.zhukai.spring.integration.client;
 import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
 import com.zhukai.spring.integration.commons.Session;
 import com.zhukai.spring.integration.commons.annotation.*;
+import com.zhukai.spring.integration.commons.utils.JsonUtil;
 import com.zhukai.spring.integration.context.WebContext;
 import com.zhukai.spring.integration.commons.Request;
 import com.zhukai.spring.integration.commons.utils.ParameterUtil;
@@ -100,7 +101,7 @@ public class ClientAction implements Runnable {
                     paramValues.add(WebContext.getSession());
                 } else {
                     Annotation parameterAnnotation = parameter.getAnnotations()[0];
-                    String parameterValue = null;
+                    Object parameterValue = null;
                     if (parameterAnnotation instanceof RequestParam) {
                         parameterValue = request.getParameter(((RequestParam) parameterAnnotation).value());
                     } else if (parameterAnnotation instanceof RequestHeader) {
@@ -108,6 +109,8 @@ public class ClientAction implements Runnable {
                     } else if (parameterAnnotation instanceof RequestAttribute) {
                         Object attributeValue = request.getAttribute(((RequestAttribute) parameterAnnotation).value());
                         if (attributeValue != null) parameterValue = attributeValue.toString();
+                    } else if (parameterAnnotation instanceof RequestBody) {
+                        parameterValue = JsonUtil.convertObj(request.getRequestContext(), parameter.getType());
                     } else if (parameterAnnotation instanceof PathVariable) {
                         //TODO @PathVariable注解未实现
                     }
@@ -154,8 +157,7 @@ public class ClientAction implements Runnable {
                 }
                 inputStream.close();
             } else {
-                Logger.info("Response result: " + message);
-                out.println(message);
+                out.println(JsonUtil.toJson(message));
             }
         } catch (IOException e) {
             Logger.error();

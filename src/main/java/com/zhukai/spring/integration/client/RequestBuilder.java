@@ -69,6 +69,7 @@ public class RequestBuilder {
             } else if (request.getHeader("Content-Type").startsWith("text/plain") ||
                     request.getHeader("Content-Type").startsWith("application/json")) {
                 //TODO JSON格式字符串
+                request.setRequestContext(postString);
             }
         }
         return request;

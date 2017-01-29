@@ -3,7 +3,9 @@ package com.zhukai.spring.integration.commons.utils;
 import com.zhukai.spring.integration.commons.annotation.*;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by zhukai on 17-1-19.
@@ -69,29 +71,33 @@ public class JpaUtil {
         } else if (typeClass.isAssignableFrom(Float.class)) {
             return "REAL";
         } else if (typeClass.isAnnotationPresent(Entity.class)) {
-            Field idField = Arrays.stream(typeClass.getDeclaredFields()).filter(field -> field.isAnnotationPresent(Id.class)).findFirst().get();
+            Field idField = getIdField(typeClass);
             return getSqlType(idField.getType());
         }
         return null;
     }
 
-    public static Object convertToColumnValue(Object obj, Field field) {
+
+    public static Object getColumnValue(Object obj, Field field) {
         Object fieldValue = ReflectUtil.getFieldValue(obj, field.getName());
         if (fieldValue.getClass().isAnnotationPresent(Entity.class)) {
-            Field idField = Arrays.stream(fieldValue.getClass().getDeclaredFields()).filter(e -> e.isAnnotationPresent(Id.class)).findFirst().get();
-            return convertToColumnValue(fieldValue, idField);
+            Field idField = getIdField(fieldValue.getClass());
+            return getColumnValue(fieldValue, idField);
         } else {
             return fieldValue;
         }
     }
 
-    public static Object convertToColumnValue(Object obj) {
-        if (obj.getClass().isAnnotationPresent(Entity.class)) {
-            Field idField = Arrays.stream(obj.getClass().getDeclaredFields()).filter(e -> e.isAnnotationPresent(Id.class)).findFirst().get();
-            return convertToColumnValue(obj, idField);
-        } else {
+    public static Object getIdColumnValue(Object obj) {
+        if (!obj.getClass().isAnnotationPresent(Entity.class)) {
             return obj;
         }
+        Field idField = getIdField(obj.getClass());
+        return getColumnValue(obj, idField);
+    }
+
+    public static Field getIdField(Class clazz) {
+        return Arrays.stream(clazz.getDeclaredFields()).filter(e -> e.isAnnotationPresent(Id.class)).findFirst().get();
     }
 
     public static String getTableName(Class clazz) {
@@ -110,6 +116,16 @@ public class JpaUtil {
         }
         columnName = columnName.equals("") ? field.getName() : columnName;
         return columnName;
+    }
+
+    public static List<Field> getJoinFields(Class clazz) {
+        List<Field> joinFields = new ArrayList<>();
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.getType().isAnnotationPresent(Entity.class)) {
+                joinFields.add(field);
+            }
+        }
+        return joinFields;
     }
 
 }

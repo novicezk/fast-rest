@@ -6,8 +6,8 @@ import com.zhukai.spring.integration.commons.annotation.Repository;
 import com.zhukai.spring.integration.commons.utils.ReflectUtil;
 import com.zhukai.spring.integration.proxy.*;
 import com.zhukai.spring.integration.logger.Logger;
-import com.zhukai.spring.integration.proxy.cglib.CommonHandler;
-import com.zhukai.spring.integration.proxy.jdk.DaoHandler;
+import com.zhukai.spring.integration.proxy.cglib.CommonProxy;
+import com.zhukai.spring.integration.proxy.jdk.MapperProxy;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,9 +78,9 @@ public class ComponentBeanFactory implements BeanFactory {
     private Object createProxyInstance(String className) throws ClassNotFoundException {
         Class clazz = Class.forName(className);
         if (clazz.isAnnotationPresent(Repository.class)) {
-            return ProxyFactory.getJdkProxyInstance(clazz, new DaoHandler());
+            return new MapperProxy().getProxyInstance(clazz);
         }
-        return ProxyFactory.getCglibProxyInstance(clazz, new CommonHandler());
+        return new CommonProxy().getProxyInstance(clazz);
     }
 
     @Override

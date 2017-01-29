@@ -2,9 +2,13 @@ package com.zhukai.spring.integration.web;
 
 
 import com.zhukai.spring.integration.commons.annotation.Autowired;
+import com.zhukai.spring.integration.commons.annotation.RequestBody;
 import com.zhukai.spring.integration.commons.annotation.RequestMapping;
 import com.zhukai.spring.integration.commons.annotation.RestController;
+import com.zhukai.spring.integration.commons.constant.RequestType;
 import com.zhukai.spring.integration.domain.UserRepository;
+import com.zhukai.spring.integration.domain.entity.RoleBean;
+import com.zhukai.spring.integration.domain.entity.UserBean;
 import com.zhukai.spring.integration.service.TestService;
 
 import java.sql.SQLException;
@@ -24,9 +28,12 @@ public class HelloController {
 
     @RequestMapping(value = "/hello")
 
-    public String hello() throws SQLException {
-        userRepository.findOne(23);
-        return "";
+    public UserBean hello() throws SQLException {
+        return userRepository.findOne(2);
     }
 
+    @RequestMapping(value = "/test", method = RequestType.POST)
+    public RoleBean testRequestBody(@RequestBody RoleBean roleBean) {
+        return roleBean;
+    }
 }

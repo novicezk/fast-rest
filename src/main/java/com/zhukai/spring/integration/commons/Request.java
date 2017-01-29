@@ -14,6 +14,15 @@ public class Request {
     private Map<String, String> cookies;
     private String actionType;
     private String path;
+    private String requestContext;
+
+    public String getRequestContext() {
+        return requestContext;
+    }
+
+    public void setRequestContext(String requestContext) {
+        this.requestContext = requestContext;
+    }
 
     public String getActionType() {
         return actionType;
