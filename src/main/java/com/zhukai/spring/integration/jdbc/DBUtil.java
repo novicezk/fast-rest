@@ -21,13 +21,25 @@ import java.util.List;
 public class DBUtil {
 
     public static void save(Object object) {
+        if (object instanceof List) {
+            List beans = (List) object;
+            for (Object bean : beans) {
+                saveBean(bean);
+            }
+        } else {
+            saveBean(object);
+        }
+
+    }
+
+    private static void saveBean(Object bean) {
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO ");
-        String tableName = JpaUtil.getTableName(object.getClass());
+        String tableName = JpaUtil.getTableName(bean.getClass());
         sql.append(tableName);
         StringBuilder cloumns = new StringBuilder("(");
         StringBuilder values = new StringBuilder("(");
-        for (Field field : object.getClass().getDeclaredFields()) {
+        for (Field field : bean.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(GeneratedValue.class)) {
                 continue;
             }
@@ -35,9 +47,9 @@ public class DBUtil {
             cloumns.append(columnName).append(",");
 
             if (JpaUtil.getSqlType(field.getType()).equals("VARCHAR")) {
-                values.append("'").append(JpaUtil.getColumnValue(object, field)).append("'");
+                values.append("'").append(JpaUtil.getColumnValueByField(bean, field)).append("'");
             } else {
-                values.append(JpaUtil.getColumnValue(object, field));
+                values.append(JpaUtil.getColumnValueByField(bean, field));
             }
             values.append(",");
         }
@@ -54,13 +66,13 @@ public class DBUtil {
         StringBuilder sql = new StringBuilder();
         sql.append("DELETE FROM ").append(JpaUtil.getTableName(clazz)).append(" ");
         sql.append("WHERE ");
-        Field idField = Arrays.stream(clazz.getDeclaredFields()).filter(e -> e.isAnnotationPresent(Id.class)).findFirst().get();
+        Field idField = JpaUtil.getIdField(clazz);
         String idFieldName = JpaUtil.getColumnName(idField);
         sql.append(idFieldName).append("=");
         if (JpaUtil.getSqlType(id.getClass()).equals("VARCHAR")) {
-            sql.append("'").append(JpaUtil.getIdColumnValue(id)).append("'");
+            sql.append("'").append(JpaUtil.convertToColumnValue(id)).append("'");
         } else {
-            sql.append(JpaUtil.getIdColumnValue(id));
+            sql.append(JpaUtil.convertToColumnValue(id));
         }
         sql.append(";");
         Logger.info(sql);
@@ -69,24 +81,13 @@ public class DBUtil {
 
 
     public static <T, ID> T getBean(Class<T> clazz, ID id) throws Exception {
-        StringBuilder sql = new StringBuilder();
-        sql.append(getSelectMainSql(clazz));
-        sql.append(getJoinSql(clazz));
-
-        String mainTableName = JpaUtil.getTableName(clazz);
-        String idFieldName = JpaUtil.getColumnName(JpaUtil.getIdField(clazz));
-
-        sql.append("WHERE ").append(mainTableName).append(".")
-                .append(idFieldName).append("=");
-        if (JpaUtil.getSqlType(id.getClass()).equals("VARCHAR")) {
-            sql.append("'").append(JpaUtil.getIdColumnValue(id)).append("'");
-        } else {
-            sql.append(JpaUtil.getIdColumnValue(id));
+        Field idField = JpaUtil.getIdField(clazz);
+        String idName = JpaUtil.getColumnName(idField);
+        List<T> beans = getBeans(clazz, new Object[]{idName, id});
+        if (beans != null && !beans.isEmpty()) {
+            return beans.get(0);
         }
-        sql.append(";");
-        ResultSet resultSet = executeQuery(sql.toString());
-        resultSet.next();
-        return convertToEntity(resultSet, clazz);
+        return null;
     }
 
     private static void executeSQL(Connection conn, String sql) {
@@ -112,12 +113,52 @@ public class DBUtil {
         return conn.prepareStatement(sql).executeQuery();
     }
 
+    public static <T, ID> boolean exists(Class<T> clazz, ID id) throws Exception {
+        Field idField = JpaUtil.getIdField(clazz);
+        String idName = JpaUtil.getColumnName(idField);
+        ResultSet resultSet = getSelectResultSet(clazz, new Object[]{idName, id});
+        if (resultSet.next()) {
+            return true;
+        }
+        return false;
+    }
+
+    public static <T> List<T> getBeans(Class<T> entityClass, Object[] properties) throws Exception {
+        return getEntityList(getSelectResultSet(entityClass, properties), entityClass);
+    }
+
+    private static <T> ResultSet getSelectResultSet(Class<T> entityClass, Object[] properties) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append(getSelectSqlWithoutProperties(entityClass));
+        if (properties != null) {
+            sql.append(" WHERE ");
+            for (int i = 0; i < properties.length; i += 2) {
+                String columnName = properties[i].toString();
+                String[] arr = columnName.split("\\.");
+                Class fieldClass = entityClass;
+                String columnTableName = JpaUtil.getTableName(entityClass);
+                for (int j = 0; j < arr.length - 1; j++) {
+                    fieldClass = ReflectUtil.getDeclaredField(fieldClass, arr[i]).getType();
+                    columnTableName = JpaUtil.getTableName(fieldClass);
+                }
+                sql.append(columnTableName).append(".").append(arr[arr.length - 1]);
+                sql.append("=").append(JpaUtil.convertToColumnValue(properties[i + 1]));
+            }
+        }
+        ResultSet resultSet = executeQuery(sql.toString());
+        return resultSet;
+    }
+
     private static <T> List<T> getEntityList(ResultSet resultSet, Class<T> convertClazz) throws Exception {
         List<T> entityList = new ArrayList();
         while (resultSet.next()) {
             entityList.add(convertToEntity(resultSet, convertClazz));
         }
         return entityList;
+    }
+
+    private static StringBuilder getSelectSqlWithoutProperties(Class entityClass) {
+        return getSelectMainSql(entityClass).append(getJoinSql(entityClass));
     }
 
     private static <T> T convertToEntity(ResultSet resultSet, Class<T> convertClazz) throws Exception {

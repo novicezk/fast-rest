@@ -12,6 +12,7 @@ import com.zhukai.spring.integration.domain.entity.UserBean;
 import com.zhukai.spring.integration.service.TestService;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by zhukai on 17-1-12.
@@ -28,8 +29,8 @@ public class HelloController {
 
     @RequestMapping(value = "/hello")
 
-    public UserBean hello() throws SQLException {
-        return userRepository.findOne(2);
+    public List<UserBean> hello() throws SQLException {
+        return userRepository.findAll();
     }
 
     @RequestMapping(value = "/test", method = RequestType.POST)

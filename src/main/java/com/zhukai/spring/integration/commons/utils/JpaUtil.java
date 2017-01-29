@@ -78,22 +78,22 @@ public class JpaUtil {
     }
 
 
-    public static Object getColumnValue(Object obj, Field field) {
+    public static Object getColumnValueByField(Object obj, Field field) {
         Object fieldValue = ReflectUtil.getFieldValue(obj, field.getName());
         if (fieldValue.getClass().isAnnotationPresent(Entity.class)) {
             Field idField = getIdField(fieldValue.getClass());
-            return getColumnValue(fieldValue, idField);
+            return getColumnValueByField(fieldValue, idField);
         } else {
             return fieldValue;
         }
     }
 
-    public static Object getIdColumnValue(Object obj) {
+    public static Object convertToColumnValue(Object obj) {
         if (!obj.getClass().isAnnotationPresent(Entity.class)) {
             return obj;
         }
         Field idField = getIdField(obj.getClass());
-        return getColumnValue(obj, idField);
+        return getColumnValueByField(obj, idField);
     }
 
     public static Field getIdField(Class clazz) {

@@ -1,5 +1,6 @@
 package com.zhukai.spring.integration.domain;
 
+
 import java.io.Serializable;
 import java.util.List;
 

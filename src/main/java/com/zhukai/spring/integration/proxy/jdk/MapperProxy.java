@@ -17,17 +17,24 @@ public class MapperProxy implements InvocationHandler {
         return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(),
                 new Class[]{mapperInterface}, this);
     }
-
+    
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Type[] actualTypes = ((ParameterizedType) mapperInterface.getGenericInterfaces()[0]).getActualTypeArguments();
         Class entityClass = (Class) actualTypes[0];
-        Class idClass = (Class) actualTypes[1];
-        System.out.println(entityClass + "====" + idClass);
-        StringBuilder sql = new StringBuilder();
         if (method.getName().equals("findOne")) {
             return DBUtil.getBean(entityClass, args[0]);
+        } else if (method.getName().equals("exists")) {
+            return DBUtil.exists(entityClass, args[0]);
+        } else if (method.getName().equals("findAll")) {
+            return DBUtil.getBeans(entityClass, null);
+        } else if (method.getName().equals("delete")) {
+            DBUtil.delete(entityClass, args[0]);
+            return null;
+        } else if (method.getName().equals("save")) {
+            DBUtil.save(args[0]);
+            return null;
         }
-        return null;
+        return method.invoke(proxy, args);
     }
 }
