@@ -89,11 +89,18 @@ public class JpaUtil {
     }
 
     public static Object convertToColumnValue(Object obj) {
+        Object objValue;
         if (!obj.getClass().isAnnotationPresent(Entity.class)) {
-            return obj;
+            objValue = obj;
+        } else {
+            Field idField = getIdField(obj.getClass());
+            objValue = getColumnValueByField(obj, idField);
         }
-        Field idField = getIdField(obj.getClass());
-        return getColumnValueByField(obj, idField);
+        if (objValue instanceof String) {
+            return "'" + objValue + "'";
+        } else {
+            return objValue;
+        }
     }
 
     public static Field getIdField(Class clazz) {
@@ -116,6 +123,11 @@ public class JpaUtil {
         }
         columnName = columnName.equals("") ? field.getName() : columnName;
         return columnName;
+    }
+
+    public static String getColumnName(Class clazz, String fieldName) {
+        Field field = ReflectUtil.getDeclaredField(clazz, fieldName);
+        return getColumnName(field);
     }
 
     public static List<Field> getJoinFields(Class clazz) {

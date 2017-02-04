@@ -19,15 +19,15 @@ public interface CrudRepository<T, ID extends Serializable> {
 
     List<T> findAll();
 
-    List<T> findAll(List<ID> var1);
+    //List<T> findAll(List<ID> var1);
 
-    long count();
+    //long count();
 
     void delete(ID var1);
 
     void delete(T var1);
 
-    void delete(List<? extends T> var1);
+    //void delete(List<? extends T> var1);
 
-    void deleteAll();
+    //void deleteAll();
 }

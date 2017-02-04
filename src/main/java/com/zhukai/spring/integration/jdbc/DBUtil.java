@@ -141,13 +141,20 @@ public class DBUtil {
                     fieldClass = ReflectUtil.getDeclaredField(fieldClass, arr[i]).getType();
                     columnTableName = JpaUtil.getTableName(fieldClass);
                 }
-                sql.append(columnTableName).append(".").append(arr[arr.length - 1]);
-                sql.append("=").append(JpaUtil.convertToColumnValue(properties[i + 1]));
+                sql.append(columnTableName).append(".").append(JpaUtil.getColumnName(fieldClass, arr[arr.length - 1]));
+                sql.append("=").append(JpaUtil.convertToColumnValue(properties[i + 1]))
+                        .append(" AND ");
             }
+            sql.delete(sql.length() - 4, sql.length() - 1);
         }
         ResultSet resultSet = executeQuery(sql.toString());
         return resultSet;
     }
+
+    public static <T> List<T> getEntityList(StringBuilder sql, Class<T> convertClazz) throws Exception {
+        return getEntityList(executeQuery(sql.toString()), convertClazz);
+    }
+
 
     private static <T> List<T> getEntityList(ResultSet resultSet, Class<T> convertClazz) throws Exception {
         List<T> entityList = new ArrayList();
@@ -157,7 +164,7 @@ public class DBUtil {
         return entityList;
     }
 
-    private static StringBuilder getSelectSqlWithoutProperties(Class entityClass) {
+    public static StringBuilder getSelectSqlWithoutProperties(Class entityClass) {
         return getSelectMainSql(entityClass).append(getJoinSql(entityClass));
     }
 

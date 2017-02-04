@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/home")
 public class HelloController {
 
-    @Autowired("test")
+    @Autowired
     TestService testService;
 
     @Autowired
@@ -30,7 +30,7 @@ public class HelloController {
     @RequestMapping(value = "/hello")
 
     public List<UserBean> hello() throws SQLException {
-        return userRepository.findAll();
+        return userRepository.findByUsernameAndPassword("zhukai", "123");
     }
 
     @RequestMapping(value = "/test", method = RequestType.POST)
