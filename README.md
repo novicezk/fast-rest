@@ -1,8 +1,9 @@
 # integration
-使用javaSE实现springboot框架，为了深入学习框架的原理。目前只实现了基础的功能，有很多不足，请指正。
+该框架参考springboot框架，主要目的是为了学习框架的原理。目前只实现了基础的功能，还有很多不足和待完成的部分，
+求帮忙提出意见。本人邮箱：15156851740@163.com
 
 ## 主要功能：
-webserver、springmvc的部分功能、spring的IOC和AOP、spring-data-jpa的部分功能。
+webserver、springmvc的部分功能、spring的IOC和AOP基础、spring-data-jpa的部分功能。
 
 ## 项目描述：
 1. 项目启动入口是Application的main函数
@@ -11,5 +12,7 @@ webserver、springmvc的部分功能、spring的IOC和AOP、spring-data-jpa的�
 
 ## 目前存在问题：
 1. springmvc的@PathVariable注解不知道如何实现
-2. [Issue #1](https://github.com/zhukai-git/integration/issues/1)  
-3. 很多...
+2. 事务控制Transactional注解未实现
+3. 并发未仔细测试
+4. [Issue #1](https://github.com/zhukai-git/integration/issues/1)  Transactional
+5. 很多...
