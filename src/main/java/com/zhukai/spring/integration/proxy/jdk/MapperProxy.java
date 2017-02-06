@@ -22,6 +22,7 @@ public class MapperProxy implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Type[] actualTypes = ((ParameterizedType) mapperInterface.getGenericInterfaces()[0]).getActualTypeArguments();
         Class entityClass = (Class) actualTypes[0];
-        return new MapperMethod(method, args, entityClass, null).execute();
+        //return new MapperMethod(method, args, entityClass, null).execute();
+        return null;
     }
 }
