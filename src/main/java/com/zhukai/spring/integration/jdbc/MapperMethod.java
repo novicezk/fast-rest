@@ -2,37 +2,95 @@ package com.zhukai.spring.integration.jdbc;
 
 import com.zhukai.spring.integration.commons.annotation.Entity;
 import com.zhukai.spring.integration.commons.annotation.GeneratedValue;
-import com.zhukai.spring.integration.commons.annotation.Id;
 import com.zhukai.spring.integration.commons.utils.JpaUtil;
 import com.zhukai.spring.integration.commons.utils.ReflectUtil;
+import com.zhukai.spring.integration.commons.utils.StringUtil;
 import com.zhukai.spring.integration.logger.Logger;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by zhukai on 17-1-22.
  */
-public class DBUtil {
+public class MapperMethod<T> {
+    private Connection conn;
+    private Method method;
+    private Object[] args;
+    private ResultSet resultSet;
+    private Class<T> entityClass;
 
-    public static void save(Object object) {
-        if (object instanceof List) {
-            List beans = (List) object;
-            for (Object bean : beans) {
-                saveBean(bean);
-            }
-        } else {
-            saveBean(object);
-        }
-
+    public MapperMethod(Method method, Object[] args, Class<T> entityClass, Connection conn) {
+        this.entityClass = entityClass;
+        this.method = method;
+        this.args = args;
+        this.conn = conn;
     }
 
-    private static void saveBean(Object bean) {
+    public Object execute() throws Exception {
+        if (conn == null) {
+            conn = DBConnectionPool.getConnection();
+        }
+        String methodName = method.getName();
+        if (methodName.equals("findOne")) {
+            return getBean(args[0]);
+        } else if (methodName.equals("exists")) {
+            return MapperMethod.exists(entityClass.getClass(), args[0]);
+        } else if (methodName.equals("findAll")) {
+            return MapperMethod.getBeans(entityClass.getClass(), null);
+        } else if (methodName.equals("delete")) {
+            MapperMethod.delete(entityClass.getClass(), args[0]);
+            return null;
+        } else if (methodName.equals("save")) {
+            if (args[0] instanceof List) {
+                return saveBeans((List) args[0]);
+            } else {
+                return saveBean(args[0]);
+            }
+        } else if (methodName.startsWith("findBy")) {
+            StringBuilder propertiesSql = new StringBuilder();
+            String propertiesString = methodName.substring(6);
+            String[] arr = propertiesString.split("And|Or");
+            for (int i = 0; i < arr.length; i++) {
+                if (i == 0) {
+                    propertiesSql.append(" WHERE ");
+                }
+                propertiesSql.append(JpaUtil.getColumnName(entityClass.getClass(), StringUtil.letterToLowerCase(arr[i])))
+                        .append("=").append(JpaUtil.convertToColumnValue(args[i]));
+                String afterString = propertiesString.substring(propertiesString.indexOf(arr[i]) + arr[i].length());
+                if (afterString.startsWith("And")) {
+                    propertiesSql.append(" AND ");
+                } else if (afterString.startsWith("Or")) {
+                    propertiesSql.append(" OR ");
+                }
+            }
+            return MapperMethod.getEntityList(MapperMethod.getSelectSqlWithoutProperties(entityClass.getClass()).append(propertiesSql), entityClass.getClass());
+        }
+        //TODO
+        return null;
+    }
+
+    private boolean saveBeans(List beans) {
+        Connection conn = DBConnectionPool.getConnection();
+        try {
+            conn.setAutoCommit(false);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        for (Object bean : beans) {
+            if (!saveBean(bean)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean saveBean(Object bean) {
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO ");
         String tableName = JpaUtil.getTableName(bean.getClass());
@@ -59,10 +117,10 @@ public class DBUtil {
         values.append(")");
         sql.append(cloumns).append(" VALUES ").append(values).append(";");
         Logger.info(sql);
-        executeSQL(sql.toString());
+        return executeSQL(sql.toString());
     }
 
-    public static void delete(Class clazz, Object id) {
+    public void delete(Class clazz, Object id) {
         StringBuilder sql = new StringBuilder();
         sql.append("DELETE FROM ").append(JpaUtil.getTableName(clazz)).append(" ");
         sql.append("WHERE ");
@@ -80,40 +138,41 @@ public class DBUtil {
     }
 
 
-    public static <T, ID> T getBean(Class<T> clazz, ID id) throws Exception {
-        Field idField = JpaUtil.getIdField(clazz);
+    public <T, ID> T getBean(ID id) throws Exception {
+        Field idField = JpaUtil.getIdField(entityClass);
         String idName = JpaUtil.getColumnName(idField);
-        List<T> beans = getBeans(clazz, new Object[]{idName, id});
+        List<T> beans = getBeans(new Object[]{idName, id});
         if (beans != null && !beans.isEmpty()) {
             return beans.get(0);
         }
         return null;
     }
 
-    private static void executeSQL(Connection conn, String sql) {
+    private boolean executeSQL(String sql) {
+        Connection conn = DBConnectionPool.getConnection();
+        return executeSQL(conn, sql);
+    }
+
+    private boolean executeSQL(Connection conn, String sql) {
         try {
-            conn.prepareStatement(sql.toString()).execute();
+            System.out.println(sql);
+            return conn.prepareStatement(sql.toString()).execute();
         } catch (SQLException e) {
             Logger.error();
             e.printStackTrace();
+            return false;
         } finally {
             DBConnectionPool.freeConnection(conn);
         }
     }
 
-    private static void executeSQL(String sql) {
-        System.out.println(sql);
-        Connection conn = DBConnectionPool.getConnection();
-        executeSQL(conn, sql);
-    }
-
-    private static ResultSet executeQuery(String sql) throws SQLException {
+    private ResultSet executeQuery(String sql) throws SQLException {
         System.out.println(sql);
         Connection conn = DBConnectionPool.getConnection();
         return conn.prepareStatement(sql).executeQuery();
     }
 
-    public static <T, ID> boolean exists(Class<T> clazz, ID id) throws Exception {
+    public <T, ID> boolean exists(Class<T> clazz, ID id) throws Exception {
         Field idField = JpaUtil.getIdField(clazz);
         String idName = JpaUtil.getColumnName(idField);
         ResultSet resultSet = getSelectResultSet(clazz, new Object[]{idName, id});
@@ -123,11 +182,11 @@ public class DBUtil {
         return false;
     }
 
-    public static <T> List<T> getBeans(Class<T> entityClass, Object[] properties) throws Exception {
-        return getEntityList(getSelectResultSet(entityClass, properties), entityClass);
+    public <T> List<T> getBeans(Object[] properties) throws Exception {
+        return getEntityList(getSelectResultSet(properties), entityClass);
     }
 
-    private static <T> ResultSet getSelectResultSet(Class<T> entityClass, Object[] properties) throws Exception {
+    private <T> ResultSet getSelectResultSet(Object[] properties) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append(getSelectSqlWithoutProperties(entityClass));
         if (properties != null) {
@@ -147,34 +206,34 @@ public class DBUtil {
             }
             sql.delete(sql.length() - 4, sql.length() - 1);
         }
-        ResultSet resultSet = executeQuery(sql.toString());
+        resultSet = executeQuery(sql.toString());
         return resultSet;
     }
 
-    public static <T> List<T> getEntityList(StringBuilder sql, Class<T> convertClazz) throws Exception {
+    public <T> List<T> getEntityList(StringBuilder sql, Class<T> convertClazz) throws Exception {
         return getEntityList(executeQuery(sql.toString()), convertClazz);
     }
 
 
-    private static <T> List<T> getEntityList(ResultSet resultSet, Class<T> convertClazz) throws Exception {
+    private <T> List<T> getEntityList() throws Exception {
         List<T> entityList = new ArrayList();
         while (resultSet.next()) {
-            entityList.add(convertToEntity(resultSet, convertClazz));
+            entityList.add(convertToEntity(entityClass));
         }
         return entityList;
     }
 
-    public static StringBuilder getSelectSqlWithoutProperties(Class entityClass) {
-        return getSelectMainSql(entityClass).append(getJoinSql(entityClass));
+    public StringBuilder getSelectSqlWithoutProperties() {
+        return getSelectMainSql().append(getJoinSql());
     }
 
-    private static <T> T convertToEntity(ResultSet resultSet, Class<T> convertClazz) throws Exception {
+    private Object convertToEntity(Class convertClazz) throws Exception {
         String mainTableName = JpaUtil.getTableName(convertClazz);
-        T object = ReflectUtil.createInstance(convertClazz, null);
+        Object object = ReflectUtil.createInstance(convertClazz, null);
         for (Field field : convertClazz.getDeclaredFields()) {
             Object columnValue;
             if (field.getType().isAnnotationPresent(Entity.class)) {
-                columnValue = convertToEntity(resultSet, field.getType());
+                columnValue = convertToEntity(field.getType());
             } else {
                 columnValue = resultSet.getObject(mainTableName + "." + JpaUtil.getColumnName(field));
             }
@@ -183,20 +242,24 @@ public class DBUtil {
         return object;
     }
 
-    private static StringBuilder getSelectMainSql(Class entityClass) {
+    private StringBuilder getSelectMainSql() {
         StringBuilder sql = new StringBuilder();
         String mainTableName = JpaUtil.getTableName(entityClass);
         sql.append("SELECT * FROM ").append(mainTableName).append(" ");
         return sql;
     }
 
-    private static StringBuilder getJoinSql(Class entityClass) {
+    private StringBuilder getJoinSql() {
+        return getJoinSql(entityClass);
+    }
+
+    private StringBuilder getJoinSql(Class clazz) {
         StringBuilder sql = new StringBuilder();
-        List<Field> joinFields = JpaUtil.getJoinFields(entityClass);
+        List<Field> joinFields = JpaUtil.getJoinFields(clazz);
         if (joinFields == null || joinFields.isEmpty()) {
             return sql;
         }
-        String mainTableName = JpaUtil.getTableName(entityClass);
+        String mainTableName = JpaUtil.getTableName(clazz);
         for (Field joinField : joinFields) {
             String joinTableName = JpaUtil.getTableName(joinField.getType());
             String foreignKeyName = JpaUtil.getColumnName(joinField);
