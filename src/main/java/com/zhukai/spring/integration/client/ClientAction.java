@@ -9,6 +9,7 @@ import com.zhukai.spring.integration.context.WebContext;
 import com.zhukai.spring.integration.commons.Request;
 import com.zhukai.spring.integration.commons.utils.ParameterUtil;
 import com.zhukai.spring.integration.logger.Logger;
+import com.zhukai.spring.integration.server.SpringIntegration;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -43,7 +44,7 @@ public class ClientAction implements Runnable {
             Logger.info("Request path: " + request.getPath());
             //请求静态资源
             if (request.getPath().startsWith("/public/")) {
-                InputStream resourceAsStream = this.getClass().getResourceAsStream(request.getPath());
+                InputStream resourceAsStream = SpringIntegration.runClass.getResourceAsStream(request.getPath());
                 String[] arr = request.getPath().split("\\.");
                 if (arr.length > 0) {
                     String fileType = arr[arr.length - 1];

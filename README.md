@@ -6,7 +6,7 @@
 webserver、springmvc的部分功能、spring的IOC和AOP基础、spring-data-jpa的部分功能。
 
 ## 项目描述：
-1. 项目启动入口是Application的main函数
+1. 框架的测试项目为java/demo，项目启动入口是Application的main函数
 2. 数据库配置（不需要数据库的注掉datasource）和启动端口配置在resources下的application.yml文件
 3. 文件资源需要放在resources下public目录下，访问例localhost:9001/public/login.html
 

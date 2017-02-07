@@ -1,4 +1,4 @@
-package com.zhukai.spring.integration;
+package demo;
 
 
 import com.zhukai.spring.integration.server.SpringIntegration;
@@ -9,6 +9,6 @@ import com.zhukai.spring.integration.server.SpringIntegration;
 public class Application {
 
     public static void main(String[] args) {
-        SpringIntegration.run();
+        SpringIntegration.run(Application.class);
     }
 }

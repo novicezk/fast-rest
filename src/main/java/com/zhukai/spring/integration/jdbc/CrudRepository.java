@@ -1,4 +1,4 @@
-package com.zhukai.spring.integration.domain;
+package com.zhukai.spring.integration.jdbc;
 
 
 import java.io.Serializable;
@@ -9,9 +9,9 @@ import java.util.List;
  */
 public interface CrudRepository<T, ID extends Serializable> {
 
-    <T> T save(T var1);
+    T save(T var1);
 
-    <T> List<T> save(List<T> var1);
+    List<T> save(List<T> var1);
 
     T findOne(ID var1);
 

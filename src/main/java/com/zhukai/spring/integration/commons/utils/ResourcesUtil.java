@@ -66,7 +66,7 @@ public class ResourcesUtil {
         }
     }
 
-    public static void findClassInPackageByJar(String packageDirName, String packageName, URL url, final boolean recursive, List<Class> clazzs) throws IOException, ClassNotFoundException {
+    private static void findClassInPackageByJar(String packageDirName, String packageName, URL url, final boolean recursive, List<Class> clazzs) throws IOException, ClassNotFoundException {
         JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
         Enumeration<JarEntry> entries = jar.entries();
         while (entries.hasMoreElements()) {

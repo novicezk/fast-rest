@@ -1,4 +1,4 @@
-package com.zhukai.spring.integration.web;
+package demo.web;
 
 
 import com.zhukai.spring.integration.commons.annotation.RequestMapping;

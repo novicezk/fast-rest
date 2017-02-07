@@ -1,6 +1,7 @@
-package com.zhukai.spring.integration.commons.utils;
+package com.zhukai.spring.integration.jdbc;
 
 import com.zhukai.spring.integration.commons.annotation.*;
+import com.zhukai.spring.integration.commons.utils.ReflectUtil;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -175,14 +176,14 @@ public class JpaUtil {
     }
 
     public static <T> T convertToEntity(Class<T> convertClazz, ResultSet resultSet) throws Exception {
-        String mainTableName = JpaUtil.getTableName(convertClazz);
+        String mainTableName = getTableName(convertClazz);
         T entity = ReflectUtil.createInstance(convertClazz, null);
         for (Field field : convertClazz.getDeclaredFields()) {
             Object columnValue;
             if (field.getType().isAnnotationPresent(Entity.class)) {
                 columnValue = convertToEntity(field.getType(), resultSet);
             } else {
-                columnValue = resultSet.getObject(mainTableName + "." + JpaUtil.getColumnName(field));
+                columnValue = resultSet.getObject(mainTableName + "." + getColumnName(field));
             }
             ReflectUtil.setFieldValue(entity, field.getName(), columnValue);
         }
@@ -191,20 +192,20 @@ public class JpaUtil {
 
     public static String getSelectSQL(Class clazz, Object[] properties) throws Exception {
         StringBuilder sql = new StringBuilder();
-        sql.append(JpaUtil.getSelectSqlWithoutProperties(clazz));
+        sql.append(getSelectSqlWithoutProperties(clazz));
         if (properties != null) {
             sql.append(" WHERE ");
             for (int i = 0; i < properties.length; i += 2) {
                 String columnName = properties[i].toString();
                 String[] arr = columnName.split("\\.");
                 Class fieldClass = clazz;
-                String columnTableName = JpaUtil.getTableName(clazz);
+                String columnTableName = getTableName(clazz);
                 for (int j = 0; j < arr.length - 1; j++) {
                     fieldClass = ReflectUtil.getDeclaredField(fieldClass, arr[i]).getType();
-                    columnTableName = JpaUtil.getTableName(fieldClass);
+                    columnTableName = getTableName(fieldClass);
                 }
-                sql.append(columnTableName).append(".").append(JpaUtil.getColumnName(fieldClass, arr[arr.length - 1]));
-                sql.append("=").append(JpaUtil.convertToColumnValue(properties[i + 1]))
+                sql.append(columnTableName).append(".").append(getColumnName(fieldClass, arr[arr.length - 1]));
+                sql.append("=").append(convertToColumnValue(properties[i + 1]))
                         .append(" AND ");
             }
             sql.delete(sql.length() - 4, sql.length() - 1);
@@ -215,7 +216,7 @@ public class JpaUtil {
     public static <T> String getSaveSQL(T bean) throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO ");
-        String tableName = JpaUtil.getTableName(bean.getClass());
+        String tableName = getTableName(bean.getClass());
         sql.append(tableName);
         StringBuilder columns = new StringBuilder("(");
         StringBuilder values = new StringBuilder("(");
@@ -223,13 +224,13 @@ public class JpaUtil {
             if (field.isAnnotationPresent(GeneratedValue.class)) {
                 continue;
             }
-            String columnName = JpaUtil.getColumnName(field);
+            String columnName = getColumnName(field);
             columns.append(columnName).append(",");
 
-            if (JpaUtil.getSqlType(field.getType()).equals("VARCHAR")) {
-                values.append("'").append(JpaUtil.getColumnValueByField(bean, field)).append("'");
+            if (getSqlType(field.getType()).equals("VARCHAR")) {
+                values.append("'").append(getColumnValueByField(bean, field)).append("'");
             } else {
-                values.append(JpaUtil.getColumnValueByField(bean, field));
+                values.append(getColumnValueByField(bean, field));
             }
             values.append(",");
         }

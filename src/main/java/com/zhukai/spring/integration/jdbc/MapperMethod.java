@@ -1,6 +1,5 @@
 package com.zhukai.spring.integration.jdbc;
 
-import com.zhukai.spring.integration.commons.utils.JpaUtil;
 import com.zhukai.spring.integration.commons.utils.StringUtil;
 import com.zhukai.spring.integration.logger.Logger;
 

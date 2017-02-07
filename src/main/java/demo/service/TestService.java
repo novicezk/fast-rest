@@ -1,4 +1,4 @@
-package com.zhukai.spring.integration.service;
+package demo.service;
 
 
 import com.zhukai.spring.integration.commons.annotation.Service;

@@ -1,14 +1,9 @@
 package com.zhukai.spring.integration.proxy.jdk;
 
-import com.zhukai.spring.integration.commons.utils.ReflectUtil;
 import com.zhukai.spring.integration.context.WebContext;
-import com.zhukai.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.spring.integration.jdbc.MapperMethod;
-import com.zhukai.spring.integration.logger.Logger;
 
 import java.lang.reflect.*;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * Created by zhukai on 17-1-22.

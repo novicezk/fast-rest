@@ -1,12 +1,11 @@
 package com.zhukai.spring.integration.server;
 
 
-import com.zhukai.spring.integration.Application;
 import com.zhukai.spring.integration.beans.impl.ComponentBean;
 import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
 import com.zhukai.spring.integration.client.ClientAction;
 import com.zhukai.spring.integration.commons.annotation.*;
-import com.zhukai.spring.integration.commons.utils.JpaUtil;
+import com.zhukai.spring.integration.jdbc.JpaUtil;
 import com.zhukai.spring.integration.commons.utils.ReflectUtil;
 import com.zhukai.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.spring.integration.jdbc.DataSource;
@@ -39,8 +38,11 @@ public class SpringIntegration {
 
     private static boolean useDB = false;
 
-    public static void run() {
+    public static Class runClass;
+
+    public static void run(Class runClass) {
         try {
+            SpringIntegration.runClass = runClass;
             //初始化配置文件
             initConfig();
             //开启扫描
@@ -67,7 +69,8 @@ public class SpringIntegration {
         Map<String, Map> result = null;
         try {
             Yaml yaml = new Yaml();
-            result = (Map<String, Map>) yaml.load(Application.class.getResourceAsStream("/application.yml"));
+            result = (Map<String, Map>) yaml.load(runClass.
+                    getResourceAsStream("/application.yml"));
         } catch (Exception e) {
             //do nothing 没有该文件
         }
@@ -96,7 +99,7 @@ public class SpringIntegration {
             conn = DBConnectionPool.getConnection();
             conn.setAutoCommit(false);
         }
-        List<Class> classes = ResourcesUtil.getClassesFromPackage(Application.class.getPackage().getName());
+        List<Class> classes = ResourcesUtil.getClassesFromPackage(runClass.getPackage().getName());
         for (Class componentClass : classes) {
 
             if (componentClass.isAnnotationPresent(RestController.class)) {

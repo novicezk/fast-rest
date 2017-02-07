@@ -1,7 +1,8 @@
-package com.zhukai.spring.integration.domain;
+package demo.domain;
 
 import com.zhukai.spring.integration.commons.annotation.Repository;
-import com.zhukai.spring.integration.domain.entity.UserBean;
+import demo.domain.entity.UserBean;
+import com.zhukai.spring.integration.jdbc.CrudRepository;
 
 import java.util.List;
 

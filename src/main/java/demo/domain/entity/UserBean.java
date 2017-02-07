@@ -1,4 +1,4 @@
-package com.zhukai.spring.integration.domain.entity;
+package demo.domain.entity;
 
 import com.zhukai.spring.integration.commons.annotation.*;
 

@@ -1,13 +1,13 @@
-package com.zhukai.spring.integration.web;
+package demo.web;
 
 
 import com.zhukai.spring.integration.commons.annotation.*;
 import com.zhukai.spring.integration.commons.constant.RequestType;
-import com.zhukai.spring.integration.domain.RoleRepository;
-import com.zhukai.spring.integration.domain.UserRepository;
-import com.zhukai.spring.integration.domain.entity.RoleBean;
-import com.zhukai.spring.integration.domain.entity.UserBean;
-import com.zhukai.spring.integration.service.TestService;
+import demo.domain.RoleRepository;
+import demo.domain.UserRepository;
+import demo.domain.entity.RoleBean;
+import demo.domain.entity.UserBean;
+import demo.service.TestService;
 
 import java.sql.SQLException;
 import java.util.List;
