@@ -6,6 +6,7 @@ import com.zhukai.spring.integration.commons.annotation.RequestBody;
 import com.zhukai.spring.integration.commons.annotation.RequestMapping;
 import com.zhukai.spring.integration.commons.annotation.RestController;
 import com.zhukai.spring.integration.commons.constant.RequestType;
+import com.zhukai.spring.integration.domain.RoleRepository;
 import com.zhukai.spring.integration.domain.UserRepository;
 import com.zhukai.spring.integration.domain.entity.RoleBean;
 import com.zhukai.spring.integration.domain.entity.UserBean;
@@ -27,9 +28,19 @@ public class HelloController {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    RoleRepository roleRepository;
+
     @RequestMapping(value = "/hello")
 
     public List<UserBean> hello() throws SQLException {
+
+        RoleBean roleBean = roleRepository.findOne(1);
+        UserBean userBean = new UserBean();
+        userBean.setRole(roleBean);
+        userBean.setUsername("zhukai");
+        userBean.setPassword("123");
+        userRepository.save(userBean);
         return userRepository.findByUsernameAndPassword("zhukai", "123");
     }
 

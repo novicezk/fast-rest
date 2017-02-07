@@ -3,6 +3,8 @@ package com.zhukai.spring.integration.commons.utils;
 import com.zhukai.spring.integration.commons.annotation.*;
 
 import java.lang.reflect.Field;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.List;
  * Created by zhukai on 17-1-19.
  */
 public class JpaUtil {
+
     public static String convertToSqlColumn(Field field) {
         StringBuilder sqlColumn = new StringBuilder();
 
@@ -140,6 +143,102 @@ public class JpaUtil {
         return joinFields;
     }
 
+    public static StringBuilder getSelectSqlWithoutProperties(Class clazz) {
+        return getSelectMainSql(clazz).append(getJoinSql(clazz));
+    }
 
+    public static StringBuilder getJoinSql(Class clazz) {
+        StringBuilder sql = new StringBuilder();
+        List<Field> joinFields = getJoinFields(clazz);
+        if (joinFields == null || joinFields.isEmpty()) {
+            return sql;
+        }
+        String mainTableName = getTableName(clazz);
+        for (Field joinField : joinFields) {
+            String joinTableName = getTableName(joinField.getType());
+            String foreignKeyName = getColumnName(joinField);
+            sql.append(" JOIN ").append(joinTableName)
+                    .append(" ON ").append(mainTableName).append(".")
+                    .append(foreignKeyName).append("=").append(joinTableName)
+                    .append(".").append(getColumnName(getIdField(joinField.getType())))
+                    .append(" ");
+            sql.append(getJoinSql(joinField.getType()));
+        }
+        return sql;
+    }
+
+    public static StringBuilder getSelectMainSql(Class clazz) {
+        StringBuilder sql = new StringBuilder();
+        String mainTableName = getTableName(clazz);
+        sql.append("SELECT * FROM ").append(mainTableName).append(" ");
+        return sql;
+    }
+
+    public static <T> T convertToEntity(Class<T> convertClazz, ResultSet resultSet) throws Exception {
+        String mainTableName = JpaUtil.getTableName(convertClazz);
+        T entity = ReflectUtil.createInstance(convertClazz, null);
+        for (Field field : convertClazz.getDeclaredFields()) {
+            Object columnValue;
+            if (field.getType().isAnnotationPresent(Entity.class)) {
+                columnValue = convertToEntity(field.getType(), resultSet);
+            } else {
+                columnValue = resultSet.getObject(mainTableName + "." + JpaUtil.getColumnName(field));
+            }
+            ReflectUtil.setFieldValue(entity, field.getName(), columnValue);
+        }
+        return entity;
+    }
+
+    public static String getSelectSQL(Class clazz, Object[] properties) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append(JpaUtil.getSelectSqlWithoutProperties(clazz));
+        if (properties != null) {
+            sql.append(" WHERE ");
+            for (int i = 0; i < properties.length; i += 2) {
+                String columnName = properties[i].toString();
+                String[] arr = columnName.split("\\.");
+                Class fieldClass = clazz;
+                String columnTableName = JpaUtil.getTableName(clazz);
+                for (int j = 0; j < arr.length - 1; j++) {
+                    fieldClass = ReflectUtil.getDeclaredField(fieldClass, arr[i]).getType();
+                    columnTableName = JpaUtil.getTableName(fieldClass);
+                }
+                sql.append(columnTableName).append(".").append(JpaUtil.getColumnName(fieldClass, arr[arr.length - 1]));
+                sql.append("=").append(JpaUtil.convertToColumnValue(properties[i + 1]))
+                        .append(" AND ");
+            }
+            sql.delete(sql.length() - 4, sql.length() - 1);
+        }
+        return sql.toString();
+    }
+
+    public static <T> String getSaveSQL(T bean) throws SQLException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("INSERT INTO ");
+        String tableName = JpaUtil.getTableName(bean.getClass());
+        sql.append(tableName);
+        StringBuilder columns = new StringBuilder("(");
+        StringBuilder values = new StringBuilder("(");
+        for (Field field : bean.getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(GeneratedValue.class)) {
+                continue;
+            }
+            String columnName = JpaUtil.getColumnName(field);
+            columns.append(columnName).append(",");
+
+            if (JpaUtil.getSqlType(field.getType()).equals("VARCHAR")) {
+                values.append("'").append(JpaUtil.getColumnValueByField(bean, field)).append("'");
+            } else {
+                values.append(JpaUtil.getColumnValueByField(bean, field));
+            }
+            values.append(",");
+        }
+        columns.deleteCharAt(columns.length() - 1);
+        columns.append(")");
+        values.deleteCharAt(values.length() - 1);
+        values.append(")");
+        sql.append(columns).append(" VALUES ").append(values);
+        return sql.toString();
+    }
 
 }

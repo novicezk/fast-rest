@@ -21,6 +21,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -93,6 +94,7 @@ public class SpringIntegration {
         Connection conn = null;
         if (useDB) {
             conn = DBConnectionPool.getConnection();
+            conn.setAutoCommit(false);
         }
         List<Class> classes = ResourcesUtil.getClassesFromPackage(Application.class.getPackage().getName());
         for (Class componentClass : classes) {
@@ -110,8 +112,14 @@ public class SpringIntegration {
         }
         Logger.info("Useful web methods: " + webMethods.keySet());
         WebContext.setWebMethods(webMethods);
-        if (useDB) {
-            DBConnectionPool.freeConnection(conn);
+        if (conn != null) {
+            try {
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+            } finally {
+                DBConnectionPool.freeConnection(conn);
+            }
         }
     }
 
@@ -120,9 +128,11 @@ public class SpringIntegration {
 
         ResultSet rs = conn.getMetaData().getTables(null, null, tableName, null);
         if (rs.next()) {
-            Logger.info("Table \'" + tableName + "\' is exists");
+            Logger.info("Table '" + tableName + "' is exists");
+            rs.close();
             return;
         }
+        rs.close();
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE TABLE ");
         sql.append(tableName);
@@ -135,7 +145,7 @@ public class SpringIntegration {
             sql.append(JpaUtil.convertToSqlColumn(field));
         }
         sql.deleteCharAt(sql.length() - 1);
-        sql.append(");");
+        sql.append(")");
         Logger.info(sql);
         conn.prepareStatement(sql.toString()).execute();
     }
