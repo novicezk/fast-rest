@@ -1,5 +1,7 @@
 package com.zhukai.spring.integration.proxy.jdk;
 
+import com.zhukai.spring.integration.commons.utils.ReflectUtil;
+import com.zhukai.spring.integration.context.WebContext;
 import com.zhukai.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.spring.integration.jdbc.MapperMethod;
 import com.zhukai.spring.integration.logger.Logger;
@@ -23,23 +25,12 @@ public class MapperProxy implements InvocationHandler {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws SQLException {
+    public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
         Type[] actualTypes = ((ParameterizedType) mapperInterface.getGenericInterfaces()[0]).getActualTypeArguments();
         Class entityClass = (Class) actualTypes[0];
-        Connection conn = DBConnectionPool.getConnection();
-        MapperMethod mapperMethod = new MapperMethod(method, args, entityClass, conn);
-        try {
-            conn.setAutoCommit(false);
-            Object result = mapperMethod.execute();
-            conn.commit();
-            return result;
-        } catch (Exception e) {
-            conn.rollback();
-            Logger.error();
-            e.printStackTrace();
-            return null;
-        } finally {
-            mapperMethod.freeResource();
-        }
+        MapperMethod mapperMethod = new MapperMethod(method, args, entityClass, WebContext.getTransaction());
+        Object result = mapperMethod.execute();
+        mapperMethod.release();
+        return result;
     }
 }

@@ -21,6 +21,7 @@ public class MapperMethod<T> {
     private Object[] args;
     private ResultSet resultSet;
     private Class<T> entityClass;
+    private boolean isTransactional = true;
 
     public MapperMethod(Method method, Object[] args, Class<T> entityClass, Connection conn) {
         this.entityClass = entityClass;
@@ -29,8 +30,8 @@ public class MapperMethod<T> {
         this.conn = conn;
     }
 
-    public void freeResource() throws SQLException {
-        if (conn != null) {
+    public void release() throws SQLException {
+        if (conn != null && !isTransactional) {
             DBConnectionPool.freeConnection(conn);
         }
         if (resultSet != null) {
@@ -40,6 +41,7 @@ public class MapperMethod<T> {
 
     public Object execute() throws Exception {
         if (conn == null) {
+            isTransactional = false;
             conn = DBConnectionPool.getConnection();
         }
         String methodName = method.getName();
@@ -150,6 +152,6 @@ public class MapperMethod<T> {
 
     private boolean executeSQL(String sql) throws SQLException {
         Logger.info(sql);
-        return conn.prepareStatement(sql.toString()).execute();
+        return conn.prepareStatement(sql).execute();
     }
 }
