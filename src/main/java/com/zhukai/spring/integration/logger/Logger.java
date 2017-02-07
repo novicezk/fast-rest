@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class Logger {
 
-    private static DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd-hh:mm:ss");
+    private static DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
     public static void info(Object object) {
         println("info", object);

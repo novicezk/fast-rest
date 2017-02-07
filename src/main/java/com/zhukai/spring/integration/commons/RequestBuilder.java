@@ -1,6 +1,5 @@
-package com.zhukai.spring.integration.client;
+package com.zhukai.spring.integration.commons;
 
-import com.zhukai.spring.integration.commons.Request;
 import com.zhukai.spring.integration.commons.constant.RequestType;
 import com.zhukai.spring.integration.commons.utils.StringUtil;
 import com.zhukai.spring.integration.context.WebContext;

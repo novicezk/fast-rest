@@ -2,6 +2,7 @@ package com.zhukai.spring.integration.client;
 
 
 import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
+import com.zhukai.spring.integration.commons.RequestBuilder;
 import com.zhukai.spring.integration.commons.Session;
 import com.zhukai.spring.integration.commons.annotation.*;
 import com.zhukai.spring.integration.commons.utils.JsonUtil;
