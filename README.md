@@ -12,7 +12,6 @@ webserver、springmvc的部分功能、spring的IOC和AOP基础、spring-data-jp
 
 ## 目前存在问题：
 1. springmvc的@PathVariable注解不知道如何实现
-2. 事务控制Transactional注解未实现
-3. 并发未仔细测试
-4. [Issue #1](https://github.com/zhukai-git/integration/issues/1)  
-5. 很多...
+2. 并发未仔细测试
+3. [Issue #1](https://github.com/zhukai-git/integration/issues/1)  
+4. 很多...
