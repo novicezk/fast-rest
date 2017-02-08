@@ -20,6 +20,11 @@ public class RoleBean {
     public RoleBean() {
     }
 
+    public RoleBean(String roleName, Integer level) {
+        this.roleName = roleName;
+        this.level = level;
+    }
+
     public Integer getId() {
         return id;
     }

@@ -73,7 +73,7 @@ public class JpaUtil {
         } else if (typeClass.isAssignableFrom(Double.class)) {
             return "DOUBLE";
         } else if (typeClass.isAssignableFrom(Float.class)) {
-            return "REAL";
+            return "FLOAT";
         } else if (typeClass.isAnnotationPresent(Entity.class)) {
             Field idField = getIdField(typeClass);
             return getSqlType(idField.getType());
@@ -84,6 +84,9 @@ public class JpaUtil {
 
     public static Object getColumnValueByField(Object obj, Field field) {
         Object fieldValue = ReflectUtil.getFieldValue(obj, field.getName());
+        if (fieldValue == null) {
+            return null;
+        }
         if (fieldValue.getClass().isAnnotationPresent(Entity.class)) {
             Field idField = getIdField(fieldValue.getClass());
             return getColumnValueByField(fieldValue, idField);
@@ -93,6 +96,9 @@ public class JpaUtil {
     }
 
     public static Object convertToColumnValue(Object obj) {
+        if (obj == null) {
+            return null;
+        }
         Object objValue;
         if (!obj.getClass().isAnnotationPresent(Entity.class)) {
             objValue = obj;
@@ -158,7 +164,7 @@ public class JpaUtil {
         for (Field joinField : joinFields) {
             String joinTableName = getTableName(joinField.getType());
             String foreignKeyName = getColumnName(joinField);
-            sql.append(" JOIN ").append(joinTableName)
+            sql.append(" LEFT JOIN ").append(joinTableName)
                     .append(" ON ").append(mainTableName).append(".")
                     .append(foreignKeyName).append("=").append(joinTableName)
                     .append(".").append(getColumnName(getIdField(joinField.getType())))
@@ -184,6 +190,9 @@ public class JpaUtil {
                 columnValue = convertToEntity(field.getType(), resultSet);
             } else {
                 columnValue = resultSet.getObject(mainTableName + "." + getColumnName(field));
+            }
+            if (field.isAnnotationPresent(Id.class) && columnValue == null) {
+                return null;
             }
             ReflectUtil.setFieldValue(entity, field.getName(), columnValue);
         }
@@ -226,19 +235,39 @@ public class JpaUtil {
             }
             String columnName = getColumnName(field);
             columns.append(columnName).append(",");
-
-            if (getSqlType(field.getType()).equals("VARCHAR")) {
-                values.append("'").append(getColumnValueByField(bean, field)).append("'");
-            } else {
-                values.append(getColumnValueByField(bean, field));
-            }
-            values.append(",");
+            Object columnValue = getColumnValueByField(bean, field);
+            columnValue = convertToColumnValue(columnValue);
+            values.append(columnValue).append(",");
         }
         columns.deleteCharAt(columns.length() - 1);
         columns.append(")");
         values.deleteCharAt(values.length() - 1);
         values.append(")");
         sql.append(columns).append(" VALUES ").append(values);
+        return sql.toString();
+    }
+
+    public static <T> String getUpdateSQL(T bean) throws SQLException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("UPDATE ");
+        String tableName = getTableName(bean.getClass());
+        sql.append(tableName).append(" SET ");
+        for (Field field : bean.getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(Id.class)) {
+                continue;
+            }
+            String columnName = getColumnName(field);
+            sql.append(columnName).append("=");
+            Object columnValue = getColumnValueByField(bean, field);
+            columnValue = convertToColumnValue(columnValue);
+            sql.append(columnValue);
+            sql.append(",");
+        }
+        sql.deleteCharAt(sql.length() - 1);
+        Field idField = getIdField(bean.getClass());
+        String idFieldName = getColumnName(idField);
+        Object id = ReflectUtil.getFieldValue(bean, idField.getName());
+        sql.append(" WHERE ").append(idFieldName).append("=").append(convertToColumnValue(id));
         return sql.toString();
     }
 

@@ -17,7 +17,7 @@ import java.sql.SQLException;
  */
 public class CommonProxy implements MethodInterceptor {
 
-    //创建一个clazz的继承类，额外增加intercept()方法，该clazz可以不是接口的实现类
+    //该clazz可以不是接口的实现类,用来代理除Repository之外的类
     public <T> T getProxyInstance(Class<T> clazz) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(clazz);

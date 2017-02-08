@@ -1,6 +1,8 @@
 package com.zhukai.spring.integration.jdbc;
 
 
+import demo.domain.entity.UserBean;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -9,9 +11,9 @@ import java.util.List;
  */
 public interface CrudRepository<T, ID extends Serializable> {
 
-    T save(T var1);
+    boolean save(T var1);
 
-    List<T> save(List<T> var1);
+    boolean save(List<T> var1);
 
     T findOne(ID var1);
 
@@ -19,7 +21,9 @@ public interface CrudRepository<T, ID extends Serializable> {
 
     List<T> findAll();
 
-    //List<T> findAll(List<ID> var1);
+    List<T> findAll(Object[] properties);
+
+    List<T> findAll(List<ID> ids);
 
     //long count();
 

@@ -139,7 +139,7 @@ public class ClientAction implements Runnable {
             out.println("HTTP/1.0 200 OK");
             out.println("Content-Type: " + contentType);
             if (sendSessionID) {
-                out.println("Set-Cookie: " + WebContext.JSESSIONID + "=" + WebContext.getSessionId());
+                out.println("Set-Cookie: " + WebContext.JSESSIONID + "=" + WebContext.getSessionId() + ";Path=/");
             }
             //根据HTTP协议,空行将结束头信息
             out.println();
