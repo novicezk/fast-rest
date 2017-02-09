@@ -1,7 +1,11 @@
 package demo.web;
 
+import com.zhukai.spring.integration.commons.Session;
 import com.zhukai.spring.integration.commons.annotation.*;
 import com.zhukai.spring.integration.commons.constant.RequestType;
+import com.zhukai.spring.integration.commons.response.Response;
+import com.zhukai.spring.integration.commons.response.ResponseBuilder;
+import com.zhukai.spring.integration.commons.response.ResponseCodeEnums;
 import com.zhukai.spring.integration.context.WebContext;
 import demo.domain.UserRepository;
 import demo.domain.entity.UserBean;
@@ -18,14 +22,14 @@ public class UserController {
     @Autowired
     UserRepository userRepository;
 
-    @RequestMapping("/login")
-    public boolean login(@RequestParam("username") String username, @RequestParam("password") String password) {
+    @RequestMapping(value = "/login", method = RequestType.POST)
+    public Response login(@RequestAttribute("username") String username, @RequestAttribute("password") String password) {
         List<UserBean> userBeans = userRepository.findByUsernameAndPassword(username, password);
         if (userBeans != null && !userBeans.isEmpty()) {
             WebContext.getSession().setAttribute("loginUser", userBeans.get(0));
-            return true;
+            return ResponseBuilder.build(ResponseCodeEnums.SUCCESS);
         } else {
-            return false;
+            return ResponseBuilder.build(ResponseCodeEnums.LOGIN_ERROR);
         }
     }
 
@@ -37,6 +41,17 @@ public class UserController {
     @RequestMapping("/getAll")
     public List<UserBean> getAllUsersExcludeAdmin() {
         return userRepository.getAllUsersExcludeAdmin(0);
+    }
+
+    @RequestMapping("/getRoleUser")
+    public List<UserBean> getAllAdminUsers(@RequestParam("roleName") String roleName) {
+        return userRepository.findAll(new Object[]{"role.roleName", roleName});
+    }
+
+    @RequestMapping("/getLoginName")
+    public String getLoginName(Session session) {
+        UserBean loginUser = (UserBean) session.getAttribute("loginUser");
+        return loginUser.getUsername();
     }
 
 }

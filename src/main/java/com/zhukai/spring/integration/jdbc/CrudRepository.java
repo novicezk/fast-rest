@@ -1,8 +1,6 @@
 package com.zhukai.spring.integration.jdbc;
 
 
-import demo.domain.entity.UserBean;
-
 import java.io.Serializable;
 import java.util.List;
 

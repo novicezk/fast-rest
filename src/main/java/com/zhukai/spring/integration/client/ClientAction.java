@@ -42,6 +42,7 @@ public class ClientAction implements Runnable {
             if (request == null) {
                 return;
             }
+            System.out.println(WebContext.getSessionId());
             Logger.info("Request path: " + request.getPath());
             //请求静态资源
             if (request.getPath().startsWith("/public/")) {

@@ -18,6 +18,10 @@ public class RequestBuilder {
         WebContext.setRequest(request);
 
         String line = StringUtil.readLine(inputStream);
+        if (line.indexOf('/') == -1 || line
+                .lastIndexOf('/') - 5 < 0) {
+            return null;
+        }
         String resource = line.substring(line.indexOf('/'), line
                 .lastIndexOf('/') - 5);
         String methodType = new StringTokenizer(line).nextElement()
