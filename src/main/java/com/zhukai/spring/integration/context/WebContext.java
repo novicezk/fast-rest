@@ -48,10 +48,12 @@ public class WebContext {
     }
 
     public static Session getSession() {
-        if (sessions.get(getSessionId()) == null) {
-            sessions.put(getSessionId(), new Session(getSessionId()));
+        String sessionId = getSessionId();
+        System.out.println("sessionId=" + sessionId);
+        if (sessions.get(sessionId) == null) {
+            sessions.put(sessionId, new Session(sessionId));
         }
-        return sessions.get(getSessionId());
+        return sessions.get(sessionId);
     }
 
     public static Map<String, Method> getWebMethods() {

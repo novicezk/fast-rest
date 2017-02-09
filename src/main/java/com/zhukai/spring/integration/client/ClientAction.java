@@ -42,7 +42,6 @@ public class ClientAction implements Runnable {
             if (request == null) {
                 return;
             }
-            System.out.println(WebContext.getSessionId());
             Logger.info("Request path: " + request.getPath());
             //请求静态资源
             if (request.getPath().startsWith("/public/")) {
@@ -98,9 +97,9 @@ public class ClientAction implements Runnable {
             List<Object> paramValues = new ArrayList<>();
             Parameter[] parameters = method.getParameters();
             for (Parameter parameter : parameters) {
-                if (parameter.getType().isAssignableFrom(Request.class)) {
+                if (Request.class.isAssignableFrom(parameter.getType())) {
                     paramValues.add(request);
-                } else if (parameter.getType().isAssignableFrom(Session.class)) {
+                } else if (Session.class.isAssignableFrom(parameter.getType())) {
                     paramValues.add(WebContext.getSession());
                 } else {
                     Annotation parameterAnnotation = parameter.getAnnotations()[0];

@@ -1,5 +1,6 @@
 package demo.web;
 
+import com.zhukai.spring.integration.commons.Request;
 import com.zhukai.spring.integration.commons.Session;
 import com.zhukai.spring.integration.commons.annotation.*;
 import com.zhukai.spring.integration.commons.constant.RequestType;
@@ -27,6 +28,7 @@ public class UserController {
         List<UserBean> userBeans = userRepository.findByUsernameAndPassword(username, password);
         if (userBeans != null && !userBeans.isEmpty()) {
             WebContext.getSession().setAttribute("loginUser", userBeans.get(0));
+            System.out.println(WebContext.getSession().getSessionId() + "----login");
             return ResponseBuilder.build(ResponseCodeEnums.SUCCESS);
         } else {
             return ResponseBuilder.build(ResponseCodeEnums.LOGIN_ERROR);
@@ -49,7 +51,10 @@ public class UserController {
     }
 
     @RequestMapping("/getLoginName")
-    public String getLoginName(Session session) {
+    public String getLoginName(Request request) {
+        System.out.println(request.getPath());
+        Session session = WebContext.getSession();
+        System.out.println(session.getSessionId() + "----home");
         UserBean loginUser = (UserBean) session.getAttribute("loginUser");
         return loginUser.getUsername();
     }
