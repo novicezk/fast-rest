@@ -42,6 +42,11 @@ public class ClientAction implements Runnable {
             if (request == null) {
                 return;
             }
+            if (WebContext.getSessionId() == null) {
+                String sessionId = UUID.randomUUID().toString();
+                request.setCookie(WebContext.JSESSIONID, sessionId);
+                sendSessionID = true;
+            }
             Logger.info("Request path: " + request.getPath());
             //请求静态资源
             if (request.getPath().startsWith("/public/")) {
@@ -77,11 +82,7 @@ public class ClientAction implements Runnable {
             if (method == null) {
                 throw new Exception("Have not this request path");
             }
-            if (WebContext.getSessionId() == null) {
-                String sessionId = UUID.randomUUID().toString();
-                request.setCookie(WebContext.JSESSIONID, sessionId);
-                sendSessionID = true;
-            }
+
             Object result = invokeMethod(method, request);
             respond(result);
         } catch (Exception e) {
@@ -139,6 +140,7 @@ public class ClientAction implements Runnable {
             out.println("HTTP/1.0 200 OK");
             out.println("Content-Type: " + contentType);
             if (sendSessionID) {
+                sendSessionID = false;
                 out.println("Set-Cookie: " + WebContext.JSESSIONID + "=" + WebContext.getSessionId() + ";Path=/");
             }
             //根据HTTP协议,空行将结束头信息
@@ -162,7 +164,6 @@ public class ClientAction implements Runnable {
                 out.println(JsonUtil.toJson(message));
             }
         } catch (IOException e) {
-            Logger.error();
             e.printStackTrace();
         } finally {
             if (out != null)
@@ -176,7 +177,6 @@ public class ClientAction implements Runnable {
             client.close();
             WebContext.clear();
         } catch (IOException e) {
-            Logger.error();
             e.printStackTrace();
         }
     }

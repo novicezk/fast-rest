@@ -90,16 +90,6 @@ public class ReflectUtil {
         return (T) obj;
     }
 
-    public static Object createInstance(String className, Class<?>[] paramsClass, Object... params) {
-        try {
-            Class beanClass = Class.forName(className);
-            return createInstance(beanClass, paramsClass, params);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public static boolean existAnnotation(Class objectClass, Class<? extends Annotation> annotationClass) {
         if (objectClass.equals(Target.class) || objectClass.equals(Retention.class) || objectClass.equals(Documented.class)) {
             return false;

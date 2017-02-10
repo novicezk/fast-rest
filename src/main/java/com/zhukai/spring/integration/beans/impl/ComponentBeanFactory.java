@@ -4,8 +4,6 @@ import com.zhukai.spring.integration.beans.BeanDefinition;
 import com.zhukai.spring.integration.beans.BeanFactory;
 import com.zhukai.spring.integration.commons.annotation.Repository;
 import com.zhukai.spring.integration.commons.utils.ReflectUtil;
-import com.zhukai.spring.integration.proxy.*;
-import com.zhukai.spring.integration.logger.Logger;
 import com.zhukai.spring.integration.proxy.cglib.CommonProxy;
 import com.zhukai.spring.integration.proxy.jdk.MapperProxy;
 
@@ -35,7 +33,6 @@ public class ComponentBeanFactory implements BeanFactory {
         try {
             return autowiredBean(null, null, beanName);
         } catch (Exception e) {
-            Logger.error();
             e.printStackTrace();
         }
         return null;

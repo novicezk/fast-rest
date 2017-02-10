@@ -50,7 +50,6 @@ public class SpringIntegration {
             //启动服务
             startServer();
         } catch (Exception e) {
-            Logger.error();
             e.printStackTrace();
         }
     }

@@ -49,7 +49,6 @@ public class WebContext {
 
     public static Session getSession() {
         String sessionId = getSessionId();
-        System.out.println("sessionId=" + sessionId);
         if (sessions.get(sessionId) == null) {
             sessions.put(sessionId, new Session(sessionId));
         }

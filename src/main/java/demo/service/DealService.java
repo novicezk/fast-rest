@@ -34,6 +34,7 @@ public class DealService {
         return userRepository.save(userBean);
     }
 
+
     @Transactional
     public void init() {
         List<RoleBean> roleBeanList = new ArrayList<>();

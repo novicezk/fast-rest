@@ -19,7 +19,7 @@ public interface UserRepository extends CrudRepository<UserBean, Integer> {
     @QueryCondition("rolebean.id is null or rolebean.level != ?")
     List<UserBean> getAllUsersExcludeAdmin(Integer adminLevel);
 
-    @ExecuteUpdate("UPDATE userbean SET money=? WHERE userbean.id=?")
-    boolean recharge(float money, Integer userId);
+    @ExecuteUpdate("UPDATE userbean SET money=0")
+    boolean resetMoney();
 
 }

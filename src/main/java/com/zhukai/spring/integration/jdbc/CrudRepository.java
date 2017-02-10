@@ -9,13 +9,17 @@ import java.util.List;
  */
 public interface CrudRepository<T, ID extends Serializable> {
 
-    boolean save(T var1);
+    boolean save(T bean);
 
-    boolean save(List<T> var1);
+    boolean save(List<T> beanList);
 
-    T findOne(ID var1);
+    T findOne(ID id);
 
-    boolean exists(ID var1);
+    boolean exists(ID id);
+
+    boolean exists(T bean);
+
+    boolean exists(Object[] properties);
 
     List<T> findAll();
 
@@ -25,11 +29,8 @@ public interface CrudRepository<T, ID extends Serializable> {
 
     //long count();
 
-    void delete(ID var1);
+    void delete(ID id);
 
-    void delete(T var1);
+    void delete(T bean);
 
-    //void delete(List<? extends T> var1);
-
-    //void deleteAll();
 }

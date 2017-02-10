@@ -48,8 +48,12 @@ public class RequestBuilder {
         //保存此次请求的headers（包含cookies）
         while (!contextLine.trim().equals("")) {
             if (contextLine.startsWith("Cookie")) {
-                String[] cookieArr = contextLine.substring(contextLine.indexOf(':') + 2).split("=");
-                request.setCookie(cookieArr[0], cookieArr[1]);
+                String cookieString = contextLine.substring(contextLine.indexOf(':') + 2);
+                String[] cookieArr = cookieString.split(";");
+                for (String cookie : cookieArr) {
+                    String[] keyValue = cookie.split("=");
+                    request.setCookie(keyValue[0].trim(), keyValue[1].trim());
+                }
             } else {
                 String headerKey = contextLine.substring(0, contextLine.indexOf(':'));
                 String headerValue = contextLine.substring(contextLine.indexOf(':') + 2);

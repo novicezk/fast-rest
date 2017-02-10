@@ -59,6 +59,9 @@ public class MapperMethod<T> {
         } else if (methodName.equals("findOne")) {
             return getBean(args[0]);
         } else if (methodName.equals("exists")) {
+            if (args[0] instanceof Object[]) {
+                return existsByProperties((Object[]) args[0]);
+            }
             return exists(args[0]);
         } else if (methodName.equals("findAll")) {
             if (args != null) {
@@ -145,10 +148,19 @@ public class MapperMethod<T> {
     }
 
 
-    private <ID> boolean exists(ID id) throws Exception {
+    private <ID> boolean exists(ID ID) throws Exception {
         Field idField = JpaUtil.getIdField(entityClass);
         String idName = JpaUtil.getColumnName(idField);
-        String sql = JpaUtil.getSelectSQL(entityClass, new Object[]{idName, id});
+        String sql = JpaUtil.getSelectSQL(entityClass, new Object[]{idName, ID});
+        resultSet = executeQuery(sql);
+        if (resultSet.next()) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean existsByProperties(Object[] properties) throws Exception {
+        String sql = JpaUtil.getSelectSQL(entityClass, properties);
         resultSet = executeQuery(sql);
         if (resultSet.next()) {
             return true;

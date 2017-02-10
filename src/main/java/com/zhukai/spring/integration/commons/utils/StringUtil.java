@@ -48,7 +48,12 @@ public class StringUtil {
                     out.write(i);
                 }
             }
-            return new String(out.toByteArray(), "utf-8");
+
+            String result = new String(out.toByteArray(), "utf-8");
+            if (result.charAt(result.length() - 1) == 13) {
+                result = result.substring(0, result.length() - 1);
+            }
+            return result;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

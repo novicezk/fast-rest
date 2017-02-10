@@ -1,5 +1,6 @@
 package demo.web;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.zhukai.spring.integration.commons.Session;
 import com.zhukai.spring.integration.commons.annotation.Autowired;
 import com.zhukai.spring.integration.commons.annotation.RequestMapping;
@@ -19,7 +20,7 @@ public class DealController {
     DealService dealService;
 
     @RequestMapping("/recharge")
-    public boolean recharge(@RequestParam("money") Float money, Session session) {
+    public Boolean recharge(@RequestParam("money") Float money, Session session) {
         UserBean loginUser = (UserBean) session.getAttribute("loginUser");
         return dealService.recharge(loginUser, money);
     }
@@ -34,4 +35,5 @@ public class DealController {
     public void init() {
         dealService.init();
     }
+
 }
