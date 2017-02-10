@@ -161,7 +161,7 @@ public class MapperMethod<T> {
 
     private boolean existsByProperties(Object[] properties) throws Exception {
         String sql = JpaUtil.getSelectSQL(entityClass, properties);
-        resultSet = executeQuery(sql);
+        resultSet = executeQuery(sql+" LIMIT 1");
         if (resultSet.next()) {
             return true;
         }

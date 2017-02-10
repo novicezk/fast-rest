@@ -47,7 +47,6 @@ public class ClientAction implements Runnable {
                 request.setCookie(WebContext.JSESSIONID, sessionId);
                 sendSessionID = true;
             }
-            Logger.info("Request path: " + request.getPath());
             //请求静态资源
             if (request.getPath().startsWith("/public/")) {
                 InputStream resourceAsStream = SpringIntegration.runClass.getResourceAsStream(request.getPath());

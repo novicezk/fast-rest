@@ -19,6 +19,11 @@ public class DBConnectionPool {
     private static DataSource dataSource;
 
     public synchronized static void freeConnection(Connection con) {
+        try {
+            con.setAutoCommit(true);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         freeConnPool.addLast(con);
         checkOutSize--;
     }

@@ -42,7 +42,6 @@ public class CommonProxy implements MethodInterceptor {
             } catch (SQLException e) {
                 connection.rollback();
                 Logger.error("Transactional rollback...");
-                Logger.error();
                 e.printStackTrace();
             } finally {
                 DBConnectionPool.freeConnection(connection);

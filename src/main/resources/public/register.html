@@ -11,7 +11,8 @@
         <legend></legend>
         <div class="control-group">
             <label class="control-label">Username:</label>
-            <div class="controls"><input type="text" name="username" id="username"></div>
+            <div class="controls"><input type="text" name="username" id="username"><span
+                    id="repeat"></span></div>
         </div>
         <div class="control-group">
             <label class="control-label">Password:</label>
@@ -31,9 +32,12 @@
         $("#username").blur(function () {
             var username = $("#username").val();
             $.get("../user/checkUsername?username=" + username, function (data) {
-                console.log(data);
-                console.log(typeof data);
-                console.log(data == 'true');
+                var result = $.parseJSON(data);
+                if (!result) {
+                    $("#repeat").html("用户名重复")
+                } else {
+                    $("#repeat").html("可用")
+                }
             });
         });
         $("#submit").click(function () {
