@@ -49,7 +49,7 @@ public class DealService {
 
     @Transactional
     public String buyFood(UserBean userBean, String foodName, Integer number) {
-        FoodBean foodBean = foodRepository.findOne(foodName);
+        FoodBean foodBean = foodRepository.findByName(foodName);
         Float price = foodBean.getPrice() * number;
         if (userBean.getMoney() < price) {
             return "你的钱不够啦";

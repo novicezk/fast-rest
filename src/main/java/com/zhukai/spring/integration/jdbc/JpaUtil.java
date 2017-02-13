@@ -51,7 +51,7 @@ public class JpaUtil {
         sqlColumn.append(",");
 
         if (field.getType().isAnnotationPresent(Entity.class)) {
-            sqlColumn.append("FOREIGN KEY(").append(field.getName())
+            sqlColumn.append("FOREIGN KEY(").append(getColumnName(field))
                     .append(") REFERENCES ");
             String tableName = getTableName(field.getType());
             Field idField = Arrays.stream(field.getType().getDeclaredFields()).filter(e -> e.isAnnotationPresent(Id.class)).findFirst().get();

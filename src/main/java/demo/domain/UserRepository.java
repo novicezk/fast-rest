@@ -14,12 +14,14 @@ import java.util.List;
 @Repository
 public interface UserRepository extends CrudRepository<UserBean, Integer> {
 
-    List<UserBean> findByUsernameAndPassword(String username, String password);
+    UserBean findByUsernameAndPassword(String username, String password);
 
-    @QueryCondition("rolebean.id is null or rolebean.level != ?")
+    UserBean findByUsername(String username);
+
+    @QueryCondition("ROLE.ID IS NULL OR ROLE.LEVEL != ?")
     List<UserBean> getAllUsersExcludeAdmin(Integer adminLevel);
 
-    @ExecuteUpdate("UPDATE userbean SET money=0")
+    @ExecuteUpdate("UPDATE USER SET MONEY=0")
     boolean resetMoney();
 
 }

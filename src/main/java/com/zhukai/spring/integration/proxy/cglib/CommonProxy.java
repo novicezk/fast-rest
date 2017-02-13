@@ -10,7 +10,6 @@ import net.sf.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * Created by zhukai on 17-1-22.
@@ -36,16 +35,7 @@ public class CommonProxy implements MethodInterceptor {
         }
         Object result = proxy.invokeSuper(obj, args);
         if (connection != null) {
-            try {
-                connection.commit();
-                Logger.info("Transactional over...");
-            } catch (SQLException e) {
-                connection.rollback();
-                Logger.error("Transactional rollback...");
-                e.printStackTrace();
-            } finally {
-                DBConnectionPool.freeConnection(connection);
-            }
+            DBConnectionPool.commit(connection);
         }
         return result;
     }

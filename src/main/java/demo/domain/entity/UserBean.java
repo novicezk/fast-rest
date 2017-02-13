@@ -5,20 +5,24 @@ import com.zhukai.spring.integration.commons.annotation.*;
 /**
  * Created by zhukai on 17-1-18.
  */
-@Entity
+@Entity(name = "USER")
 public class UserBean {
 
     @Id
     @GeneratedValue
+    @Column(name = "ID")
     private Integer id;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "USERNAME", unique = true, nullable = false)
     private String username;
 
+    @Column(name = "PASSWORD")
     private String password;
 
-    private Float money = 0f;
+    @Column(name = "MONEY")
+    private Float money = 0.0f;
 
+    @Column(name = "ROLE_ID")
     private RoleBean role;
 
     public UserBean() {

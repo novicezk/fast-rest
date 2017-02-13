@@ -1,20 +1,21 @@
 package demo.domain.entity;
 
-import com.zhukai.spring.integration.commons.annotation.Entity;
-import com.zhukai.spring.integration.commons.annotation.GeneratedValue;
-import com.zhukai.spring.integration.commons.annotation.Id;
+import com.zhukai.spring.integration.commons.annotation.*;
 
 /**
  * Created by zhukai on 17-1-20.
  */
-@Entity
+@Entity(name = "ROLE", indexes = {@Index(columns = {"roleName", "level"}, unique = true)})
 public class RoleBean {
     @Id
     @GeneratedValue
+    @Column(name = "ID")
     private Integer id;
 
+    @Column(name = "ROLE_NAME", length = 64)
     private String roleName;
 
+    @Column(name = "LEVEL")
     private Integer level;
 
     public RoleBean() {

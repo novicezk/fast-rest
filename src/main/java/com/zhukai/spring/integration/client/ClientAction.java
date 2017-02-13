@@ -136,7 +136,7 @@ public class ClientAction implements Runnable {
         PrintStream out = null;
         try {
             out = new PrintStream(client.getOutputStream(), true);
-            out.println("HTTP/1.0 200 OK");
+            out.println("HTTP/1.1 200 OK");
             out.println("Content-Type: " + contentType);
             if (sendSessionID) {
                 sendSessionID = false;

@@ -24,9 +24,9 @@ public class UserController {
 
     @RequestMapping(value = "/login", method = RequestType.POST)
     public Response login(@RequestAttribute("username") String username, @RequestAttribute("password") String password) {
-        List<UserBean> userBeans = userRepository.findByUsernameAndPassword(username, password);
-        if (userBeans != null && !userBeans.isEmpty()) {
-            WebContext.getSession().setAttribute("loginUser", userBeans.get(0));
+        UserBean userBean = userRepository.findByUsernameAndPassword(username, password);
+        if (userBean != null) {
+            WebContext.getSession().setAttribute("loginName", userBean.getUsername());
             return ResponseBuilder.build(ResponseCodeEnums.SUCCESS);
         } else {
             return ResponseBuilder.build(ResponseCodeEnums.LOGIN_ERROR);
@@ -63,8 +63,7 @@ public class UserController {
 
     @RequestMapping("/getLoginName")
     public String getLoginName(Session session) {
-        UserBean loginUser = (UserBean) session.getAttribute("loginUser");
-        return loginUser.getUsername();
+        return (String) session.getAttribute("loginName");
     }
 
 }

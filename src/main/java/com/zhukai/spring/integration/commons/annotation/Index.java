@@ -7,8 +7,14 @@ import java.lang.annotation.*;
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Entity {
+public @interface Index {
+
     String name() default "";
-    Index[] indexes() default {};
+
+    String[] columns();
+
+    boolean unique() default false;
+
+    boolean isFull() default false;
+
 }

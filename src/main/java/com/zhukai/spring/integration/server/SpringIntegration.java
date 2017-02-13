@@ -5,6 +5,7 @@ import com.zhukai.spring.integration.beans.impl.ComponentBean;
 import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
 import com.zhukai.spring.integration.client.ClientAction;
 import com.zhukai.spring.integration.commons.annotation.*;
+import com.zhukai.spring.integration.commons.utils.StringUtil;
 import com.zhukai.spring.integration.jdbc.JpaUtil;
 import com.zhukai.spring.integration.commons.utils.ReflectUtil;
 import com.zhukai.spring.integration.jdbc.DBConnectionPool;
@@ -20,7 +21,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -100,7 +100,6 @@ public class SpringIntegration {
         }
         List<Class> classes = ResourcesUtil.getClassesFromPackage(runClass.getPackage().getName());
         for (Class componentClass : classes) {
-
             if (componentClass.isAnnotationPresent(RestController.class)) {
                 addWebMethod(webMethods, componentClass);
             }
@@ -114,20 +113,12 @@ public class SpringIntegration {
         }
         Logger.info("Useful web methods: " + webMethods.keySet());
         WebContext.setWebMethods(webMethods);
-        if (conn != null) {
-            try {
-                conn.commit();
-            } catch (SQLException e) {
-                conn.rollback();
-            } finally {
-                DBConnectionPool.freeConnection(conn);
-            }
-        }
+        if (conn != null)
+            DBConnectionPool.commit(conn);
     }
 
     private static void checkDatabase(Class entityClass, Connection conn) throws Exception {
         String tableName = JpaUtil.getTableName(entityClass);
-
         ResultSet rs = conn.getMetaData().getTables(null, null, tableName, null);
         if (rs.next()) {
             Logger.info("Table '" + tableName + "' is exists");
@@ -149,7 +140,42 @@ public class SpringIntegration {
         sql.deleteCharAt(sql.length() - 1);
         sql.append(")");
         Logger.info(sql);
-        conn.prepareStatement(sql.toString()).execute();
+        conn.createStatement().executeUpdate(sql.toString());
+        //添加索引
+        Entity entityAnnotation = (Entity) entityClass.getAnnotation(Entity.class);
+        if (entityAnnotation != null) {
+            Index[] indexs = entityAnnotation.indexes();
+            for (Index index : indexs) {
+                StringBuilder indexName = new StringBuilder(index.name());
+                if (StringUtil.isBlank(indexName)) {
+                    indexName.append(tableName).append("_INDEX_");
+                    for (int i = 0; i < index.columns().length; i++) {
+                        indexName.append(JpaUtil.getColumnName(entityClass, index.columns()[i]));
+                        if (i != index.columns().length - 1) {
+                            indexName.append("_");
+                        }
+                    }
+                }
+                StringBuilder indexSql = new StringBuilder("CREATE ");
+                if (index.unique()) {
+                    indexSql.append(" UNIQUE ");
+                }
+                if (index.isFull()) {
+                    indexSql.append(" FULLTEXT ");
+                }
+                indexSql.append(" INDEX ").append(indexName).append(" ON ").append(tableName)
+                        .append("(");
+                for (int i = 0; i < index.columns().length; i++) {
+                    indexSql.append(JpaUtil.getColumnName(entityClass, index.columns()[i]));
+                    if (i != index.columns().length - 1) {
+                        indexSql.append(",");
+                    }
+                }
+                indexSql.append(")");
+                Logger.info(indexSql);
+                conn.createStatement().executeUpdate(indexSql.toString());
+            }
+        }
     }
 
     private static final Pattern methodPattern = Pattern.compile("\\{*\\}");

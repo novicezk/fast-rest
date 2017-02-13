@@ -8,6 +8,6 @@ import demo.domain.entity.FoodBean;
  * Created by zhukai on 17-1-22.
  */
 @Repository
-public interface FoodRepository extends CrudRepository<FoodBean, String> {
-
+public interface FoodRepository extends CrudRepository<FoodBean, Integer> {
+    FoodBean findByName(String name);
 }

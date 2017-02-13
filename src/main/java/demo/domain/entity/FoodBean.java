@@ -1,19 +1,25 @@
 package demo.domain.entity;
 
-import com.zhukai.spring.integration.commons.annotation.Entity;
-import com.zhukai.spring.integration.commons.annotation.Id;
+import com.zhukai.spring.integration.commons.annotation.*;
 
 /**
  * Created by zhukai on 17-2-8.
  */
-@Entity
+@Entity(name = "FOOD", indexes = {@Index(columns = {"name"})})
 public class FoodBean {
 
     @Id
+    @GeneratedValue
+    @Column(name = "ID")
+    private Integer id;
+
+    @Column(name = "NAME", length = 32)
     private String name;
 
+    @Column(name = "PRICE")
     private Float price;
-
+    
+    @Column(name = "QUANTITY")
     private Integer quantity;
 
     public FoodBean() {
@@ -23,6 +29,14 @@ public class FoodBean {
         this.name = name;
         this.price = price;
         this.quantity = quantity;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -47,5 +61,15 @@ public class FoodBean {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "FoodBean{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", quantity=" + quantity +
+                '}';
     }
 }

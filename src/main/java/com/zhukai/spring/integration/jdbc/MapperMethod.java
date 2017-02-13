@@ -55,7 +55,11 @@ public class MapperMethod<T> {
         } else if (method.isAnnotationPresent(QueryCondition.class)) {
             String queryCondition = method.getAnnotation(QueryCondition.class).value();
             String sql = JpaUtil.getSelectSqlWithoutProperties(entityClass).append(" WHERE ").append(queryCondition).toString();
-            return getEntityList(sql, args);
+            if (List.class.isAssignableFrom(method.getReturnType())) {
+                return getEntityList(sql, args);
+            } else {
+                return getEntity(sql + " LIMIT 1 ", args);
+            }
         } else if (methodName.equals("findOne")) {
             return getBean(args[0]);
         } else if (methodName.equals("exists")) {
@@ -98,7 +102,11 @@ public class MapperMethod<T> {
                 }
             }
             String selectSQL = JpaUtil.getSelectSqlWithoutProperties(entityClass).append(propertiesSql).toString();
-            return getEntityList(selectSQL);
+            if (List.class.isAssignableFrom(method.getReturnType())) {
+                return getEntityList(selectSQL);
+            } else {
+                return getEntity(selectSQL + " LIMIT 1 ");
+            }
         }
         //TODO
         return null;
@@ -125,7 +133,7 @@ public class MapperMethod<T> {
         return executeUpdate(sql);
     }
 
-    public <ID> boolean delete(ID id) throws SQLException {
+    private <ID> boolean delete(ID id) throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("DELETE FROM ").append(JpaUtil.getTableName(entityClass)).append(" ");
         sql.append("WHERE ");
@@ -150,8 +158,7 @@ public class MapperMethod<T> {
 
     private <ID> boolean exists(ID ID) throws Exception {
         Field idField = JpaUtil.getIdField(entityClass);
-        String idName = JpaUtil.getColumnName(idField);
-        String sql = JpaUtil.getSelectSQL(entityClass, new Object[]{idName, ID});
+        String sql = JpaUtil.getSelectSQL(entityClass, new Object[]{idField.getName(), ID});
         resultSet = executeQuery(sql);
         if (resultSet.next()) {
             return true;
@@ -161,24 +168,36 @@ public class MapperMethod<T> {
 
     private boolean existsByProperties(Object[] properties) throws Exception {
         String sql = JpaUtil.getSelectSQL(entityClass, properties);
-        resultSet = executeQuery(sql+" LIMIT 1");
+        resultSet = executeQuery(sql + " LIMIT 1");
         if (resultSet.next()) {
             return true;
         }
         return false;
     }
 
-    public List<T> getBeans(Object[] properties) throws Exception {
+    private List<T> getBeans(Object[] properties) throws Exception {
         String sql = JpaUtil.getSelectSQL(entityClass, properties);
         return getEntityList(sql);
     }
 
-    public <ID> List<T> getBeansIn(List<ID> ids) throws Exception {
+    private <ID> List<T> getBeansIn(List<ID> ids) throws Exception {
         List<T> beans = new ArrayList();
         for (ID id : ids) {
             beans.add(getBean(id));
         }
         return beans;
+    }
+
+    private T getEntity(String sql) throws Exception {
+        return getEntity(sql, null);
+    }
+
+    private T getEntity(String sql, Object[] properties) throws Exception {
+        List<T> entityList = getEntityList(sql, properties);
+        if (entityList != null && !entityList.isEmpty()) {
+            return entityList.get(0);
+        }
+        return null;
     }
 
     private List<T> getEntityList(String sql) throws Exception {

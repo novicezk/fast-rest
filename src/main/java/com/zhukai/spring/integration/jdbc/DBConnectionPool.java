@@ -68,4 +68,18 @@ public class DBConnectionPool {
         }
     }
 
+    public static void commit(Connection conn) throws Exception {
+        try {
+            conn.commit();
+            Logger.info("Transactional over...");
+        } catch (SQLException e) {
+            conn.rollback();
+            Logger.error("Transactional rollback...");
+            e.printStackTrace();
+        } finally {
+            freeConnection(conn);
+        }
+    }
+
+
 }
