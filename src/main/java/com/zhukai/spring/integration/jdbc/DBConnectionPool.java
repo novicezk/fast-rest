@@ -12,13 +12,24 @@ import java.util.LinkedList;
  */
 public class DBConnectionPool {
 
-    private static int checkOutSize = 0;
+    private int checkOutSize = 0;
 
-    private static LinkedList<Connection> freeConnPool = new LinkedList<>();
+    private LinkedList<Connection> freeConnPool = new LinkedList<>();
 
-    private static DataSource dataSource;
+    private DataSource dataSource;
 
-    public synchronized static void freeConnection(Connection con) {
+
+    private DBConnectionPool() {
+
+    }
+
+    private static DBConnectionPool instance = new DBConnectionPool();
+
+    public static DBConnectionPool getInstance() {
+        return instance;
+    }
+
+    public synchronized void freeConnection(Connection con) {
         try {
             con.setAutoCommit(true);
         } catch (SQLException e) {
@@ -26,34 +37,31 @@ public class DBConnectionPool {
         }
         freeConnPool.addLast(con);
         checkOutSize--;
+        notify();
     }
 
-    public static synchronized Connection getConnection() {
+    public synchronized Connection getConnection(boolean isFirst) throws Exception {
         if (freeConnPool.size() > 0) {
             checkOutSize++;
             return freeConnPool.poll();
         } else if (checkOutSize < dataSource.getMaxConn()) {
-            try {
-                Connection connection = DriverManager.getConnection(dataSource.getUrl(),
-                        dataSource.getUsername(), dataSource.getPassword());
-                checkOutSize++;
-                return connection;
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            Connection connection = DriverManager.getConnection(dataSource.getUrl(),
+                    dataSource.getUsername(), dataSource.getPassword());
+            checkOutSize++;
+            return connection;
+        } else if (isFirst) {
+            wait(dataSource.getTimeout());
+            return getConnection(false);
+        } else {
+            throw new Exception("获取数据库连接超时");
         }
-        return null;
     }
 
-    public static synchronized Connection getConnection(long time) {
-        return null;
+    public Connection getConnection() throws Exception {
+        return getConnection(true);
     }
 
-    public static synchronized void release() {
-
-    }
-
-    public static void init(DataSource source) {
+    public void init(DataSource source) {
         dataSource = source;
         try {
             Class.forName(source.getDriverClass());
@@ -63,7 +71,6 @@ public class DBConnectionPool {
                 freeConnPool.add(connection);
             }
         } catch (Exception e) {
-            Logger.error();
             e.printStackTrace();
         }
     }
@@ -77,7 +84,7 @@ public class DBConnectionPool {
             Logger.error("Transactional rollback...");
             e.printStackTrace();
         } finally {
-            freeConnection(conn);
+            instance.freeConnection(conn);
         }
     }
 

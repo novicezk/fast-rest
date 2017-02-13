@@ -12,7 +12,7 @@ public class DataSource {
     private int minConn = 2;
     //最大连接数
     private int maxConn = 100;
-
+    private long timeout = 100;
 
     public DataSource() {
     }
@@ -65,14 +65,24 @@ public class DataSource {
         this.maxConn = maxConn;
     }
 
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(long waitTime) {
+        this.timeout = waitTime;
+    }
+
     @Override
     public String toString() {
-        return "DataSource：" +
+        return "DataSource{" +
                 "username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", url='" + url + '\'' +
                 ", driverClass='" + driverClass + '\'' +
                 ", minConn=" + minConn +
-                ", maxConn=" + maxConn;
+                ", maxConn=" + maxConn +
+                ", timeout=" + timeout +
+                '}';
     }
 }

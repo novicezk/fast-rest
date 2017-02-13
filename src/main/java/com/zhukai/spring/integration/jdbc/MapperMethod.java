@@ -5,6 +5,7 @@ import com.zhukai.spring.integration.commons.annotation.QueryCondition;
 import com.zhukai.spring.integration.commons.utils.ReflectUtil;
 import com.zhukai.spring.integration.commons.utils.StringUtil;
 import com.zhukai.spring.integration.logger.Logger;
+import com.zhukai.spring.integration.server.SpringIntegration;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -36,7 +37,7 @@ public class MapperMethod<T> {
 
     public void release() throws SQLException {
         if (conn != null && !isTransactional) {
-            DBConnectionPool.freeConnection(conn);
+            DBConnectionPool.getInstance().freeConnection(conn);
         }
         if (resultSet != null) {
             resultSet.close();
@@ -46,7 +47,7 @@ public class MapperMethod<T> {
     public Object execute() throws Exception {
         if (conn == null) {
             isTransactional = false;
-            conn = DBConnectionPool.getConnection();
+            conn = DBConnectionPool.getInstance().getConnection();
         }
         String methodName = method.getName();
         if (method.isAnnotationPresent(ExecuteUpdate.class)) {
@@ -218,7 +219,9 @@ public class MapperMethod<T> {
     }
 
     private ResultSet executeQuery(String sql) throws SQLException {
-        Logger.info(sql);
+        if (SpringIntegration.showSQL) {
+            Logger.info(sql);
+        }
         return conn.prepareStatement(sql).executeQuery();
     }
 
@@ -227,7 +230,9 @@ public class MapperMethod<T> {
     }
 
     private boolean executeUpdate(String sql) throws SQLException {
-        Logger.info(sql);
+        if (SpringIntegration.showSQL) {
+            Logger.info(sql);
+        }
         return conn.prepareStatement(sql).executeUpdate() >= 1;
     }
 
@@ -236,8 +241,10 @@ public class MapperMethod<T> {
     }
 
     private PreparedStatement fillStatement(String sql, Object[] properties) throws SQLException {
-        Logger.info(sql);
-        Logger.info("parameters：" + Arrays.toString(properties));
+        if (SpringIntegration.showSQL) {
+            Logger.info(sql);
+            Logger.info("parameters：" + Arrays.toString(properties));
+        }
         PreparedStatement statement = conn.prepareStatement(sql);
         for (int i = 0; i < properties.length; i++) {
             statement.setObject(i + 1, properties[i]);

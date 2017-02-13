@@ -50,7 +50,7 @@ public class StringUtil {
             }
 
             String result = new String(out.toByteArray(), "utf-8");
-            if (result.length() > 1 && result.charAt(result.length() - 1) == 13) {
+            if (result.length() > 0 && result.charAt(result.length() - 1) == 13) {
                 result = result.substring(0, result.length() - 1);
             }
             return result;

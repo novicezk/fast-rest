@@ -46,6 +46,7 @@ public class ClientAction implements Runnable {
                 String sessionId = UUID.randomUUID().toString();
                 request.setCookie(WebContext.JSESSIONID, sessionId);
                 sendSessionID = true;
+                Logger.info(WebContext.getSessionId() + "已连接");
             }
             //请求静态资源
             if (request.getPath().startsWith("/public/")) {
@@ -85,7 +86,6 @@ public class ClientAction implements Runnable {
             Object result = invokeMethod(method, request);
             respond(result);
         } catch (Exception e) {
-            Logger.error();
             e.printStackTrace();
             respond(e.getMessage());
         }

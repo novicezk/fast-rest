@@ -29,7 +29,7 @@ public class CommonProxy implements MethodInterceptor {
         Connection connection = null;
         if (method.isAnnotationPresent(Transactional.class)) {
             Logger.info("Transactional begin...");
-            connection = DBConnectionPool.getConnection();
+            connection = DBConnectionPool.getInstance().getConnection();
             connection.setAutoCommit(false);
             WebContext.setTransaction(connection);
         }

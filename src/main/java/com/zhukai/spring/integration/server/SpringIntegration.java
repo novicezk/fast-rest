@@ -35,6 +35,7 @@ public class SpringIntegration {
     private static ServerSocket serverSocket;
 
     private static Integer port = 9000;
+    public static boolean showSQL = false;
 
     private static boolean useDB = false;
 
@@ -78,6 +79,9 @@ public class SpringIntegration {
                 if (result.get("server").get("port") != null) {
                     port = Integer.parseInt(result.get("server").get("port").toString());
                 }
+                if (result.get("server").get("showSQL") != null) {
+                    showSQL = Boolean.parseBoolean(result.get("server").get("showSQL").toString());
+                }
             }
             if (result.get("datasource") != null) {
                 useDB = true;
@@ -86,7 +90,7 @@ public class SpringIntegration {
                     ReflectUtil.setFieldValue(dataSource, sourceProperty.toString(), result.get("datasource").get(sourceProperty));
                 }
                 Logger.info(dataSource);
-                DBConnectionPool.init(dataSource);
+                DBConnectionPool.getInstance().init(dataSource);
             }
         }
     }
@@ -95,7 +99,7 @@ public class SpringIntegration {
         Map<String, Method> webMethods = new HashMap<>();
         Connection conn = null;
         if (useDB) {
-            conn = DBConnectionPool.getConnection();
+            conn = DBConnectionPool.getInstance().getConnection();
             conn.setAutoCommit(false);
         }
         List<Class> classes = ResourcesUtil.getClassesFromPackage(runClass.getPackage().getName());

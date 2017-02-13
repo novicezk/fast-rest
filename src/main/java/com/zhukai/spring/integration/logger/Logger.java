@@ -22,11 +22,6 @@ public class Logger {
         println("error", object);
     }
 
-    public static void error() {
-        StringBuffer value = getLocaleInfo("error");
-        System.err.print(value.toString());
-    }
-
     private static void println(String printType, Object object) {
         StringBuffer value = getLocaleInfo(printType);
         if (object == null) {
