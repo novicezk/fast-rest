@@ -2,8 +2,8 @@ package com.zhukai.spring.integration.beans.impl;
 
 import com.zhukai.spring.integration.beans.BeanDefinition;
 import com.zhukai.spring.integration.beans.BeanFactory;
-import com.zhukai.spring.integration.commons.annotation.Repository;
-import com.zhukai.spring.integration.commons.utils.ReflectUtil;
+import com.zhukai.spring.integration.annotation.core.Repository;
+import com.zhukai.spring.integration.utils.ReflectUtil;
 import com.zhukai.spring.integration.proxy.cglib.CommonProxy;
 import com.zhukai.spring.integration.proxy.jdk.MapperProxy;
 

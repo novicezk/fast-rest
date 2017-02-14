@@ -11,3 +11,4 @@ datasource:
 server:
   port: 9001
   showSQL: false
+  timeout: 1800000 #session过期时间，单位（毫秒）

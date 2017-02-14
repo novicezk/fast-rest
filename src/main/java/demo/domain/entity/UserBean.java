@@ -1,6 +1,9 @@
 package demo.domain.entity;
 
-import com.zhukai.spring.integration.commons.annotation.*;
+import com.zhukai.spring.integration.annotation.jpa.Column;
+import com.zhukai.spring.integration.annotation.jpa.Entity;
+import com.zhukai.spring.integration.annotation.jpa.GeneratedValue;
+import com.zhukai.spring.integration.annotation.jpa.Id;
 
 /**
  * Created by zhukai on 17-1-18.

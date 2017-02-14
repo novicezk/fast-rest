@@ -1,7 +1,10 @@
 package com.zhukai.spring.integration.jdbc;
 
-import com.zhukai.spring.integration.commons.annotation.*;
-import com.zhukai.spring.integration.commons.utils.ReflectUtil;
+import com.zhukai.spring.integration.annotation.jpa.Column;
+import com.zhukai.spring.integration.annotation.jpa.Entity;
+import com.zhukai.spring.integration.annotation.jpa.GeneratedValue;
+import com.zhukai.spring.integration.annotation.jpa.Id;
+import com.zhukai.spring.integration.utils.ReflectUtil;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;

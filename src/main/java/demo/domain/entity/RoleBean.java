@@ -1,6 +1,6 @@
 package demo.domain.entity;
 
-import com.zhukai.spring.integration.commons.annotation.*;
+import com.zhukai.spring.integration.annotation.jpa.*;
 
 /**
  * Created by zhukai on 17-1-20.

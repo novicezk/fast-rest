@@ -1,10 +1,11 @@
 package com.zhukai.spring.integration.context;
 
-import com.zhukai.spring.integration.commons.Request;
-import com.zhukai.spring.integration.commons.Session;
+import com.zhukai.spring.integration.common.Request;
+import com.zhukai.spring.integration.common.Session;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,12 +56,23 @@ public class WebContext {
         return sessions.get(sessionId);
     }
 
+    public static Map<String, Session> getSessions() {
+        return sessions;
+    }
+
     public static Map<String, Method> getWebMethods() {
         return webMethods;
     }
 
     public static void setWebMethods(Map<String, Method> webMethods) {
         WebContext.webMethods = webMethods;
+    }
+
+    public static void refreshSession() {
+        String sessionId = getSessionId();
+        if (sessions.get(sessionId) != null) {
+            sessions.get(sessionId).setLastConnectionTime(LocalDateTime.now());
+        }
     }
 
     public static void clear() {

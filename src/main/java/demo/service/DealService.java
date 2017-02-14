@@ -1,9 +1,9 @@
 package demo.service;
 
 
-import com.zhukai.spring.integration.commons.annotation.Autowired;
-import com.zhukai.spring.integration.commons.annotation.Service;
-import com.zhukai.spring.integration.commons.annotation.Transactional;
+import com.zhukai.spring.integration.annotation.core.Autowired;
+import com.zhukai.spring.integration.annotation.core.Service;
+import com.zhukai.spring.integration.annotation.core.Transactional;
 import demo.domain.FoodRepository;
 import demo.domain.RoleRepository;
 import demo.domain.UserRepository;

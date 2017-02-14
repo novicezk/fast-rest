@@ -1,6 +1,6 @@
 package com.zhukai.spring.integration.proxy.cglib;
 
-import com.zhukai.spring.integration.commons.annotation.Transactional;
+import com.zhukai.spring.integration.annotation.core.Transactional;
 import com.zhukai.spring.integration.context.WebContext;
 import com.zhukai.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.spring.integration.logger.Logger;

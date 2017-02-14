@@ -1,9 +1,9 @@
 package com.zhukai.spring.integration.jdbc;
 
-import com.zhukai.spring.integration.commons.annotation.ExecuteUpdate;
-import com.zhukai.spring.integration.commons.annotation.QueryCondition;
-import com.zhukai.spring.integration.commons.utils.ReflectUtil;
-import com.zhukai.spring.integration.commons.utils.StringUtil;
+import com.zhukai.spring.integration.annotation.jpa.ExecuteUpdate;
+import com.zhukai.spring.integration.annotation.jpa.QueryCondition;
+import com.zhukai.spring.integration.utils.ReflectUtil;
+import com.zhukai.spring.integration.utils.StringUtil;
 import com.zhukai.spring.integration.logger.Logger;
 import com.zhukai.spring.integration.server.SpringIntegration;
 
@@ -219,7 +219,7 @@ public class MapperMethod<T> {
     }
 
     private ResultSet executeQuery(String sql) throws SQLException {
-        if (SpringIntegration.showSQL) {
+        if (SpringIntegration.getServerConfig().isShowSQL()) {
             Logger.info(sql);
         }
         return conn.prepareStatement(sql).executeQuery();
@@ -230,7 +230,7 @@ public class MapperMethod<T> {
     }
 
     private boolean executeUpdate(String sql) throws SQLException {
-        if (SpringIntegration.showSQL) {
+        if (SpringIntegration.getServerConfig().isShowSQL()) {
             Logger.info(sql);
         }
         return conn.prepareStatement(sql).executeUpdate() >= 1;
@@ -241,7 +241,7 @@ public class MapperMethod<T> {
     }
 
     private PreparedStatement fillStatement(String sql, Object[] properties) throws SQLException {
-        if (SpringIntegration.showSQL) {
+        if (SpringIntegration.getServerConfig().isShowSQL()) {
             Logger.info(sql);
             Logger.info("parameters：" + Arrays.toString(properties));
         }

@@ -2,13 +2,13 @@ package com.zhukai.spring.integration.client;
 
 
 import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
-import com.zhukai.spring.integration.commons.RequestBuilder;
-import com.zhukai.spring.integration.commons.Session;
-import com.zhukai.spring.integration.commons.annotation.*;
-import com.zhukai.spring.integration.commons.utils.JsonUtil;
+import com.zhukai.spring.integration.common.RequestBuilder;
+import com.zhukai.spring.integration.common.Session;
+import com.zhukai.spring.integration.annotation.mvc.*;
+import com.zhukai.spring.integration.utils.JsonUtil;
 import com.zhukai.spring.integration.context.WebContext;
-import com.zhukai.spring.integration.commons.Request;
-import com.zhukai.spring.integration.commons.utils.ParameterUtil;
+import com.zhukai.spring.integration.common.Request;
+import com.zhukai.spring.integration.utils.ParameterUtil;
 import com.zhukai.spring.integration.logger.Logger;
 import com.zhukai.spring.integration.server.SpringIntegration;
 
@@ -48,6 +48,7 @@ public class ClientAction implements Runnable {
                 sendSessionID = true;
                 Logger.info(WebContext.getSessionId() + "已连接");
             }
+            WebContext.refreshSession();
             //请求静态资源
             if (request.getPath().startsWith("/public/")) {
                 InputStream resourceAsStream = SpringIntegration.runClass.getResourceAsStream(request.getPath());

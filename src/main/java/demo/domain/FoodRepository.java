@@ -1,6 +1,6 @@
 package demo.domain;
 
-import com.zhukai.spring.integration.commons.annotation.Repository;
+import com.zhukai.spring.integration.annotation.core.Repository;
 import com.zhukai.spring.integration.jdbc.CrudRepository;
 import demo.domain.entity.FoodBean;
 

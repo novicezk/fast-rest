@@ -1,11 +1,12 @@
 package demo.web;
 
-import com.zhukai.spring.integration.commons.Session;
-import com.zhukai.spring.integration.commons.annotation.*;
-import com.zhukai.spring.integration.commons.constant.RequestType;
-import com.zhukai.spring.integration.commons.response.Response;
-import com.zhukai.spring.integration.commons.response.ResponseBuilder;
-import com.zhukai.spring.integration.commons.response.ResponseCodeEnums;
+import com.zhukai.spring.integration.common.Session;
+import com.zhukai.spring.integration.annotation.core.Autowired;
+import com.zhukai.spring.integration.annotation.mvc.*;
+import com.zhukai.spring.integration.common.constant.RequestType;
+import com.zhukai.spring.integration.common.response.Response;
+import com.zhukai.spring.integration.common.response.ResponseBuilder;
+import com.zhukai.spring.integration.common.response.ResponseCodeEnums;
 import com.zhukai.spring.integration.context.WebContext;
 import demo.domain.UserRepository;
 import demo.domain.entity.UserBean;

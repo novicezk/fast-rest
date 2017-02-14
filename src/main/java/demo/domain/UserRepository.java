@@ -1,8 +1,8 @@
 package demo.domain;
 
-import com.zhukai.spring.integration.commons.annotation.ExecuteUpdate;
-import com.zhukai.spring.integration.commons.annotation.QueryCondition;
-import com.zhukai.spring.integration.commons.annotation.Repository;
+import com.zhukai.spring.integration.annotation.jpa.ExecuteUpdate;
+import com.zhukai.spring.integration.annotation.jpa.QueryCondition;
+import com.zhukai.spring.integration.annotation.core.Repository;
 import demo.domain.entity.UserBean;
 import com.zhukai.spring.integration.jdbc.CrudRepository;
 
