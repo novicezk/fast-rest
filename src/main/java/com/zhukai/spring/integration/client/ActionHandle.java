@@ -1,47 +1,54 @@
 package com.zhukai.spring.integration.client;
 
 
-import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
-import com.zhukai.spring.integration.common.RequestBuilder;
-import com.zhukai.spring.integration.common.Session;
 import com.zhukai.spring.integration.annotation.mvc.*;
-import com.zhukai.spring.integration.utils.JsonUtil;
-import com.zhukai.spring.integration.context.WebContext;
+import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
 import com.zhukai.spring.integration.common.Request;
-import com.zhukai.spring.integration.utils.ParameterUtil;
+import com.zhukai.spring.integration.common.Session;
+import com.zhukai.spring.integration.context.WebContext;
 import com.zhukai.spring.integration.logger.Logger;
 import com.zhukai.spring.integration.server.SpringIntegration;
+import com.zhukai.spring.integration.utils.JsonUtil;
+import com.zhukai.spring.integration.utils.ParameterUtil;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.net.Socket;
-import java.util.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Created by zhukai on 17-1-12.
  */
-public class ClientAction implements Runnable {
+public class ActionHandle implements Runnable {
 
-    private Socket client;
+    private SocketChannel client;
+
+    private Request request;
 
     private boolean sendSessionID = false;
 
-    public ClientAction(Socket client) {
+    public ActionHandle(SocketChannel client, Request request) {
         this.client = client;
+        this.request = request;
     }
 
     @Override
     public void run() {
         try {
-            InputStream inputStream = client.getInputStream();
-            Request request = RequestBuilder.build(inputStream);
             if (request == null) {
                 return;
             }
+            WebContext.setRequest(request);
             if (WebContext.getSessionId() == null) {
                 String sessionId = UUID.randomUUID().toString();
                 request.setCookie(WebContext.JSESSIONID, sessionId);
@@ -51,24 +58,25 @@ public class ClientAction implements Runnable {
             WebContext.refreshSession();
             //请求静态资源
             if (request.getPath().startsWith("/public/")) {
-                InputStream resourceAsStream = SpringIntegration.runClass.getResourceAsStream(request.getPath());
+                String filePath = SpringIntegration.runClass.getResource(request.getPath()).getPath();
+                RandomAccessFile file = new RandomAccessFile(filePath, "rw");
                 String[] arr = request.getPath().split("\\.");
                 if (arr.length > 0) {
                     String fileType = arr[arr.length - 1];
                     if (fileType.equals("css")) {
-                        respond(resourceAsStream, "text/css");
+                        respond(file.getChannel(), "text/css");
                     } else if (fileType.equals("jpg")) {
-                        respond(resourceAsStream, "image/jpeg");
+                        respond(file.getChannel(), "image/jpeg");
                     } else if (fileType.equals("png")) {
-                        respond(resourceAsStream, "image/png");
+                        respond(file.getChannel(), "image/png");
                     } else if (fileType.equals("js")) {
-                        respond(resourceAsStream, "application/x-javascript");
+                        respond(file.getChannel(), "application/x-javascript");
                     } else {
                         //TODO application/* 大多表示下载
-                        respond(resourceAsStream);
+                        respond(file.getChannel());
                     }
                 } else {
-                    respond(resourceAsStream);
+                    respond(file.getChannel());
                 }
                 return;
             }
@@ -134,50 +142,53 @@ public class ClientAction implements Runnable {
 
     //返回消息,并结束
     private void respond(Object message, String contentType) {
-        PrintStream out = null;
         try {
-            out = new PrintStream(client.getOutputStream(), true);
-            out.println("HTTP/1.1 200 OK");
-            out.println("Content-Type: " + contentType);
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("HTTP/1.1 200 OK").append("\r\n")
+                    .append("Content-Type: " + contentType)
+                    .append("\r\n");
             if (sendSessionID) {
                 sendSessionID = false;
-                out.println("Set-Cookie: " + WebContext.JSESSIONID + "=" + WebContext.getSessionId() + ";Path=/");
+                stringBuilder.append("Set-Cookie: ").append(WebContext.JSESSIONID)
+                        .append("=").append(WebContext.getSessionId())
+                        .append(";Path=/").append("\r\n");
             }
-            //根据HTTP协议,空行将结束头信息
-            out.println();
-            if (message instanceof InputStream) {
-                InputStream inputStream = (InputStream) message;
-                int len = inputStream.available();
-                if (len <= 1024 * 1024) {
-                    byte[] bytes = new byte[len];
-                    inputStream.read(bytes);
-                    out.write(bytes);
-                } else {
-                    int byteCount;
-                    byte[] bytes = new byte[1024 * 1024];
-                    while ((byteCount = inputStream.read(bytes)) != -1) {
-                        out.write(bytes, 0, byteCount);
-                    }
+            //空行,结束头信息
+            stringBuilder.append("\r\n");
+
+            ByteBuffer buffer = ByteBuffer.allocate(SpringIntegration.BUFFER_SIZE);
+            sendMessageByBuffer(stringBuilder.toString(), buffer);
+
+            if (message instanceof FileChannel) {
+                FileChannel fileChannel = (FileChannel) message;
+                buffer.clear();
+                while (fileChannel.read(buffer) != -1) {
+                    buffer.flip();
+                    client.write(buffer);
+                    buffer.clear();
                 }
-                inputStream.close();
+                fileChannel.close();
             } else {
-                out.println(JsonUtil.toJson(message));
+                String json = JsonUtil.toJson(message);
+                sendMessageByBuffer(json, buffer);
             }
-        } catch (IOException e) {
+            client.register(SpringIntegration.selector, SelectionKey.OP_WRITE);
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (out != null)
-                out.close();
-            closeClient();
+            WebContext.clear();
         }
     }
 
-    private void closeClient() {
-        try {
-            client.close();
-            WebContext.clear();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void sendMessageByBuffer(String message, ByteBuffer buffer) throws Exception {
+        int endIndex = 0;
+        while (endIndex < message.length()) {
+            buffer.clear();
+            int startIndex = endIndex;
+            endIndex = Math.min(endIndex + SpringIntegration.BUFFER_SIZE / 3, message.length());
+            buffer.put(message.substring(startIndex, endIndex).getBytes());
+            buffer.flip();
+            client.write(buffer);
         }
     }
 

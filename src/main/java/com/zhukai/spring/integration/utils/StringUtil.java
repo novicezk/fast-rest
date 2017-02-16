@@ -1,8 +1,11 @@
 package com.zhukai.spring.integration.utils;
 
+import com.zhukai.spring.integration.server.SpringIntegration;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 /**
  * Created by zhukai on 16-12-15.
@@ -31,25 +34,35 @@ public class StringUtil {
         return String.valueOf(chars);
     }
 
-    //size为0时，读取一行
-    public static String readInputStreamLimitSize(InputStream inputStream, int size) throws IOException {
+    public static String readLine(SocketChannel channel, ByteBuffer buf) throws IOException {
+        return readInputStreamLimitSize(channel, buf, 0);
+    }
+
+    public static String readInputStreamLimitSize(SocketChannel channel, ByteBuffer buf, int size) throws IOException {
         ByteArrayOutputStream out = null;
         try {
             out = new ByteArrayOutputStream();
             int total = 0;
             if (size != 0) {
-                while (total < size) {
-                    out.write(inputStream.read());
-                    total++;
+                while (channel.read(buf) != -1 && total < size) {
+                    buf.flip();
+                    while (buf.hasRemaining() && total < size) {
+                        out.write(buf.get());
+                        total++;
+                    }
+                    buf.compact();
                 }
             } else {
-                int i;
-                while ((i = inputStream.read()) != 10 && i != -1) {
-                    out.write(i);
+                int i = 0;
+                while (channel.read(buf) != -1 && i != 10) {
+                    buf.flip();
+                    while (buf.hasRemaining() && (i = buf.get()) != 10) {
+                        out.write(i);
+                    }
+                    buf.compact();
                 }
             }
-
-            String result = new String(out.toByteArray(), "utf-8");
+            String result = new String(out.toByteArray(), SpringIntegration.CHARSET);
             if (result.length() > 0 && result.charAt(result.length() - 1) == 13) {
                 result = result.substring(0, result.length() - 1);
             }
@@ -63,8 +76,5 @@ public class StringUtil {
         }
     }
 
-    public static String readLine(InputStream inputStream) throws IOException {
-        return readInputStreamLimitSize(inputStream, 0);
-    }
 
 }

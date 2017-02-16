@@ -3,14 +3,21 @@ package com.zhukai.spring.integration.server;
 
 import com.zhukai.spring.integration.annotation.batch.Scheduled;
 import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
-import com.zhukai.spring.integration.client.ClientAction;
+import com.zhukai.spring.integration.client.ActionHandle;
+import com.zhukai.spring.integration.common.Request;
+import com.zhukai.spring.integration.common.RequestBuilder;
 import com.zhukai.spring.integration.common.Session;
 import com.zhukai.spring.integration.context.WebContext;
 import com.zhukai.spring.integration.logger.Logger;
 
 import java.lang.reflect.Method;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -21,8 +28,6 @@ import java.util.concurrent.Executors;
  */
 public class SpringIntegration {
 
-    private static ServerSocket serverSocket;
-
     private static ServerConfig serverConfig;
 
     public static List<Method> batchMethods = new ArrayList<>();
@@ -30,6 +35,12 @@ public class SpringIntegration {
     public static Class runClass;
 
     private static Timer timer = new Timer();
+    private static ExecutorService service = Executors.newCachedThreadPool();
+
+    private static ServerSocketChannel serverChannel;
+    public static Selector selector;
+    public static String CHARSET = "utf-8"; //默认编码
+    public static int BUFFER_SIZE = 10;
 
     public static void run(Class runClass) {
         try {
@@ -44,12 +55,43 @@ public class SpringIntegration {
     }
 
     private static void startServer() throws Exception {
-        serverSocket = new ServerSocket(serverConfig.getPort());
-        Logger.info("Application is start on " + serverConfig.getPort());
-        ExecutorService service = Executors.newCachedThreadPool();
+        selector = Selector.open();
+        serverChannel = ServerSocketChannel.open();
+        serverChannel.socket().bind(new InetSocketAddress(serverConfig.getPort()));
+        Logger.info("Server start on port: " + serverConfig.getPort());
+        serverChannel.configureBlocking(false);
+        serverChannel.register(selector, SelectionKey.OP_ACCEPT);
         while (true) {
-            Socket client = serverSocket.accept();
-            service.execute(new ClientAction(client));
+            int readyChannels = selector.selectNow();
+            if (readyChannels == 0)
+                continue;
+            Iterator<SelectionKey> ite = selector.selectedKeys().iterator();
+            while (ite.hasNext()) {
+                SelectionKey key = ite.next();
+                if (key.isAcceptable()) {
+                    ServerSocketChannel server = (ServerSocketChannel) key
+                            .channel();
+                    SocketChannel channel = server.accept();
+                    if (channel != null) {
+                        channel.configureBlocking(false);
+                        channel.register(selector, SelectionKey.OP_READ);
+                    }
+                } else if (key.isReadable()) {
+                    SocketChannel channel = (SocketChannel) key.channel();
+                    Request request = RequestBuilder.build(channel);
+                    if (request != null) {
+                        service.execute(new ActionHandle(channel, request));
+                    } else {
+                        channel.shutdownInput();
+                        channel.close();
+                    }
+                } else if (key.isWritable()) {
+                    SocketChannel socketChannel = (SocketChannel) key.channel();
+                    socketChannel.shutdownInput();
+                    socketChannel.close();
+                }
+                ite.remove();
+            }
         }
     }
 
@@ -80,7 +122,7 @@ public class SpringIntegration {
                 @Override
                 public void run() {
                     try {
-                        method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()), null);
+                        method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()), new Object[]{});
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

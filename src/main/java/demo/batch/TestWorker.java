@@ -8,7 +8,7 @@ import com.zhukai.spring.integration.annotation.batch.Scheduled;
  */
 @Batcher
 public class TestWorker {
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 30000)
     public void test() {
         System.out.println("test batch");
     }
