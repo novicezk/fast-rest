@@ -1,20 +1,29 @@
 package com.zhukai.spring.integration.common;
 
+import com.zhukai.spring.integration.context.WebContext;
+
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by zhukai on 17-1-12.
  */
-public class Request {
+public class HttpRequest {
 
     private Map<String, Object> attributes;
     private Map<String, String> parameters;
     private Map<String, String> headers;
     private Map<String, String> cookies;
-    private String actionType;
+    private String method;
     private String path;
+    //协议版本
+    private String protocol;
     private String requestContext;
+
+    public Session getSession() {
+        String sessionId = getCookie(WebContext.JSESSIONID);
+        return WebContext.getSession(sessionId);
+    }
 
     public String getRequestContext() {
         return requestContext;
@@ -24,12 +33,12 @@ public class Request {
         this.requestContext = requestContext;
     }
 
-    public String getActionType() {
-        return actionType;
+    public String getMethod() {
+        return method;
     }
 
-    public void setActionType(String actionType) {
-        this.actionType = actionType;
+    public void setMethod(String method) {
+        this.method = method;
     }
 
     public String getPath() {
@@ -38,6 +47,14 @@ public class Request {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
     public String getParameter(String key) {
@@ -112,14 +129,4 @@ public class Request {
         this.cookies.put(key, value);
     }
 
-    @Override
-    public String toString() {
-        return
-                "\n\t attributes: " + attributes +
-                        "\n\t parameters: " + parameters +
-                        "\n\t headers: " + headers +
-                        "\n\t cookies: " + cookies +
-                        "\n\t actionType: " + actionType +
-                        "\n\t path: " + path;
-    }
 }

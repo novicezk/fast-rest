@@ -4,8 +4,8 @@ package com.zhukai.spring.integration.server;
 import com.zhukai.spring.integration.annotation.batch.Scheduled;
 import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
 import com.zhukai.spring.integration.client.ActionHandle;
-import com.zhukai.spring.integration.common.Request;
-import com.zhukai.spring.integration.common.RequestBuilder;
+import com.zhukai.spring.integration.common.HttpRequest;
+import com.zhukai.spring.integration.common.HttpParser;
 import com.zhukai.spring.integration.common.Session;
 import com.zhukai.spring.integration.context.WebContext;
 import com.zhukai.spring.integration.logger.Logger;
@@ -40,7 +40,7 @@ public class SpringIntegration {
     private static ServerSocketChannel serverChannel;
     public static Selector selector;
     public static String CHARSET = "utf-8"; //默认编码
-    public static int BUFFER_SIZE = 10;
+    public static int BUFFER_SIZE = 1024;
 
     public static void run(Class runClass) {
         try {
@@ -78,7 +78,7 @@ public class SpringIntegration {
                     }
                 } else if (key.isReadable()) {
                     SocketChannel channel = (SocketChannel) key.channel();
-                    Request request = RequestBuilder.build(channel);
+                    HttpRequest request = HttpParser.parseRequest(channel);
                     if (request != null) {
                         service.execute(new ActionHandle(channel, request));
                     } else {
@@ -102,7 +102,7 @@ public class SpringIntegration {
                 WebContext.getSessions().keySet().removeIf(sessionID -> {
                     Session session = WebContext.getSessions().get(sessionID);
                     LocalDateTime lastConnectionTime = session.getLastConnectionTime();
-                    if (lastConnectionTime.plusSeconds(serverConfig.getTimeout() / 1000).isBefore(LocalDateTime.now())) {
+                    if (lastConnectionTime.plusSeconds(serverConfig.getSessionTimeout() / 1000).isBefore(LocalDateTime.now())) {
                         System.out.println("sessionID: " + sessionID + "已过期");
                         return true;
                     }

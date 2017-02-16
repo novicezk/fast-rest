@@ -54,11 +54,11 @@
                 success: function (data) {
                     var obj = JSON.parse(data);
                     if (obj.code == -1) {
-                        if (confirm(obj.message + ",返回登陆？")) {
+                        if (confirm(obj.description + ",返回登陆？")) {
                             location.href = "login.html";
                         }
                     } else {
-                        alert(obj.message);
+                        alert(obj.description);
                     }
                 }
             });

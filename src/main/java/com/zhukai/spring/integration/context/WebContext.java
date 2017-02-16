@@ -1,6 +1,5 @@
 package com.zhukai.spring.integration.context;
 
-import com.zhukai.spring.integration.common.Request;
 import com.zhukai.spring.integration.common.Session;
 
 import java.lang.reflect.Method;
@@ -19,26 +18,9 @@ public class WebContext {
 
     private static Map<String, Method> webMethods;
 
-    private static ThreadLocal<Request> request = new ThreadLocal();
-
     private static ThreadLocal<Connection> transaction = new ThreadLocal();
 
     private static Map<String, Session> sessions = Collections.synchronizedMap(new HashMap<>());
-
-    public static String getSessionId() {
-        if (getRequest() == null) {
-            return null;
-        }
-        return getRequest().getCookie(JSESSIONID);
-    }
-
-    public static Request getRequest() {
-        return request.get();
-    }
-
-    public static void setRequest(Request request) {
-        WebContext.request.set(request);
-    }
 
     public static Connection getTransaction() {
         return transaction.get();
@@ -48,8 +30,7 @@ public class WebContext {
         WebContext.transaction.set(connection);
     }
 
-    public static Session getSession() {
-        String sessionId = getSessionId();
+    public static Session getSession(String sessionId) {
         if (sessions.get(sessionId) == null) {
             sessions.put(sessionId, new Session(sessionId));
         }
@@ -68,15 +49,10 @@ public class WebContext {
         WebContext.webMethods = webMethods;
     }
 
-    public static void refreshSession() {
-        String sessionId = getSessionId();
+    public static void refreshSession(String sessionId) {
         if (sessions.get(sessionId) != null) {
             sessions.get(sessionId).setLastConnectionTime(LocalDateTime.now());
         }
-    }
-
-    public static void clear() {
-        request.remove();
     }
 
 }

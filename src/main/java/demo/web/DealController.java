@@ -2,9 +2,9 @@ package demo.web;
 
 import com.zhukai.spring.integration.common.Session;
 import com.zhukai.spring.integration.annotation.core.Autowired;
-import com.zhukai.spring.integration.annotation.mvc.RequestMapping;
-import com.zhukai.spring.integration.annotation.mvc.RequestParam;
-import com.zhukai.spring.integration.annotation.mvc.RestController;
+import com.zhukai.spring.integration.annotation.web.RequestMapping;
+import com.zhukai.spring.integration.annotation.web.RequestParam;
+import com.zhukai.spring.integration.annotation.web.RestController;
 import demo.domain.entity.UserBean;
 import demo.service.DealService;
 

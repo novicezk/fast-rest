@@ -31,7 +31,7 @@ $(function () {
                 if (obj.code == -1) {
                     location.href = "home.html";
                 } else {
-                    $("#error").html(obj.message);
+                    $("#error").html(obj.description);
                     $("#error")[0].style.display = "";
                 }
             }

@@ -1,4 +1,4 @@
-package com.zhukai.spring.integration.annotation.mvc;
+package com.zhukai.spring.integration.annotation.web;
 
 import com.zhukai.spring.integration.common.constant.RequestType;
 

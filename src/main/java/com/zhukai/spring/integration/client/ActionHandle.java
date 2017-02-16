@@ -1,9 +1,11 @@
 package com.zhukai.spring.integration.client;
 
 
-import com.zhukai.spring.integration.annotation.mvc.*;
+import com.zhukai.spring.integration.annotation.web.*;
 import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
-import com.zhukai.spring.integration.common.Request;
+import com.zhukai.spring.integration.common.HttpParser;
+import com.zhukai.spring.integration.common.HttpRequest;
+import com.zhukai.spring.integration.common.HttpResponse;
 import com.zhukai.spring.integration.common.Session;
 import com.zhukai.spring.integration.context.WebContext;
 import com.zhukai.spring.integration.logger.Logger;
@@ -16,7 +18,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -33,51 +34,46 @@ public class ActionHandle implements Runnable {
 
     private SocketChannel client;
 
-    private Request request;
+    private HttpRequest request;
 
-    private boolean sendSessionID = false;
+    private HttpResponse response;
 
-    public ActionHandle(SocketChannel client, Request request) {
+    public ActionHandle(SocketChannel client, HttpRequest request) {
         this.client = client;
         this.request = request;
+        response = new HttpResponse();
+        response.setProtocol(request.getProtocol());
     }
 
     @Override
     public void run() {
         try {
-            if (request == null) {
-                return;
-            }
-            WebContext.setRequest(request);
-            if (WebContext.getSessionId() == null) {
+            if (request.getCookie(WebContext.JSESSIONID) == null) {
                 String sessionId = UUID.randomUUID().toString();
                 request.setCookie(WebContext.JSESSIONID, sessionId);
-                sendSessionID = true;
-                Logger.info(WebContext.getSessionId() + "已连接");
+                response.setCookie(WebContext.JSESSIONID, sessionId);
+                Logger.info(sessionId + "已连接");
             }
-            WebContext.refreshSession();
+            WebContext.refreshSession(request.getCookie(WebContext.JSESSIONID));
             //请求静态资源
             if (request.getPath().startsWith("/public/")) {
-                String filePath = SpringIntegration.runClass.getResource(request.getPath()).getPath();
-                RandomAccessFile file = new RandomAccessFile(filePath, "rw");
+                InputStream inputStream = SpringIntegration.runClass.getResourceAsStream(request.getPath());
+
                 String[] arr = request.getPath().split("\\.");
                 if (arr.length > 0) {
                     String fileType = arr[arr.length - 1];
                     if (fileType.equals("css")) {
-                        respond(file.getChannel(), "text/css");
+                        response.setContentType("text/css");
                     } else if (fileType.equals("jpg")) {
-                        respond(file.getChannel(), "image/jpeg");
+                        response.setContentType("image/jpeg");
                     } else if (fileType.equals("png")) {
-                        respond(file.getChannel(), "image/png");
+                        response.setContentType("image/png");
                     } else if (fileType.equals("js")) {
-                        respond(file.getChannel(), "application/x-javascript");
-                    } else {
-                        //TODO application/* 大多表示下载
-                        respond(file.getChannel());
+                        response.setContentType("application/x-javascript");
                     }
-                } else {
-                    respond(file.getChannel());
                 }
+                //TODO application/* 大多表示下载
+                response.setResult(inputStream);
                 return;
             }
             Method method = null;
@@ -92,24 +88,35 @@ public class ActionHandle implements Runnable {
                 throw new Exception("Have not this request path");
             }
 
-            Object result = invokeMethod(method, request);
-            respond(result);
+            Object result = invokeMethod(method);
+            if (method.isAnnotationPresent(Download.class)) {
+                response.setContentType("application/octet-stream");
+                if (result instanceof File) {
+                    response.setResult(new FileInputStream((File) result));
+                    return;
+                }
+            }
+            response.setResult(result);
         } catch (Exception e) {
             e.printStackTrace();
-            respond(e.getMessage());
+            response.setResult(e.getMessage());
+        } finally {
+            respond();
         }
     }
 
     //执行请求方法
-    public Object invokeMethod(Method method, Request request) throws Exception {
-        if (Arrays.asList(method.getAnnotation(RequestMapping.class).method()).contains(request.getActionType())) {
+    public Object invokeMethod(Method method) throws Exception {
+        if (Arrays.asList(method.getAnnotation(RequestMapping.class).method()).contains(request.getMethod())) {
             List<Object> paramValues = new ArrayList<>();
             Parameter[] parameters = method.getParameters();
             for (Parameter parameter : parameters) {
-                if (Request.class.isAssignableFrom(parameter.getType())) {
+                if (HttpRequest.class.isAssignableFrom(parameter.getType())) {
                     paramValues.add(request);
                 } else if (Session.class.isAssignableFrom(parameter.getType())) {
-                    paramValues.add(WebContext.getSession());
+                    paramValues.add(request.getSession());
+                } else if (HttpResponse.class.isAssignableFrom(parameter.getType())) {
+                    paramValues.add(response);
                 } else {
                     Annotation parameterAnnotation = parameter.getAnnotations()[0];
                     Object parameterValue = null;
@@ -131,52 +138,34 @@ public class ActionHandle implements Runnable {
             Object controllerBean = ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass());
             return method.invoke(controllerBean, paramValues.toArray());
         } else {
-            throw new Exception("The method: " + request.getActionType() + " is not supported");
+            throw new Exception("The method: " + request.getMethod() + " is not supported");
         }
-
     }
 
-    private void respond(Object message) {
-        respond(message, "text/html;charset=utf-8");
-    }
-
-    //返回消息,并结束
-    private void respond(Object message, String contentType) {
+    private void respond() {
         try {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("HTTP/1.1 200 OK").append("\r\n")
-                    .append("Content-Type: " + contentType)
-                    .append("\r\n");
-            if (sendSessionID) {
-                sendSessionID = false;
-                stringBuilder.append("Set-Cookie: ").append(WebContext.JSESSIONID)
-                        .append("=").append(WebContext.getSessionId())
-                        .append(";Path=/").append("\r\n");
-            }
-            //空行,结束头信息
-            stringBuilder.append("\r\n");
-
+            String httpHeader = HttpParser.parseHttpString(response);
             ByteBuffer buffer = ByteBuffer.allocate(SpringIntegration.BUFFER_SIZE);
-            sendMessageByBuffer(stringBuilder.toString(), buffer);
+            sendMessageByBuffer(httpHeader, buffer);
 
-            if (message instanceof FileChannel) {
-                FileChannel fileChannel = (FileChannel) message;
-                buffer.clear();
-                while (fileChannel.read(buffer) != -1) {
+            if (InputStream.class.isAssignableFrom(response.getResult().getClass())) {
+                InputStream in = (InputStream) response.getResult();
+                int byteCount;
+                byte[] bytes = new byte[SpringIntegration.BUFFER_SIZE];
+                while ((byteCount = in.read(bytes)) != -1) {
+                    buffer.clear();
+                    buffer.put(bytes, 0, byteCount);
                     buffer.flip();
                     client.write(buffer);
-                    buffer.clear();
                 }
-                fileChannel.close();
+                in.close();
             } else {
-                String json = JsonUtil.toJson(message);
+                String json = JsonUtil.toJson(response.getResult());
                 sendMessageByBuffer(json, buffer);
             }
             client.register(SpringIntegration.selector, SelectionKey.OP_WRITE);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            WebContext.clear();
         }
     }
 

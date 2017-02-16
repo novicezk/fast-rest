@@ -7,11 +7,13 @@ public class ServerConfig {
 
     private long fixedRate = 300000;//5分钟,扫描间隔
 
-    private long timeout = 1800000;//默认30分钟，session过期时间
+    private long sessionTimeout = 1800000;//默认30分钟，session过期时间
 
     private int port = 8080;
 
     private boolean showSQL = false;
+
+    private String fileTmp = "/tmp";
 
     public ServerConfig() {
     }
@@ -24,12 +26,12 @@ public class ServerConfig {
         this.fixedRate = fixedRate;
     }
 
-    public long getTimeout() {
-        return timeout;
+    public long getSessionTimeout() {
+        return sessionTimeout;
     }
 
-    public void setTimeout(long timeout) {
-        this.timeout = timeout;
+    public void setSessionTimeout(long sessionTimeout) {
+        this.sessionTimeout = sessionTimeout;
     }
 
     public int getPort() {
@@ -48,13 +50,22 @@ public class ServerConfig {
         this.showSQL = showSQL;
     }
 
+    public String getFileTmp() {
+        return fileTmp;
+    }
+
+    public void setFileTmp(String fileTmp) {
+        this.fileTmp = fileTmp;
+    }
+
     @Override
     public String toString() {
         return "ServerConfig{" +
                 "fixedRate=" + fixedRate +
-                ", timeout=" + timeout +
+                ", sessionTimeout=" + sessionTimeout +
                 ", port=" + port +
                 ", showSQL=" + showSQL +
+                ", fileTmp='" + fileTmp + '\'' +
                 '}';
     }
 }

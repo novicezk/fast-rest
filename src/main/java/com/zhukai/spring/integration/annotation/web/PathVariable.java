@@ -1,4 +1,4 @@
-package com.zhukai.spring.integration.annotation.mvc;
+package com.zhukai.spring.integration.annotation.web;
 
 import java.lang.annotation.*;
 
@@ -8,6 +8,6 @@ import java.lang.annotation.*;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RequestHeader {
+public @interface PathVariable {
     String value() default "";
 }
