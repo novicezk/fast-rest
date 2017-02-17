@@ -18,6 +18,7 @@ import com.zhukai.spring.integration.logger.Logger;
 import com.zhukai.spring.integration.utils.ReflectUtil;
 import com.zhukai.spring.integration.utils.ResourcesUtil;
 import com.zhukai.spring.integration.utils.StringUtil;
+import com.zhukai.spring.integration.utils.YmlUtil;
 import org.yaml.snakeyaml.Yaml;
 
 import java.lang.reflect.Field;
@@ -42,6 +43,11 @@ public class SpringCore {
         initConfig();
         //开启扫描
         scanComponent();
+    }
+
+    public static void main(String[] args) {
+        SpringIntegration.runClass = SpringCore.class;
+        System.out.println(YmlUtil.getValue("server.port"));
     }
 
     private static void initConfig() throws Exception {

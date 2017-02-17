@@ -8,5 +8,5 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Download {
-
+    boolean attachment() default false;// 强制弹出下载对话框
 }

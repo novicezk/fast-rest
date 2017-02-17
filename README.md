@@ -14,7 +14,8 @@ http服务器、springmvc的部分功能、spring的IOC和AOP基础、spring-dat
 1. springmvc的@PathVariable注解不知道如何实现
 2. [Issue #1](https://github.com/zhukai-git/integration/issues/1)  
 3. mac系统暂时无法运行该项目（StringUtil的readLine方法存在问题）
-3. 很多...
+4. 暂时下载文件大小不能超过5M
+5. 很多...
 
 ## 近期更新：
 1. 使用nio替换bio处理http请求协议

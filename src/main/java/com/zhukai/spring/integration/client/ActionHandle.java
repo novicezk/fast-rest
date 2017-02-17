@@ -18,6 +18,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -61,18 +62,12 @@ public class ActionHandle implements Runnable {
 
                 String[] arr = request.getPath().split("\\.");
                 if (arr.length > 0) {
-                    String fileType = arr[arr.length - 1];
-                    if (fileType.equals("css")) {
-                        response.setContentType("text/css");
-                    } else if (fileType.equals("jpg")) {
-                        response.setContentType("image/jpeg");
-                    } else if (fileType.equals("png")) {
-                        response.setContentType("image/png");
-                    } else if (fileType.equals("js")) {
-                        response.setContentType("application/x-javascript");
+                    String extensionName = arr[arr.length - 1];
+                    String contentType = HttpParser.getContentType(extensionName);
+                    if (contentType != null) {
+                        response.setContentType(contentType);
                     }
                 }
-                //TODO application/* 大多表示下载
                 response.setResult(inputStream);
                 return;
             }
@@ -90,13 +85,19 @@ public class ActionHandle implements Runnable {
 
             Object result = invokeMethod(method);
             if (method.isAnnotationPresent(Download.class)) {
-                response.setContentType("application/octet-stream");
-                if (result instanceof File) {
-                    response.setResult(new FileInputStream((File) result));
-                    return;
+                File file = (File) result;
+                StringBuilder contentDisposition = new StringBuilder();
+                if (method.getAnnotation(Download.class).attachment()) {
+                    contentDisposition.append("attachment; ");
                 }
+                String fileName = file.getName();
+                contentDisposition.append("filename=").append(fileName);
+                response.setResult(new FileInputStream(file));
+                response.setHeader("Content-Disposition", contentDisposition.toString());
+                response.setContentType("application/octet-stream");
+            } else {
+                response.setResult(result);
             }
-            response.setResult(result);
         } catch (Exception e) {
             e.printStackTrace();
             response.setResult(e.getMessage());
@@ -144,11 +145,24 @@ public class ActionHandle implements Runnable {
 
     private void respond() {
         try {
+            if (InputStream.class.isAssignableFrom(response.getResult().getClass())) {
+                int contentLength = ((InputStream) response.getResult()).available();
+                response.setHeader("Content-Length", "" + contentLength);
+            }
             String httpHeader = HttpParser.parseHttpString(response);
+            System.out.println(httpHeader);
             ByteBuffer buffer = ByteBuffer.allocate(SpringIntegration.BUFFER_SIZE);
             sendMessageByBuffer(httpHeader, buffer);
-
-            if (InputStream.class.isAssignableFrom(response.getResult().getClass())) {
+            if (response.getResult() instanceof FileInputStream) {
+                FileChannel fileChannel = ((FileInputStream) response.getResult()).getChannel();
+                buffer.clear();
+                while (fileChannel.read(buffer) != -1) {
+                    buffer.flip();
+                    client.write(buffer);
+                    buffer.clear();
+                }
+                fileChannel.close();
+            } else if (response.getResult() instanceof InputStream) {
                 InputStream in = (InputStream) response.getResult();
                 int byteCount;
                 byte[] bytes = new byte[SpringIntegration.BUFFER_SIZE];

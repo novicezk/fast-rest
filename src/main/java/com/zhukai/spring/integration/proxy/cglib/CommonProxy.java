@@ -1,13 +1,16 @@
 package com.zhukai.spring.integration.proxy.cglib;
 
 import com.zhukai.spring.integration.annotation.core.Transactional;
+import com.zhukai.spring.integration.annotation.core.Value;
 import com.zhukai.spring.integration.context.WebContext;
 import com.zhukai.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.spring.integration.logger.Logger;
+import com.zhukai.spring.integration.utils.YmlUtil;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 
@@ -21,7 +24,21 @@ public class CommonProxy implements MethodInterceptor {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(clazz);
         enhancer.setCallback(this);
-        return (T) enhancer.create();
+        T object = (T) enhancer.create();
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Value.class)) {
+                String valueKey = field.getAnnotation(Value.class).value();
+                String fileName = field.getAnnotation(Value.class).fileName();
+                Object value = fileName.equals("") ? YmlUtil.getValue(valueKey) : YmlUtil.getValue(fileName, valueKey);
+                field.setAccessible(true);
+                try {
+                    field.set(object, value);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return object;
     }
 
     @Override

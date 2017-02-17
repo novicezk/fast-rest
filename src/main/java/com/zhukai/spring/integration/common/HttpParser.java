@@ -41,6 +41,7 @@ public class HttpParser {
             }
 
             String contextLine = readLine(channel, buf);
+
             //保存此次请求的headers（包含cookies）
             while (!contextLine.trim().equals("")) {
                 if (contextLine.startsWith("Cookie")) {
@@ -142,5 +143,74 @@ public class HttpParser {
             if (out != null)
                 out.close();
         }
+    }
+
+    public static String getContentType(String extensionName) {
+        String contentType = null;
+        if (extensionName.equals("css")) {
+            contentType = "text/css";
+        } else if (extensionName.equals("png")) {
+            contentType = "image/png";
+        } else if (extensionName.equals("jpg") || extensionName.equals("jpeg")
+                || extensionName.equals("jpe")) {
+            contentType = "image/jpeg";
+        } else if (extensionName.equals("js")) {
+            contentType = "application/x-javascript";
+        } else if (extensionName.equals("txt")) {
+            contentType = "text/plain";
+        } else if (extensionName.equals("html")) {
+            contentType = "text/html";
+        } else if (extensionName.equals("json")) {
+            contentType = "text/json";
+        } else if (extensionName.equals("xml")) {
+            contentType = "text/xml";
+        } else if (extensionName.equals("git")) {
+            contentType = "image/gif";
+        } else if (extensionName.equals("cgm")) {
+            contentType = "image/cgm";
+        } else if (extensionName.equals("doc")) {
+            contentType = "application/msword";
+        } else if (extensionName.equals("dms") || extensionName.equals("lha")
+                || extensionName.equals("lzh") || extensionName.equals("exe")
+                || extensionName.equals("class")) {
+            contentType = "application/octet-stream";
+        } else if (extensionName.equals("pdf")) {
+            contentType = "application/pdf";
+        } else if (extensionName.equals("ai") || extensionName.equals("eps")
+                || extensionName.equals("ps")) {
+            contentType = "application/postscript";
+        } else if (extensionName.equals("ppt")) {
+            contentType = "application/powerpoint";
+        } else if (extensionName.equals("rtf")) {
+            contentType = "application/rtf";
+        } else if (extensionName.equals("z")) {
+            contentType = "application/x-compress";
+        } else if (extensionName.equals("gz")) {
+            contentType = "application/x-gzip";
+        } else if (extensionName.equals("gtar")) {
+            contentType = "application/x-gtar";
+        } else if (extensionName.equals("swf")) {
+            contentType = "application/x-shockwave-flash";
+        } else if (extensionName.equals("tar")) {
+            contentType = "application/x-tar";
+        } else if (extensionName.equals("zip")) {
+            contentType = "application/zip";
+        } else if (extensionName.equals("au") || extensionName.equals("snd")) {
+            contentType = "audio/basic";
+        } else if (extensionName.equals("mpeg") || extensionName.equals("mp2")) {
+            contentType = "audio/mpeg";
+        } else if (extensionName.equals("mid") || extensionName.equals("midi")
+                || extensionName.equals("rmf")) {
+            contentType = "audio/x-aiff";
+        } else if (extensionName.equals("ram") || extensionName.equals("ra")) {
+            contentType = "audio/x-pn-realaudio";
+        } else if (extensionName.equals("rpm")) {
+            contentType = "audio/x-pn-realaudio-plugin";
+        } else if (extensionName.equals("wav")) {
+            contentType = "audio/x-wav";
+        } else {
+            contentType = "application/octet-stream";
+        }
+        return contentType;
     }
 }

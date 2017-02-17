@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class HttpResponse<T> {
 
-    private String contentType = "text/html";
+    private String contentType = "text/plain; charset=utf-8";
     private int statusCode = 200;
     private String statusCodeStr = "OK";
     private String protocol;
