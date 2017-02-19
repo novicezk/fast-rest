@@ -2,14 +2,15 @@ package demo.batch;
 
 import com.zhukai.spring.integration.annotation.batch.Batcher;
 import com.zhukai.spring.integration.annotation.batch.Scheduled;
+import com.zhukai.spring.integration.logger.Logger;
 
 /**
  * Created by zhukai on 17-2-14.
  */
 @Batcher
 public class TestWorker {
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 3000000)
     public void test() {
-        System.out.println("test batch");
+        Logger.info("test batch");
     }
 }

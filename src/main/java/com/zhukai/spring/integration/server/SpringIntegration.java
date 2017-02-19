@@ -3,7 +3,8 @@ package com.zhukai.spring.integration.server;
 
 import com.zhukai.spring.integration.annotation.batch.Scheduled;
 import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
-import com.zhukai.spring.integration.client.ActionHandle;
+import com.zhukai.spring.integration.client.ActionHandleWithoutNio;
+import com.zhukai.spring.integration.client.ActionHandleWithNio;
 import com.zhukai.spring.integration.common.HttpRequest;
 import com.zhukai.spring.integration.common.HttpParser;
 import com.zhukai.spring.integration.common.Session;
@@ -13,6 +14,8 @@ import com.zhukai.spring.integration.logger.Logger;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -48,17 +51,30 @@ public class SpringIntegration {
             SpringCore.init();
             runSessionTimeoutCheck();
             runBatchSchedule();
-            startServer();
+            if (serverConfig.isUseNio()) {
+                startServerWithNio();
+            } else {
+                startServer();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private static void startServer() throws Exception {
+        ServerSocket serverSocket = new ServerSocket(serverConfig.getPort());
+        Logger.info("Server start on port: " + serverConfig.getPort());
+        while (true) {
+            Socket client = serverSocket.accept();
+            service.execute(new ActionHandleWithoutNio(client));
+        }
+    }
+
+    private static void startServerWithNio() throws Exception {
         selector = Selector.open();
         serverChannel = ServerSocketChannel.open();
         serverChannel.socket().bind(new InetSocketAddress(serverConfig.getPort()));
-        Logger.info("Server start on port: " + serverConfig.getPort());
+        Logger.info("Server start on port: " + serverConfig.getPort() + " with nio");
         serverChannel.configureBlocking(false);
         serverChannel.register(selector, SelectionKey.OP_ACCEPT);
         while (true) {
@@ -80,7 +96,7 @@ public class SpringIntegration {
                     SocketChannel channel = (SocketChannel) key.channel();
                     HttpRequest request = HttpParser.parseRequest(channel);
                     if (request != null) {
-                        service.execute(new ActionHandle(channel, request));
+                        service.execute(new ActionHandleWithNio(channel, request));
                     } else {
                         channel.shutdownInput();
                         channel.close();

@@ -143,7 +143,7 @@ public class JpaUtil {
         return getColumnName(field);
     }
 
-    public static List<Field> getJoinFields(Class clazz) {
+    protected static List<Field> getJoinFields(Class clazz) {
         List<Field> joinFields = new ArrayList<>();
         for (Field field : clazz.getDeclaredFields()) {
             if (field.getType().isAnnotationPresent(Entity.class)) {
@@ -153,11 +153,11 @@ public class JpaUtil {
         return joinFields;
     }
 
-    public static StringBuilder getSelectSqlWithoutProperties(Class clazz) {
+    protected static StringBuilder getSelectSqlWithoutProperties(Class clazz) {
         return getSelectMainSql(clazz).append(getJoinSql(clazz));
     }
 
-    public static StringBuilder getJoinSql(Class clazz) {
+    protected static StringBuilder getJoinSql(Class clazz) {
         StringBuilder sql = new StringBuilder();
         List<Field> joinFields = getJoinFields(clazz);
         if (joinFields == null || joinFields.isEmpty()) {
@@ -177,14 +177,14 @@ public class JpaUtil {
         return sql;
     }
 
-    public static StringBuilder getSelectMainSql(Class clazz) {
+    protected static StringBuilder getSelectMainSql(Class clazz) {
         StringBuilder sql = new StringBuilder();
         String mainTableName = getTableName(clazz);
         sql.append("SELECT * FROM ").append(mainTableName).append(" ");
         return sql;
     }
 
-    public static <T> T convertToEntity(Class<T> convertClazz, ResultSet resultSet) throws Exception {
+    protected static <T> T convertToEntity(Class<T> convertClazz, ResultSet resultSet) throws Exception {
         String mainTableName = getTableName(convertClazz);
         T entity = ReflectUtil.createInstance(convertClazz, null);
         for (Field field : convertClazz.getDeclaredFields()) {
@@ -202,7 +202,7 @@ public class JpaUtil {
         return entity;
     }
 
-    public static String getSelectSQL(Class clazz, Object[] properties) throws Exception {
+    protected static String getSelectSQL(Class clazz, Object[] properties) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append(getSelectSqlWithoutProperties(clazz));
         if (properties != null) {
@@ -225,7 +225,7 @@ public class JpaUtil {
         return sql.toString();
     }
 
-    public static <T> String getSaveSQL(T bean) throws SQLException {
+    protected static <T> String getSaveSQL(T bean) throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO ");
         String tableName = getTableName(bean.getClass());
@@ -250,7 +250,7 @@ public class JpaUtil {
         return sql.toString();
     }
 
-    public static <T> String getUpdateSQL(T bean) throws SQLException {
+    protected static <T> String getUpdateSQL(T bean) throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("UPDATE ");
         String tableName = getTableName(bean.getClass());

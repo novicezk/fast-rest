@@ -38,19 +38,14 @@ public class SpringCore {
 
     private static boolean useDB = false;
 
-    public static void init() throws Exception {
+    protected static void init() throws Exception {
         //初始化配置文件
         initConfig();
         //开启扫描
         scanComponent();
     }
 
-    public static void main(String[] args) {
-        SpringIntegration.runClass = SpringCore.class;
-        System.out.println(YmlUtil.getValue("server.port"));
-    }
-
-    private static void initConfig() throws Exception {
+    protected static void initConfig() throws Exception {
         Map<String, Map> result = null;
         try {
             Yaml yaml = new Yaml();
@@ -80,7 +75,7 @@ public class SpringCore {
         }
     }
 
-    public static void scanComponent() throws Exception {
+    protected static void scanComponent() throws Exception {
         Map<String, Method> webMethods = new HashMap<>();
         Connection conn = null;
         if (useDB) {
@@ -213,6 +208,5 @@ public class SpringCore {
         ComponentBeanFactory.getInstance().registerBeanDefinition(registerName, componentBean);
         Logger.info("Register in componentBeanFactory: " + registerName + " = " + beanClass.getSimpleName() + ".class");
     }
-
 
 }

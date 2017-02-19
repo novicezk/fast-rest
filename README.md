@@ -13,12 +13,12 @@ http服务器、springmvc的部分功能、spring的IOC和AOP基础、spring-dat
 ## 目前存在问题：
 1. springmvc的@PathVariable注解不知道如何实现
 2. [Issue #1](https://github.com/zhukai-git/integration/issues/1)  
-3. mac系统暂时无法运行该项目（StringUtil的readLine方法存在问题）
-4. 暂时下载文件大小不能超过5M
+3. mac系统暂时无法运行该项目（HttpParser的readLine方法存在问题）
+4. 使用nio下载文件，会出现文件缺失问题
 5. 很多...
 
 ## 近期更新：
-1. 使用nio替换bio处理http请求协议
+1. 启动可配置使用nio或bio处理http请求
 2. 添加spring schedule和session过时设置
 3. 添加获取数据库连接等待机制
 4. 添加@Transactional（简单的事务支持）

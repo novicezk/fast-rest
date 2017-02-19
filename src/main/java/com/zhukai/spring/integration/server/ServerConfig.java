@@ -15,6 +15,8 @@ public class ServerConfig {
 
     private String fileTmp = "/tmp";
 
+    private boolean useNio = true;
+
     public ServerConfig() {
     }
 
@@ -58,6 +60,14 @@ public class ServerConfig {
         this.fileTmp = fileTmp;
     }
 
+    public boolean isUseNio() {
+        return useNio;
+    }
+
+    public void setUseNio(boolean useNio) {
+        this.useNio = useNio;
+    }
+
     @Override
     public String toString() {
         return "ServerConfig{" +
@@ -66,6 +76,7 @@ public class ServerConfig {
                 ", port=" + port +
                 ", showSQL=" + showSQL +
                 ", fileTmp='" + fileTmp + '\'' +
+                ", useNio=" + useNio +
                 '}';
     }
 }

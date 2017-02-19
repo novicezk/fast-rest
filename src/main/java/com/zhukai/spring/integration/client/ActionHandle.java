@@ -1,6 +1,5 @@
 package com.zhukai.spring.integration.client;
 
-
 import com.zhukai.spring.integration.annotation.web.*;
 import com.zhukai.spring.integration.beans.impl.ComponentBeanFactory;
 import com.zhukai.spring.integration.common.HttpParser;
@@ -13,14 +12,12 @@ import com.zhukai.spring.integration.server.SpringIntegration;
 import com.zhukai.spring.integration.utils.JsonUtil;
 import com.zhukai.spring.integration.utils.ParameterUtil;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,26 +26,25 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by zhukai on 17-1-12.
+ * Created by zhukai on 17-2-19.
  */
-public class ActionHandle implements Runnable {
+public abstract class ActionHandle implements Runnable {
 
-    private SocketChannel client;
+    protected HttpRequest request;
 
-    private HttpRequest request;
+    protected HttpResponse response;
 
-    private HttpResponse response;
-
-    public ActionHandle(SocketChannel client, HttpRequest request) {
-        this.client = client;
-        this.request = request;
-        response = new HttpResponse();
-        response.setProtocol(request.getProtocol());
-    }
+    protected abstract void respond();
 
     @Override
     public void run() {
         try {
+            if (request == null) {
+                return;
+            }
+            response = new HttpResponse();
+            response.setProtocol(request.getProtocol());
+
             if (request.getCookie(WebContext.JSESSIONID) == null) {
                 String sessionId = UUID.randomUUID().toString();
                 request.setCookie(WebContext.JSESSIONID, sessionId);
@@ -107,7 +103,7 @@ public class ActionHandle implements Runnable {
     }
 
     //执行请求方法
-    public Object invokeMethod(Method method) throws Exception {
+    protected Object invokeMethod(Method method) throws Exception {
         if (Arrays.asList(method.getAnnotation(RequestMapping.class).method()).contains(request.getMethod())) {
             List<Object> paramValues = new ArrayList<>();
             Parameter[] parameters = method.getParameters();
@@ -142,57 +138,4 @@ public class ActionHandle implements Runnable {
             throw new Exception("The method: " + request.getMethod() + " is not supported");
         }
     }
-
-    private void respond() {
-        try {
-            if (InputStream.class.isAssignableFrom(response.getResult().getClass())) {
-                int contentLength = ((InputStream) response.getResult()).available();
-                response.setHeader("Content-Length", "" + contentLength);
-            }
-            String httpHeader = HttpParser.parseHttpString(response);
-            System.out.println(httpHeader);
-            ByteBuffer buffer = ByteBuffer.allocate(SpringIntegration.BUFFER_SIZE);
-            sendMessageByBuffer(httpHeader, buffer);
-            if (response.getResult() instanceof FileInputStream) {
-                FileChannel fileChannel = ((FileInputStream) response.getResult()).getChannel();
-                buffer.clear();
-                while (fileChannel.read(buffer) != -1) {
-                    buffer.flip();
-                    client.write(buffer);
-                    buffer.clear();
-                }
-                fileChannel.close();
-            } else if (response.getResult() instanceof InputStream) {
-                InputStream in = (InputStream) response.getResult();
-                int byteCount;
-                byte[] bytes = new byte[SpringIntegration.BUFFER_SIZE];
-                while ((byteCount = in.read(bytes)) != -1) {
-                    buffer.clear();
-                    buffer.put(bytes, 0, byteCount);
-                    buffer.flip();
-                    client.write(buffer);
-                }
-                in.close();
-            } else {
-                String json = JsonUtil.toJson(response.getResult());
-                sendMessageByBuffer(json, buffer);
-            }
-            client.register(SpringIntegration.selector, SelectionKey.OP_WRITE);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void sendMessageByBuffer(String message, ByteBuffer buffer) throws Exception {
-        int endIndex = 0;
-        while (endIndex < message.length()) {
-            buffer.clear();
-            int startIndex = endIndex;
-            endIndex = Math.min(endIndex + SpringIntegration.BUFFER_SIZE / 3, message.length());
-            buffer.put(message.substring(startIndex, endIndex).getBytes());
-            buffer.flip();
-            client.write(buffer);
-        }
-    }
-
 }
