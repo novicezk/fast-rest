@@ -27,6 +27,9 @@ public class ActionHandleWithNio extends ActionHandle {
     @Override
     protected void respond() {
         try {
+            if (response == null) {
+                return;
+            }
             if (InputStream.class.isAssignableFrom(response.getResult().getClass())) {
                 int contentLength = ((InputStream) response.getResult()).available();
                 response.setHeader("Content-Length", "" + contentLength);

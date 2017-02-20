@@ -14,7 +14,7 @@ import java.util.jar.JarFile;
 /**
  * Created by zhukai on 17-1-12.
  */
-public class ResourcesUtil {
+public class PackageUtil {
 
     public static List<Class> getClassesFromPackage(String pack) {
         List<Class> clazzs = new ArrayList();

@@ -9,6 +9,7 @@ import java.util.Map;
 public class HttpResponse<T> {
 
     private String contentType = "text/plain; charset=utf-8";
+    private String fileName = null;
     private int statusCode = 200;
     private String statusCodeStr = "OK";
     private String protocol;
@@ -30,6 +31,14 @@ public class HttpResponse<T> {
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public int getStatusCode() {

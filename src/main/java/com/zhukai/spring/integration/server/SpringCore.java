@@ -16,9 +16,8 @@ import com.zhukai.spring.integration.jdbc.DataSource;
 import com.zhukai.spring.integration.jdbc.JpaUtil;
 import com.zhukai.spring.integration.logger.Logger;
 import com.zhukai.spring.integration.utils.ReflectUtil;
-import com.zhukai.spring.integration.utils.ResourcesUtil;
+import com.zhukai.spring.integration.utils.PackageUtil;
 import com.zhukai.spring.integration.utils.StringUtil;
-import com.zhukai.spring.integration.utils.YmlUtil;
 import org.yaml.snakeyaml.Yaml;
 
 import java.lang.reflect.Field;
@@ -81,7 +80,7 @@ public class SpringCore {
         if (useDB) {
             conn = DBConnectionPool.getInstance().getConnection();
         }
-        List<Class> classes = ResourcesUtil.getClassesFromPackage(SpringIntegration.runClass.getPackage().getName());
+        List<Class> classes = PackageUtil.getClassesFromPackage(SpringIntegration.runClass.getPackage().getName());
         for (Class componentClass : classes) {
             if (componentClass.isAnnotationPresent(RestController.class)) {
                 addWebMethod(webMethods, componentClass);

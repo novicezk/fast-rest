@@ -80,17 +80,16 @@ public abstract class ActionHandle implements Runnable {
             }
 
             Object result = invokeMethod(method);
-            if (method.isAnnotationPresent(Download.class)) {
+            if (File.class.isAssignableFrom(result.getClass())) {
                 File file = (File) result;
-                StringBuilder contentDisposition = new StringBuilder();
-                if (method.getAnnotation(Download.class).attachment()) {
-                    contentDisposition.append("attachment; ");
-                }
                 String fileName = file.getName();
-                contentDisposition.append("filename=").append(fileName);
                 response.setResult(new FileInputStream(file));
-                response.setHeader("Content-Disposition", contentDisposition.toString());
+                response.setHeader("Content-Disposition", "filename=" + fileName);
                 response.setContentType("application/octet-stream");
+            } else if (InputStream.class.isAssignableFrom(result.getClass())) {
+                response.setHeader("Content-Disposition", "filename=" + response.getFileName());
+                response.setContentType("application/octet-stream");
+                response.setResult(result);
             } else {
                 response.setResult(result);
             }
