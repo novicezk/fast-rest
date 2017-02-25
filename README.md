@@ -18,8 +18,9 @@ http服务器、springmvc的部分功能、spring的IOC和AOP基础、spring-dat
 5. 很多...
 
 ## 近期更新：
-1. 启动可配置使用nio或bio处理http请求
-2. 添加spring schedule和session过时设置
-3. 添加获取数据库连接等待机制
-4. 添加@Transactional（简单的事务支持）
-5. 添加@Index（数据库表索引）
+1. 添加log4j日志
+2. 启动可配置使用nio或bio处理http请求
+3. 添加spring schedule和session过时设置
+4. 添加获取数据库连接等待机制
+5. 添加@Transactional（简单的事务支持）
+6. 添加@Index（数据库表索引）
