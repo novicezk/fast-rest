@@ -14,16 +14,17 @@ import com.zhukai.spring.integration.context.WebContext;
 import com.zhukai.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.spring.integration.jdbc.DataSource;
 import com.zhukai.spring.integration.jdbc.JpaUtil;
-import com.zhukai.spring.integration.logger.Logger;
 import com.zhukai.spring.integration.utils.ReflectUtil;
 import com.zhukai.spring.integration.utils.PackageUtil;
 import com.zhukai.spring.integration.utils.StringUtil;
+import org.apache.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,8 @@ import java.util.regex.Pattern;
 public class SpringCore {
 
     private static boolean useDB = false;
+    private static List<Method> batchMethods = new ArrayList<>();
+    private static Logger logger = Logger.getLogger(SpringCore.class);
 
     protected static void init() throws Exception {
         //初始化配置文件
@@ -51,7 +54,7 @@ public class SpringCore {
             result = (Map<String, Map>) yaml.load(SpringIntegration.runClass.
                     getResourceAsStream("/application.yml"));
         } catch (Exception e) {
-            //do nothing 没有该文件
+            logger.warn("Have no application.yml");
         }
         if (result != null) {
             if (result.get("server") != null) {
@@ -59,7 +62,7 @@ public class SpringCore {
                 for (Object sourceProperty : result.get("server").keySet()) {
                     ReflectUtil.setFieldValue(config, sourceProperty.toString(), result.get("server").get(sourceProperty));
                 }
-                Logger.info(config);
+                logger.info(config);
                 SpringIntegration.setServerConfig(config);
             }
             if (result.get("datasource") != null) {
@@ -68,7 +71,7 @@ public class SpringCore {
                 for (Object sourceProperty : result.get("datasource").keySet()) {
                     ReflectUtil.setFieldValue(dataSource, sourceProperty.toString(), result.get("datasource").get(sourceProperty));
                 }
-                Logger.info(dataSource);
+                logger.info(dataSource);
                 DBConnectionPool.getInstance().init(dataSource);
             }
         }
@@ -91,7 +94,7 @@ public class SpringCore {
             if (componentClass.isAnnotationPresent(Batcher.class)) {
                 for (Method method : componentClass.getMethods()) {
                     if (method.isAnnotationPresent(Scheduled.class)) {
-                        SpringIntegration.batchMethods.add(method);
+                        batchMethods.add(method);
                     }
                 }
             }
@@ -100,7 +103,7 @@ public class SpringCore {
                 registerBean(componentClass, registerName);
             }
         }
-        Logger.info("Useful web methods: " + webMethods.keySet());
+        logger.info("Useful web methods: " + webMethods.keySet());
         WebContext.setWebMethods(webMethods);
         if (conn != null)
             DBConnectionPool.getInstance().freeConnection(conn);
@@ -110,7 +113,7 @@ public class SpringCore {
         String tableName = JpaUtil.getTableName(entityClass);
         ResultSet rs = conn.getMetaData().getTables(null, null, tableName, null);
         if (rs.next()) {
-            Logger.info("Table '" + tableName + "' is exists");
+            logger.info("Table '" + tableName + "' is exists");
             rs.close();
             return;
         }
@@ -128,7 +131,7 @@ public class SpringCore {
         }
         sql.deleteCharAt(sql.length() - 1);
         sql.append(")");
-        Logger.info(sql);
+        logger.info(sql);
         conn.createStatement().executeUpdate(sql.toString());
         //添加索引
         Entity entityAnnotation = (Entity) entityClass.getAnnotation(Entity.class);
@@ -161,7 +164,7 @@ public class SpringCore {
                     }
                 }
                 indexSql.append(")");
-                Logger.info(indexSql);
+                logger.info(indexSql);
                 conn.createStatement().executeUpdate(indexSql.toString());
             }
         }
@@ -205,7 +208,10 @@ public class SpringCore {
         }
         componentBean.setChildBeanNames(childBeanNames);
         ComponentBeanFactory.getInstance().registerBeanDefinition(registerName, componentBean);
-        Logger.info("Register in componentBeanFactory: " + registerName + " = " + beanClass.getSimpleName() + ".class");
+        logger.info("Register in componentBeanFactory: " + registerName + " = " + beanClass.getSimpleName() + ".class");
     }
 
+    protected static List<Method> getBatchMethods() {
+        return batchMethods;
+    }
 }

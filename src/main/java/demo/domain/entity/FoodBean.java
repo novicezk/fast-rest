@@ -5,21 +5,18 @@ import com.zhukai.spring.integration.annotation.jpa.*;
 /**
  * Created by zhukai on 17-2-8.
  */
-@Entity(name = "FOOD", indexes = {@Index(columns = {"name"})})
+@Entity(indexes = {@Index(columns = {"name"})})
 public class FoodBean {
 
     @Id
     @GeneratedValue
-    @Column(name = "ID")
     private Integer id;
 
-    @Column(name = "NAME", length = 32)
+    @Column(length = 32)
     private String name;
 
-    @Column(name = "PRICE")
     private Float price;
-    
-    @Column(name = "QUANTITY")
+
     private Integer quantity;
 
     public FoodBean() {

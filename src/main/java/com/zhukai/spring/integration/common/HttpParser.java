@@ -2,6 +2,7 @@ package com.zhukai.spring.integration.common;
 
 import com.zhukai.spring.integration.common.constant.RequestType;
 import com.zhukai.spring.integration.server.SpringIntegration;
+import org.apache.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.nio.channels.SocketChannel;
  * Created by zhukai on 17-1-17.
  */
 public class HttpParser {
+    private static Logger logger = Logger.getLogger(HttpParser.class);
 
     public static HttpRequest parseRequest(SocketChannel channel) {
         try {
@@ -38,7 +40,7 @@ public class HttpParser {
             }
             return request;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Parse request error", e);
             return null;
         }
     }
@@ -67,7 +69,7 @@ public class HttpParser {
             }
             return request;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Parse request error", e);
             return null;
         }
     }
@@ -180,7 +182,7 @@ public class HttpParser {
             }
             return result;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Read Http error", e);
             return null;
         } finally {
             if (out != null)
@@ -212,7 +214,7 @@ public class HttpParser {
             }
             return result;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Read Http error", e);
             return null;
         } finally {
             if (out != null)

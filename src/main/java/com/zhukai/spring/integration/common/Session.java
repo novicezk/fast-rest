@@ -1,6 +1,5 @@
 package com.zhukai.spring.integration.common;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +10,7 @@ public class Session {
 
     private String sessionId;
 
-    private LocalDateTime lastConnectionTime;
+    private long lastConnectionTime;
 
     private Map<String, Object> attributes;
 
@@ -45,11 +44,11 @@ public class Session {
         this.attributes.put(key, value);
     }
 
-    public LocalDateTime getLastConnectionTime() {
+    public long getLastConnectionTime() {
         return lastConnectionTime;
     }
 
-    public void setLastConnectionTime(LocalDateTime lastConnectionTime) {
+    public void setLastConnectionTime(long lastConnectionTime) {
         this.lastConnectionTime = lastConnectionTime;
     }
 }

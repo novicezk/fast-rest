@@ -1,6 +1,6 @@
 package com.zhukai.spring.integration.jdbc;
 
-import com.zhukai.spring.integration.logger.Logger;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,13 +11,11 @@ import java.util.LinkedList;
  * Created by zhukai on 17-1-18.
  */
 public class DBConnectionPool {
+    private static Logger logger = Logger.getLogger(DBConnectionPool.class);
 
     private int checkOutSize = 0;
-
     private LinkedList<Connection> freeConnPool = new LinkedList<>();
-
     private DataSource dataSource;
-
 
     private DBConnectionPool() {
 
@@ -71,18 +69,17 @@ public class DBConnectionPool {
                 freeConnPool.add(connection);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 
     public static void commit(Connection conn) throws Exception {
         try {
             conn.commit();
-            Logger.info("Transactional over...");
-        } catch (SQLException e) {
+            logger.info("Transactional over ");
+        } catch (SQLException ex) {
             conn.rollback();
-            Logger.error("Transactional rollback...");
-            e.printStackTrace();
+            logger.error("Transactional rollback：", ex);
         } finally {
             instance.freeConnection(conn);
         }

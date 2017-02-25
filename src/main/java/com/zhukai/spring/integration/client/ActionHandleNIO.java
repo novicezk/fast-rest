@@ -15,11 +15,11 @@ import java.nio.channels.SocketChannel;
 /**
  * Created by zhukai on 17-1-12.
  */
-public class ActionHandleWithNio extends ActionHandle {
+public class ActionHandleNIO extends AbstractActionHandle {
 
     private SocketChannel socketChannel;
 
-    public ActionHandleWithNio(SocketChannel socketChannel, HttpRequest request) {
+    public ActionHandleNIO(SocketChannel socketChannel, HttpRequest request) {
         this.socketChannel = socketChannel;
         this.request = request;
     }
@@ -59,7 +59,7 @@ public class ActionHandleWithNio extends ActionHandle {
             }
             socketChannel.register(SpringIntegration.selector, SelectionKey.OP_WRITE);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Respond error", e);
         }
     }
 

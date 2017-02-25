@@ -5,17 +5,15 @@ import com.zhukai.spring.integration.annotation.jpa.*;
 /**
  * Created by zhukai on 17-1-20.
  */
-@Entity(name = "ROLE", indexes = {@Index(columns = {"roleName", "level"}, unique = true)})
+@Entity(indexes = {@Index(columns = {"roleName", "level"}, unique = true)})
 public class RoleBean {
     @Id
     @GeneratedValue
-    @Column(name = "ID")
     private Integer id;
 
-    @Column(name = "ROLE_NAME", length = 64)
+    @Column(length = 64)
     private String roleName;
 
-    @Column(name = "LEVEL")
     private Integer level;
 
     public RoleBean() {

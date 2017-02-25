@@ -4,7 +4,6 @@ import com.zhukai.spring.integration.common.Session;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +50,7 @@ public class WebContext {
 
     public static void refreshSession(String sessionId) {
         if (sessions.get(sessionId) != null) {
-            sessions.get(sessionId).setLastConnectionTime(LocalDateTime.now());
+            sessions.get(sessionId).setLastConnectionTime(System.currentTimeMillis());
         }
     }
 

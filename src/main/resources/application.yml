@@ -11,6 +11,7 @@ datasource:
 server:
   port: 9001
   showSQL: true
-  sessionTimeout: 1800000 #session过期时间，单位（毫秒）
+  sessionTimeout: 1800000 #session过期时间，单位（毫秒），默认30分钟
+  fixedRate: 300000 #session扫描间隔(毫秒),默认5分钟
   fileTmp: /home/zhukai/tmp #文件上传下载目录
-  useNio: true #可以设置使用nio处理http请求，默认使用nio
+  useNio: true #可以设置使用nio处理http请求，默认true

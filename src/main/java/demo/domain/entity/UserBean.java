@@ -8,24 +8,20 @@ import com.zhukai.spring.integration.annotation.jpa.Id;
 /**
  * Created by zhukai on 17-1-18.
  */
-@Entity(name = "USER")
+@Entity
 public class UserBean {
 
     @Id
     @GeneratedValue
-    @Column(name = "ID")
     private Integer id;
 
-    @Column(name = "USERNAME", unique = true, nullable = false)
+    @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(name = "PASSWORD")
     private String password;
 
-    @Column(name = "MONEY")
     private Float money = 0.0f;
 
-    @Column(name = "ROLE_ID")
     private RoleBean role;
 
     public UserBean() {

@@ -18,10 +18,10 @@ public interface UserRepository extends CrudRepository<UserBean, Integer> {
 
     UserBean findByUsername(String username);
 
-    @QueryCondition("ROLE.ID IS NULL OR ROLE.LEVEL != ?")
+    @QueryCondition("rolebean.id IS NULL OR rolebean.level != ?")
     List<UserBean> getAllUsersExcludeAdmin(Integer adminLevel);
 
-    @ExecuteUpdate("UPDATE USER SET MONEY=0")
+    @ExecuteUpdate("UPDATE userbean SET money=0")
     boolean resetMoney();
 
 }

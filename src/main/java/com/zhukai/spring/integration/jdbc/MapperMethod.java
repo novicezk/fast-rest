@@ -4,8 +4,8 @@ import com.zhukai.spring.integration.annotation.jpa.ExecuteUpdate;
 import com.zhukai.spring.integration.annotation.jpa.QueryCondition;
 import com.zhukai.spring.integration.utils.ReflectUtil;
 import com.zhukai.spring.integration.utils.StringUtil;
-import com.zhukai.spring.integration.logger.Logger;
 import com.zhukai.spring.integration.server.SpringIntegration;
+import org.apache.log4j.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -21,6 +21,8 @@ import java.util.List;
  * Created by zhukai on 17-1-22.
  */
 public class MapperMethod<T> {
+    private static Logger logger = Logger.getLogger(MapperMethod.class);
+
     private Connection conn;
     private Method method;
     private Object[] args;
@@ -220,7 +222,7 @@ public class MapperMethod<T> {
 
     private ResultSet executeQuery(String sql) throws SQLException {
         if (SpringIntegration.getServerConfig().isShowSQL()) {
-            Logger.info(sql);
+            logger.info(sql);
         }
         return conn.prepareStatement(sql).executeQuery();
     }
@@ -231,7 +233,7 @@ public class MapperMethod<T> {
 
     private boolean executeUpdate(String sql) throws SQLException {
         if (SpringIntegration.getServerConfig().isShowSQL()) {
-            Logger.info(sql);
+            logger.info(sql);
         }
         return conn.prepareStatement(sql).executeUpdate() >= 1;
     }
@@ -242,8 +244,8 @@ public class MapperMethod<T> {
 
     private PreparedStatement fillStatement(String sql, Object[] properties) throws SQLException {
         if (SpringIntegration.getServerConfig().isShowSQL()) {
-            Logger.info(sql);
-            Logger.info("parameters：" + Arrays.toString(properties));
+            logger.info(sql);
+            logger.info("parameters：" + Arrays.toString(properties));
         }
         PreparedStatement statement = conn.prepareStatement(sql);
         for (int i = 0; i < properties.length; i++) {
