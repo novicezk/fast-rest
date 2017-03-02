@@ -116,6 +116,7 @@ public class HttpParser {
     private static void setRequestPostParameter(HttpRequest request, String postString) {
         if (request.getHeader("Content-Type").startsWith("multipart/form-data")) {
             //TODO 一般用来上传文件
+            System.out.println(postString);
         } else if (request.getHeader("Content-Type").startsWith("application/x-www-form-urlencoded")) {
             String[] paramStringArr = postString.split("&");
             for (String paramString : paramStringArr) {
