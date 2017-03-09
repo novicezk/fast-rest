@@ -5,14 +5,19 @@
 ## 主要功能：
 http服务器、springmvc的部分功能、spring的IOC和AOP基础、spring-data-jpa的部分功能。
 
-## 项目描述：
-1. 框架的测试项目为/src/main/java/demo，项目启动入口是Application的main函数,或执行mvn clean package打包jar，然后java -jar运行
-2. 数据库配置和服务器配置在resources下的application.yml文件
-3. 文件资源需要放在resources下public目录下，访问例localhost:9001/public/login.html
+## 框架使用([demo](https://github.com/zhukai-git/integration-demo))：
+1. 在项目下执行mvn clean install（导入maven库），然后新建maven项目，引入该框架jar包依赖
+2. 或在com.zhukai.framework.spring.integration.demo/下直接开发
+
+## 框架运行的两种方式：
+1. 直接启动com.zhukai.framework.spring.integration.demo/Application
+2. 执行mvn assembly:assembly打包jar，然后java -jar运行target下spring-integration-{版本}-jar-with-dependencies.jar
+
+访问http://localhost:8080/hello，出现"hello,world"说明启动正常
 
 ## 目前存在问题：
 1. springmvc的@PathVariable注解不知道如何实现
-2. mac系统暂时无法运行该项目（HttpParser的readLine方法存在问题）
+2. mac系统可能无法运行该项目（HttpParser的readLine方法存在问题）
 3. 使用nio下载文件，会出现文件缺失问题
 4. 很多...
 
