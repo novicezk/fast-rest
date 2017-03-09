@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -45,8 +46,9 @@ public class HttpParser {
         }
     }
 
-    public static HttpRequest parseRequest(InputStream inputStream) {
+    public static HttpRequest parseRequest(Socket socket) {
         try {
+            InputStream inputStream = socket.getInputStream();
             String line = readLine(inputStream);
 
             HttpRequest request = parseFirstLine(line);
@@ -129,13 +131,17 @@ public class HttpParser {
         }
     }
 
-    public static String parseHttpString(HttpResponse response) {
+    public static String parseHttpString(HttpResponse response) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append(response.getProtocol()).append(" ")
                 .append(response.getStatusCode()).append(" ")
                 .append(response.getStatusCodeStr()).append("\r\n")
                 .append("Content-Type: ").append(response.getContentType())
                 .append("\r\n");
+        if (InputStream.class.isAssignableFrom(response.getResult().getClass()) && response.getHeaderValue("Content-Length") == null) {
+            int contentLength = ((InputStream) response.getResult()).available();
+            response.setHeader("Content-Length", "" + contentLength);
+        }
         response.getHeaders().keySet().forEach(key ->
                 sb.append(key).append(": ")
                         .append(response.getHeaders().get(key))

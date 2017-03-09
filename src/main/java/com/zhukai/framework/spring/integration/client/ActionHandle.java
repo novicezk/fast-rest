@@ -17,14 +17,10 @@ public class ActionHandle extends AbstractActionHandle {
 
     public ActionHandle(Socket socket) {
         this.socket = socket;
-        try {
-            request = HttpParser.parseRequest(socket.getInputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.request = HttpParser.parseRequest(socket);
     }
 
-    //返回消息,并结束
+    @Override
     protected void respond() {
         PrintStream out = null;
         try {
@@ -32,26 +28,14 @@ public class ActionHandle extends AbstractActionHandle {
                 return;
             }
             out = new PrintStream(socket.getOutputStream(), true);
-            if (InputStream.class.isAssignableFrom(response.getResult().getClass())) {
-                int contentLength = ((InputStream) response.getResult()).available();
-                response.setHeader("Content-Length", "" + contentLength);
-            }
             String httpHeader = HttpParser.parseHttpString(response);
             out.println(httpHeader);
-
             if (InputStream.class.isAssignableFrom(response.getResult().getClass())) {
                 InputStream inputStream = (InputStream) response.getResult();
-                int len = inputStream.available();
-                if (len <= 1024 * 1024) {
-                    byte[] bytes = new byte[len];
-                    inputStream.read(bytes);
-                    out.write(bytes);
-                } else {
-                    int byteCount;
-                    byte[] bytes = new byte[1024 * 1024];
-                    while ((byteCount = inputStream.read(bytes)) != -1) {
-                        out.write(bytes, 0, byteCount);
-                    }
+                int byteCount;
+                byte[] bytes = new byte[1024 * 1024];
+                while ((byteCount = inputStream.read(bytes)) != -1) {
+                    out.write(bytes, 0, byteCount);
                 }
                 inputStream.close();
             } else {

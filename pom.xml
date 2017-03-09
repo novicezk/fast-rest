@@ -63,7 +63,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.zhukai.framework.spring.integration.demo.Application</mainClass>
+                            <mainClass>com.zhukai.framework.spring.integration.demo.TestApplication</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

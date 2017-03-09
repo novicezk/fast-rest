@@ -80,4 +80,8 @@ public class HttpResponse<T> {
     public void setHeader(String key, String value) {
         this.headers.put(key, value);
     }
+
+    public String getHeaderValue(String key) {
+        return this.headers.get(key);
+    }
 }

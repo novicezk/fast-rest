@@ -15,7 +15,7 @@ public class ServerConfig {
 
     private String fileTmp = "/tmp";
 
-    private boolean useNio = true;
+    private boolean useNio = false;
 
     public ServerConfig() {
     }

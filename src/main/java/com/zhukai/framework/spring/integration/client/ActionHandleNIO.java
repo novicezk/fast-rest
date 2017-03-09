@@ -30,14 +30,9 @@ public class ActionHandleNIO extends AbstractActionHandle {
             if (response == null) {
                 return;
             }
-            if (InputStream.class.isAssignableFrom(response.getResult().getClass())) {
-                int contentLength = ((InputStream) response.getResult()).available();
-                response.setHeader("Content-Length", "" + contentLength);
-            }
             String httpHeader = HttpParser.parseHttpString(response);
             ByteBuffer buffer = ByteBuffer.allocate(SpringIntegration.BUFFER_SIZE);
             sendMessageByBuffer(httpHeader + "\r\n", buffer);
-
             if (response.getResult() instanceof FileInputStream) {
                 FileChannel fileChannel = ((FileInputStream) response.getResult()).getChannel();
                 fileChannel.transferTo(0, fileChannel.size(), socketChannel);

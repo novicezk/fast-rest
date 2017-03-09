@@ -5,12 +5,12 @@
 ## 主要功能：
 http服务器、springmvc的部分功能、spring的IOC和AOP基础、spring-data-jpa的部分功能。
 
-## 框架使用([demo](https://github.com/zhukai-git/integration-demo))：
+## 框架使用(参见[demo项目](https://github.com/zhukai-git/integration-demo))：
 1. 在项目下执行mvn clean install（导入maven库），然后新建maven项目，引入该框架jar包依赖
 2. 或在com.zhukai.framework.spring.integration.demo/下直接开发
 
-## 框架运行的两种方式：
-1. 直接启动com.zhukai.framework.spring.integration.demo/Application
+## 项目运行的两种方式：
+1. 直接启动com.zhukai.framework.spring.integration.demo/TestApplication
 2. 执行mvn assembly:assembly打包jar，然后java -jar运行target下spring-integration-{版本}-jar-with-dependencies.jar
 
 访问http://localhost:8080/hello，出现"hello,world"说明启动正常
