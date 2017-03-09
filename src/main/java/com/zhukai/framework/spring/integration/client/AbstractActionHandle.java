@@ -1,12 +1,9 @@
 package com.zhukai.framework.spring.integration.client;
 
 import com.zhukai.framework.spring.integration.annotation.web.*;
+import com.zhukai.framework.spring.integration.common.*;
 import com.zhukai.framework.spring.integration.server.SpringIntegration;
 import com.zhukai.framework.spring.integration.beans.impl.ComponentBeanFactory;
-import com.zhukai.framework.spring.integration.common.HttpParser;
-import com.zhukai.framework.spring.integration.common.HttpRequest;
-import com.zhukai.framework.spring.integration.common.HttpResponse;
-import com.zhukai.framework.spring.integration.common.Session;
 import com.zhukai.framework.spring.integration.context.WebContext;
 import com.zhukai.framework.spring.integration.utils.JsonUtil;
 import com.zhukai.framework.spring.integration.utils.ParameterUtil;
@@ -114,6 +111,8 @@ public abstract class AbstractActionHandle implements Runnable {
                     paramValues.add(request.getSession());
                 } else if (HttpResponse.class.isAssignableFrom(parameter.getType())) {
                     paramValues.add(response);
+                } else if (FileBean.class.isAssignableFrom(parameter.getType())) {
+                    paramValues.add(request.getUploadFile());
                 } else {
                     Annotation parameterAnnotation = parameter.getAnnotations()[0];
                     Object parameterValue = null;

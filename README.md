@@ -16,8 +16,8 @@ http服务器、springmvc的部分功能、spring的IOC和AOP基础、spring-dat
 访问http://localhost:8080/hello，出现"hello,world"说明启动正常
 
 ## 目前存在问题：
-1. springmvc的@PathVariable注解不知道如何实现
-2. mac系统可能无法运行该项目（HttpParser的readLine方法存在问题）
+1. 暂时认为\r\n表示换行（适合LINUX，其他系统可能有问题）
+2. springmvc的@PathVariable注解不知道如何实现
 3. 使用nio下载文件，会出现文件缺失问题
 4. 很多...
 

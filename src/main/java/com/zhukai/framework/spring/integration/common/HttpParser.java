@@ -4,12 +4,12 @@ import com.zhukai.framework.spring.integration.common.constant.RequestType;
 import com.zhukai.framework.spring.integration.server.SpringIntegration;
 import org.apache.log4j.Logger;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by zhukai on 17-1-17.
@@ -115,10 +115,27 @@ public class HttpParser {
         }
     }
 
-    private static void setRequestPostParameter(HttpRequest request, String postString) {
+    private static Pattern fileNamePattern = Pattern.compile("filename=\"(.*?)\"");
+
+    private static void setRequestPostParameter(HttpRequest request, String postString) throws IOException {
         if (request.getHeader("Content-Type").startsWith("multipart/form-data")) {
-            //TODO 一般用来上传文件
-            System.out.println(postString);
+//            System.out.println(postString);
+//            System.out.println(request.getHeader("Content-Type"));
+
+            Matcher matcher = fileNamePattern.matcher(postString);
+            String fileName = null;
+            if (matcher.find()) {
+                fileName = matcher.group(1);
+            }
+            String splitString = postString.substring(0, postString.indexOf("\r\n"));
+            int startIndex = postString.indexOf("\r\n\r\n") + 4;
+            int endIndex = postString.indexOf(splitString, 1) - 2;
+            String fileString = postString.substring(startIndex, endIndex);
+            InputStream is = new ByteArrayInputStream(fileString.getBytes());
+            FileBean uploadFile = new FileBean();
+            uploadFile.setInputStream(is);
+            uploadFile.setFileName(fileName);
+            request.setUploadFile(uploadFile);
         } else if (request.getHeader("Content-Type").startsWith("application/x-www-form-urlencoded")) {
             String[] paramStringArr = postString.split("&");
             for (String paramString : paramStringArr) {
@@ -215,7 +232,7 @@ public class HttpParser {
                 }
             }
 
-            String result = new String(out.toByteArray(), "utf-8");
+            String result = new String(out.toByteArray());
             if (result.length() > 0 && result.charAt(result.length() - 1) == 13) {
                 result = result.substring(0, result.length() - 1);
             }

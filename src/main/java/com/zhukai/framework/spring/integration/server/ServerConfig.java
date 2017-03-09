@@ -13,7 +13,7 @@ public class ServerConfig {
 
     private boolean showSQL = false;
 
-    private String fileTmp = "/tmp";
+    private String fileTmp = "/home/zhukai/tmp";
 
     private boolean useNio = false;
 

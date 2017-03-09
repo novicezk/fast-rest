@@ -19,6 +19,7 @@ public class HttpRequest {
     //协议版本
     private String protocol;
     private String requestContext;
+    private FileBean uploadFile;
 
     public Session getSession() {
         String sessionId = getCookie(WebContext.JSESSIONID);
@@ -129,4 +130,11 @@ public class HttpRequest {
         this.cookies.put(key, value);
     }
 
+    public FileBean getUploadFile() {
+        return uploadFile;
+    }
+
+    public void setUploadFile(FileBean uploadFile) {
+        this.uploadFile = uploadFile;
+    }
 }
