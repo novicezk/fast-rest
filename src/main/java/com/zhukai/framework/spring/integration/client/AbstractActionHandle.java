@@ -15,10 +15,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +28,8 @@ public abstract class AbstractActionHandle implements Runnable {
     protected HttpRequest request;
 
     protected HttpResponse response;
+
+    private boolean isRestUrl = false;
 
     protected abstract void respond();
 
@@ -67,27 +66,23 @@ public abstract class AbstractActionHandle implements Runnable {
             }
             Method method = null;
             for (String key : WebContext.getWebMethods().keySet()) {
-                Pattern pattern = Pattern.compile(key);
-                Matcher matcher = pattern.matcher(request.getPath());
-                if (matcher.find()) {
+                if (Pattern.matches(key, request.getPath())) {
                     method = WebContext.getWebMethods().get(key);
+                    break;
                 }
             }
             if (method == null) {
                 throw new Exception("Have not this request path");
+            } else if (method.getAnnotation(RequestMapping.class).value().contains("{")) {
+                isRestUrl = true;
             }
-
             Object result = invokeMethod(method);
-            if (File.class.isAssignableFrom(result.getClass())) {
-                File file = (File) result;
-                String fileName = file.getName();
-                response.setResult(new FileInputStream(file));
+            if (result instanceof FileBean) {
+                FileBean fileBean = (FileBean) result;
+                String fileName = fileBean.getFileName();
                 response.setHeader("Content-Disposition", "filename=" + fileName);
                 response.setContentType("application/octet-stream");
-            } else if (InputStream.class.isAssignableFrom(result.getClass())) {
-                response.setHeader("Content-Disposition", "filename=" + response.getFileName());
-                response.setContentType("application/octet-stream");
-                response.setResult(result);
+                response.setResult(fileBean.getInputStream());
             } else {
                 response.setResult(result);
             }
@@ -104,6 +99,23 @@ public abstract class AbstractActionHandle implements Runnable {
         if (Arrays.asList(method.getAnnotation(RequestMapping.class).method()).contains(request.getMethod())) {
             List<Object> paramValues = new ArrayList<>();
             Parameter[] parameters = method.getParameters();
+            List<String> pathKeys = new ArrayList<>(5);
+            List<String> pathValues = new ArrayList<>(5);
+            if (isRestUrl) {
+                String methodRequestMapperValue = method.getAnnotation(RequestMapping.class).value();
+                Matcher test = Pattern.compile("\\{([^}]+)}").matcher(methodRequestMapperValue);
+                while (test.find()) {
+                    pathKeys.add(test.group(1));
+                }
+                String regular = methodRequestMapperValue.replaceAll("\\{[^}]*}", "([^/]+)");
+                Pattern pattern = Pattern.compile(regular);
+                Matcher restMatcher = pattern.matcher(request.getPath());
+                if (restMatcher.find()) {
+                    for (int i = 1; i <= restMatcher.groupCount(); i++) {
+                        pathValues.add(restMatcher.group(i));
+                    }
+                }
+            }
             for (Parameter parameter : parameters) {
                 if (HttpRequest.class.isAssignableFrom(parameter.getType())) {
                     paramValues.add(request);
@@ -126,7 +138,8 @@ public abstract class AbstractActionHandle implements Runnable {
                     } else if (parameterAnnotation instanceof RequestBody) {
                         parameterValue = JsonUtil.convertObj(request.getRequestContext(), parameter.getType());
                     } else if (parameterAnnotation instanceof PathVariable) {
-                        //TODO @PathVariable注解未实现
+                        String value = ((PathVariable) parameterAnnotation).value();
+                        parameterValue = pathValues.get(pathKeys.indexOf(value));
                     }
                     paramValues.add(ParameterUtil.convert(parameterValue, parameter.getType()));
                 }

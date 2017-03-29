@@ -119,9 +119,6 @@ public class HttpParser {
 
     private static void setRequestPostParameter(HttpRequest request, String postString) throws IOException {
         if (request.getHeader("Content-Type").startsWith("multipart/form-data")) {
-//            System.out.println(postString);
-//            System.out.println(request.getHeader("Content-Type"));
-
             Matcher matcher = fileNamePattern.matcher(postString);
             String fileName = null;
             if (matcher.find()) {
@@ -131,7 +128,7 @@ public class HttpParser {
             int startIndex = postString.indexOf("\r\n\r\n") + 4;
             int endIndex = postString.indexOf(splitString, 1) - 2;
             String fileString = postString.substring(startIndex, endIndex);
-            InputStream is = new ByteArrayInputStream(fileString.getBytes());
+            InputStream is = new ByteArrayInputStream(fileString.getBytes(SpringIntegration.CHARSET));
             FileBean uploadFile = new FileBean();
             uploadFile.setInputStream(is);
             uploadFile.setFileName(fileName);
@@ -155,7 +152,7 @@ public class HttpParser {
                 .append(response.getStatusCodeStr()).append("\r\n")
                 .append("Content-Type: ").append(response.getContentType())
                 .append("\r\n");
-        if (InputStream.class.isAssignableFrom(response.getResult().getClass()) && response.getHeaderValue("Content-Length") == null) {
+        if (response.getResult() instanceof InputStream && response.getHeaderValue("Content-Length") == null) {
             int contentLength = ((InputStream) response.getResult()).available();
             response.setHeader("Content-Length", "" + contentLength);
         }
@@ -232,7 +229,7 @@ public class HttpParser {
                 }
             }
 
-            String result = new String(out.toByteArray());
+            String result = new String(out.toByteArray(), SpringIntegration.CHARSET);
             if (result.length() > 0 && result.charAt(result.length() - 1) == 13) {
                 result = result.substring(0, result.length() - 1);
             }
@@ -252,7 +249,7 @@ public class HttpParser {
 
 
     public static String getContentType(String extensionName) {
-        String contentType = null;
+        String contentType = "application/octet-stream";
         if (extensionName.equals("css")) {
             contentType = "text/css";
         } else if (extensionName.equals("png")) {
@@ -314,8 +311,6 @@ public class HttpParser {
             contentType = "audio/x-pn-realaudio-plugin";
         } else if (extensionName.equals("wav")) {
             contentType = "audio/x-wav";
-        } else {
-            contentType = "application/octet-stream";
         }
         return contentType;
     }

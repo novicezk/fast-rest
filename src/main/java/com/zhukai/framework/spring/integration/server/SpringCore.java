@@ -103,7 +103,6 @@ public class SpringCore {
                 registerBean(componentClass, registerName);
             }
         }
-        logger.info("Useful web methods: " + webMethods.keySet());
         WebContext.setWebMethods(webMethods);
         if (conn != null)
             DBConnectionPool.getInstance().freeConnection(conn);
@@ -170,7 +169,7 @@ public class SpringCore {
         }
     }
 
-    private static final Pattern methodPattern = Pattern.compile("\\{*\\}");
+    private static final Pattern methodPattern = Pattern.compile("\\{.*?}");
 
     private static void addWebMethod(Map<String, Method> webMethods, Class webClass) {
         String webPath = "";
@@ -181,13 +180,12 @@ public class SpringCore {
         for (Method method : methods) {
             if (method.isAnnotationPresent(RequestMapping.class)) {
                 String methodPath = method.getAnnotation(RequestMapping.class).value();
+                logger.info("Useful web method: " + webPath + methodPath);
                 Matcher matcher = methodPattern.matcher(methodPath);
                 if (matcher.find()) {
-                    methodPath = methodPath.replaceAll("\\{[^}]*}", "*");
-                    webMethods.put(webPath + methodPath, method);
-                } else {
-                    webMethods.put(webPath + methodPath, method);
+                    methodPath = methodPath.replaceAll("\\{[^}]*}", "([^/]+)");
                 }
+                webMethods.put(webPath + methodPath, method);
             }
         }
     }

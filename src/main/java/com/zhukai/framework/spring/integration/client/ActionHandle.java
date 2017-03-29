@@ -30,7 +30,7 @@ public class ActionHandle extends AbstractActionHandle {
             out = new PrintStream(socket.getOutputStream(), true);
             String httpHeader = HttpParser.parseHttpString(response);
             out.println(httpHeader);
-            if (InputStream.class.isAssignableFrom(response.getResult().getClass())) {
+            if (response.getResult() instanceof InputStream) {
                 InputStream inputStream = (InputStream) response.getResult();
                 int byteCount;
                 byte[] bytes = new byte[1024 * 1024];
