@@ -16,23 +16,23 @@ public class Resources {
         return SpringIntegration.runClass.getResourceAsStream(filePath);
     }
 
-    public static InputStream getResourceAsStreamByTmp(String filePath) {
+    public static InputStream getResourceAsStreamByTmp(String filePath) throws FileNotFoundException {
         File file = getResourceByTmp(filePath);
         if (file != null) {
-            try {
-                return new FileInputStream(file);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
+            return new FileInputStream(file);
         }
         return null;
     }
 
-    public static File getResourceByTmp(String filePath) {
+    public static File getResourceByTmp(String filePath) throws FileNotFoundException {
         Object tmpPath = YmlUtil.getValue("server.fileTmp");
+        File file = null;
         if (tmpPath != null) {
-            return new File(tmpPath.toString() + "/" + filePath);
+            file = new File(tmpPath.toString() + "/" + filePath);
         }
-        return null;
+        if (!file.exists()) {
+            throw new FileNotFoundException(filePath + " is not a file");
+        }
+        return file;
     }
 }

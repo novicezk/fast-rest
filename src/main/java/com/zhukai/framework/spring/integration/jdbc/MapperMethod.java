@@ -87,6 +87,8 @@ public class MapperMethod<T> {
             } else {
                 return saveBean((T) args[0]);
             }
+        } else if (methodName.equals("count")) {
+            return count();
         } else if (methodName.startsWith("findBy")) {
             StringBuilder propertiesSql = new StringBuilder();
             String propertiesString = methodName.substring(6);
@@ -111,8 +113,15 @@ public class MapperMethod<T> {
                 return getEntity(selectSQL + " LIMIT 1 ");
             }
         }
-        //TODO
-        return null;
+        throw new NoSuchMethodException(methodName + " is not exists");
+    }
+
+    private long count() throws Exception {
+        resultSet = executeQuery("select count(*) from " + JpaUtil.getTableName(entityClass));
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return -1;
     }
 
     private boolean saveBeans(List<T> beans) throws Exception {

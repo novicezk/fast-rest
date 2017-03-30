@@ -5,9 +5,9 @@ package com.zhukai.framework.spring.integration.server;
  */
 public class ServerConfig {
 
-    private long fixedRate = 300000;//5分钟,扫描间隔
+    private long fixedRate = 5;//扫描间隔(分钟)
 
-    private long sessionTimeout = 1800000;//默认30分钟，session过期时间
+    private long sessionTimeout = 30;//session过期时间(分钟)
 
     private int port = 8080;
 
@@ -15,7 +15,7 @@ public class ServerConfig {
 
     private String fileTmp = "/home/zhukai/tmp";
 
-    private boolean useNio = false;
+    private boolean useNio = true;
 
     public ServerConfig() {
     }

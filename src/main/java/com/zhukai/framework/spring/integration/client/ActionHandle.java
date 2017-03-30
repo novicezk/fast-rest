@@ -49,7 +49,7 @@ public class ActionHandle extends AbstractActionHandle {
             try {
                 socket.close();
             } catch (IOException e) {
-                logger.error(e);
+                logger.error("socke", e);
             }
         }
     }

@@ -11,6 +11,7 @@ import com.zhukai.framework.spring.integration.common.Session;
 import com.zhukai.framework.spring.integration.context.WebContext;
 import org.apache.log4j.Logger;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 
@@ -21,9 +22,10 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.*;
 
 /**
  * Created by zhukai on 17-1-12.
@@ -65,10 +67,10 @@ public class SpringIntegration {
         }
     }
 
-    private static ServerSocketChannel serverChannel;
     public static Selector selector;
 
     private static void startServerNIO() throws Exception {
+        ServerSocketChannel serverChannel;
         selector = Selector.open();
         serverChannel = ServerSocketChannel.open();
         serverChannel.socket().bind(new InetSocketAddress(serverConfig.getPort()));
@@ -109,23 +111,19 @@ public class SpringIntegration {
         }
     }
 
-    private static Timer timer = new Timer();
+    private static ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(5);
 
     private static void runSessionTimeoutCheck() {
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+        scheduledExecutor.scheduleAtFixedRate(() ->
                 WebContext.getSessions().keySet().removeIf(sessionID -> {
                     Session session = WebContext.getSessions().get(sessionID);
                     long lastConnectionTime = session.getLastConnectionTime();
-                    if (lastConnectionTime + serverConfig.getSessionTimeout() < System.currentTimeMillis()) {
+                    if (lastConnectionTime + TimeUnit.MINUTES.toMillis(serverConfig.getSessionTimeout()) < System.currentTimeMillis()) {
                         logger.warn("sessionID: " + sessionID + "已过期");
                         return true;
                     }
                     return false;
-                });
-            }
-        }, serverConfig.getFixedRate(), serverConfig.getFixedRate());
+                }), serverConfig.getFixedRate(), serverConfig.getFixedRate(), TimeUnit.MINUTES);
     }
 
     private static void runBatchSchedule() {
@@ -134,16 +132,13 @@ public class SpringIntegration {
             long fixedDelay = method.getAnnotation(Scheduled.class).fixedDelay();
             fixedDelay = fixedDelay == 0 ? fixedRate : fixedDelay;
             logger.info("Batch method: " + method.getName());
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    try {
-                        method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()), new Object[]{});
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            scheduledExecutor.scheduleAtFixedRate(() -> {
+                try {
+                    method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()), new Object[]{});
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            }, fixedDelay, fixedRate);
+            }, fixedDelay, fixedRate, method.getAnnotation(Scheduled.class).timeUnit());
         }
     }
 

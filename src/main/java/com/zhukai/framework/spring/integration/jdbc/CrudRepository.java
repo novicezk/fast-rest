@@ -27,7 +27,7 @@ public interface CrudRepository<T, ID extends Serializable> {
 
     List<T> findAll(List<ID> ids);
 
-    //long count();
+    long count();
 
     void delete(ID id);
 

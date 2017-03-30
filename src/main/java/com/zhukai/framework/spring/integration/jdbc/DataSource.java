@@ -12,7 +12,7 @@ public class DataSource {
     private int minConn = 2;
     //最大连接数
     private int maxConn = 100;
-    private long timeout = 100;
+    private long timeout = 500;
 
     public DataSource() {
     }

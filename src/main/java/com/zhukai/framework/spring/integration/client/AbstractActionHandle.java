@@ -9,10 +9,9 @@ import com.zhukai.framework.spring.integration.utils.JsonUtil;
 import com.zhukai.framework.spring.integration.utils.ParameterUtil;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -86,6 +85,9 @@ public abstract class AbstractActionHandle implements Runnable {
             } else {
                 response.setResult(result);
             }
+        } catch (InvocationTargetException ite) {
+            logger.error("Request action error", ite);
+            response.setResult(ite.getCause().getMessage());
         } catch (Exception e) {
             logger.error("Request action error", e);
             response.setResult(e.getMessage());

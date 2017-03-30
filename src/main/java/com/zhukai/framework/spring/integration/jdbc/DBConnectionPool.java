@@ -69,7 +69,7 @@ public class DBConnectionPool {
                 freeConnPool.add(connection);
             }
         } catch (Exception e) {
-            logger.error(e);
+            logger.error("init datasource error", e);
         }
     }
 
