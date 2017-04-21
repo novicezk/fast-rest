@@ -117,10 +117,12 @@ public class MapperMethod<T> {
     }
 
     private long count() throws Exception {
-        resultSet = executeQuery("select count(*) from " + JpaUtil.getTableName(entityClass));
+        String tableName = JpaUtil.getTableName(entityClass);
+        resultSet = executeQuery("select count(*) from " + tableName);
         if (resultSet.next()) {
             return resultSet.getInt(1);
         }
+        logger.warn(tableName + " is not exists");
         return -1;
     }
 
