@@ -2,8 +2,8 @@ package com.zhukai.framework.spring.integration.beans.impl;
 
 import com.zhukai.framework.spring.integration.annotation.core.Repository;
 import com.zhukai.framework.spring.integration.beans.BeanFactory;
-import com.zhukai.framework.spring.integration.proxy.cglib.CommonProxy;
-import com.zhukai.framework.spring.integration.proxy.jdk.MapperProxy;
+import com.zhukai.framework.spring.integration.proxy.AopProxy;
+import com.zhukai.framework.spring.integration.proxy.RepositoryProxy;
 import com.zhukai.framework.spring.integration.utils.ReflectUtil;
 import com.zhukai.framework.spring.integration.beans.BeanDefinition;
 
@@ -75,9 +75,9 @@ public class ComponentBeanFactory implements BeanFactory {
     private Object createProxyInstance(String className) throws ClassNotFoundException {
         Class clazz = Class.forName(className);
         if (clazz.isAnnotationPresent(Repository.class)) {
-            return new MapperProxy().getProxyInstance(clazz);
+            return new RepositoryProxy().getProxyInstance(clazz);
         }
-        return new CommonProxy().getProxyInstance(clazz);
+        return new AopProxy().getProxyInstance(clazz);
     }
 
     @Override

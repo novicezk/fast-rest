@@ -1,4 +1,4 @@
-package com.zhukai.framework.spring.integration.jdbc;
+package com.zhukai.framework.spring.integration.jdbc.data.jpa;
 
 import com.zhukai.framework.spring.integration.annotation.jpa.Column;
 import com.zhukai.framework.spring.integration.annotation.jpa.Id;

@@ -1,8 +1,9 @@
-package com.zhukai.framework.spring.integration.jdbc;
+package com.zhukai.framework.spring.integration.jdbc.data.jpa;
 
-import com.zhukai.framework.spring.integration.server.SpringIntegration;
 import com.zhukai.framework.spring.integration.annotation.jpa.ExecuteUpdate;
 import com.zhukai.framework.spring.integration.annotation.jpa.QueryCondition;
+import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
+import com.zhukai.framework.spring.integration.server.SpringIntegration;
 import com.zhukai.framework.spring.integration.utils.ReflectUtil;
 import com.zhukai.framework.spring.integration.utils.StringUtil;
 import org.apache.log4j.Logger;

@@ -1,7 +1,7 @@
-package com.zhukai.framework.spring.integration.proxy.jdk;
+package com.zhukai.framework.spring.integration.proxy;
 
 import com.zhukai.framework.spring.integration.context.WebContext;
-import com.zhukai.framework.spring.integration.jdbc.MapperMethod;
+import com.zhukai.framework.spring.integration.jdbc.data.jpa.MapperMethod;
 
 import java.lang.reflect.*;
 
@@ -9,7 +9,7 @@ import java.lang.reflect.*;
  * Created by zhukai on 17-1-22.
  */
 //只用来代理Repository类
-public class MapperProxy implements InvocationHandler {
+public class RepositoryProxy implements InvocationHandler {
 
     private Class mapperInterface;
 

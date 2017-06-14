@@ -13,7 +13,7 @@ import com.zhukai.framework.spring.integration.beans.impl.ComponentBeanFactory;
 import com.zhukai.framework.spring.integration.context.WebContext;
 import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.framework.spring.integration.jdbc.DataSource;
-import com.zhukai.framework.spring.integration.jdbc.JpaUtil;
+import com.zhukai.framework.spring.integration.jdbc.data.jpa.JpaUtil;
 import com.zhukai.framework.spring.integration.utils.PackageUtil;
 import com.zhukai.framework.spring.integration.utils.ReflectUtil;
 import com.zhukai.framework.spring.integration.utils.StringUtil;

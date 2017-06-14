@@ -1,4 +1,4 @@
-package com.zhukai.framework.spring.integration.jdbc;
+package com.zhukai.framework.spring.integration.jdbc.data.jpa;
 
 
 import java.io.Serializable;

@@ -5,27 +5,25 @@ import com.zhukai.framework.spring.integration.annotation.batch.Scheduled;
 import com.zhukai.framework.spring.integration.beans.impl.ComponentBeanFactory;
 import com.zhukai.framework.spring.integration.client.ActionHandle;
 import com.zhukai.framework.spring.integration.client.ActionHandleNIO;
-import com.zhukai.framework.spring.integration.common.HttpRequest;
 import com.zhukai.framework.spring.integration.common.HttpParser;
+import com.zhukai.framework.spring.integration.common.HttpRequest;
 import com.zhukai.framework.spring.integration.common.Session;
 import com.zhukai.framework.spring.integration.context.WebContext;
 import org.apache.log4j.Logger;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-
 import java.util.Iterator;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by zhukai on 17-1-12.

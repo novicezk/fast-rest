@@ -1,6 +1,7 @@
 package com.zhukai.framework.spring.integration.annotation.web;
 
 import com.zhukai.framework.spring.integration.annotation.core.Component;
+import com.zhukai.framework.spring.integration.annotation.core.Singleton;
 
 import java.lang.annotation.*;
 
@@ -11,6 +12,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Component
+@Singleton
 public @interface RestController {
     String value() default "";
 }

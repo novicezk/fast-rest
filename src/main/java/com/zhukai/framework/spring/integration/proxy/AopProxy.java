@@ -1,4 +1,4 @@
-package com.zhukai.framework.spring.integration.proxy.cglib;
+package com.zhukai.framework.spring.integration.proxy;
 
 import com.zhukai.framework.spring.integration.annotation.core.Value;
 import com.zhukai.framework.spring.integration.annotation.core.Transactional;
@@ -17,8 +17,8 @@ import java.sql.Connection;
 /**
  * Created by zhukai on 17-1-22.
  */
-public class CommonProxy implements MethodInterceptor {
-    private static Logger logger = Logger.getLogger(CommonProxy.class);
+public class AopProxy implements MethodInterceptor {
+    private static Logger logger = Logger.getLogger(AopProxy.class);
 
     //该clazz可以不是接口的实现类,用来代理除Repository之外的类
     public <T> T getProxyInstance(Class<T> clazz) {
