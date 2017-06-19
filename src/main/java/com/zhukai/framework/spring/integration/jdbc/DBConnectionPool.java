@@ -1,5 +1,6 @@
 package com.zhukai.framework.spring.integration.jdbc;
 
+import com.zhukai.framework.spring.integration.config.DataSource;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -28,6 +29,9 @@ public class DBConnectionPool {
     }
 
     public synchronized void freeConnection(Connection con) {
+        if (con == null) {
+            return;
+        }
         try {
             con.setAutoCommit(true);
         } catch (SQLException e) {
@@ -56,11 +60,17 @@ public class DBConnectionPool {
     }
 
     public Connection getConnection() throws Exception {
+        if (dataSource == null) {
+            return null;
+        }
         return getConnection(true);
     }
 
     public void init(DataSource source) {
         dataSource = source;
+        if (dataSource == null) {
+            return;
+        }
         try {
             Class.forName(source.getDriverClass());
             for (int i = 0; i < source.getMinConn(); i++) {

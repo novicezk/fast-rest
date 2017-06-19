@@ -1,54 +1,57 @@
-package com.zhukai.framework.spring.integration.server;
+package com.zhukai.framework.spring.integration.config;
+
+import com.zhukai.framework.spring.integration.annotation.core.Configure;
 
 /**
  * Created by zhukai on 17-2-14.
  */
+@Configure(prefix = "server")
 public class ServerConfig {
 
-    private long fixedRate = 5;//扫描间隔(分钟)
+    private Long fixedRate = 5L;//扫描间隔(分钟)
 
-    private long sessionTimeout = 30;//session过期时间(分钟)
+    private Long sessionTimeout = 30L;//session过期时间(分钟)
 
-    private int port = 8080;
+    private Integer port = 8080;
 
-    private boolean showSQL = false;
+    private Boolean showSQL = false;
 
-    private String fileTmp = "/home/zhukai/tmp";
+    private String fileTmp = "/tmp";
 
-    private boolean useNio = true;
+    private Boolean useNio = true;
 
     public ServerConfig() {
     }
 
-    public long getFixedRate() {
+    public Long getFixedRate() {
         return fixedRate;
     }
 
-    public void setFixedRate(long fixedRate) {
+    public void setFixedRate(Long fixedRate) {
         this.fixedRate = fixedRate;
     }
 
-    public long getSessionTimeout() {
+    public Long getSessionTimeout() {
         return sessionTimeout;
     }
 
-    public void setSessionTimeout(long sessionTimeout) {
+    public void setSessionTimeout(Long sessionTimeout) {
         this.sessionTimeout = sessionTimeout;
     }
 
-    public int getPort() {
+    public Integer getPort() {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(Integer port) {
         this.port = port;
     }
 
-    public boolean isShowSQL() {
+    public Boolean isShowSQL() {
         return showSQL;
     }
 
-    public void setShowSQL(boolean showSQL) {
+    public void setShowSQL(Boolean showSQL) {
         this.showSQL = showSQL;
     }
 
@@ -60,11 +63,11 @@ public class ServerConfig {
         this.fileTmp = fileTmp;
     }
 
-    public boolean isUseNio() {
+    public Boolean isUseNio() {
         return useNio;
     }
 
-    public void setUseNio(boolean useNio) {
+    public void setUseNio(Boolean useNio) {
         this.useNio = useNio;
     }
 

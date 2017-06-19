@@ -1,6 +1,8 @@
 package com.zhukai.framework.spring.integration.utils;
 
-import com.zhukai.framework.spring.integration.server.SpringIntegration;
+import com.zhukai.framework.spring.integration.SpringIntegration;
+import com.zhukai.framework.spring.integration.beans.configure.ConfigureBeanFactory;
+import com.zhukai.framework.spring.integration.config.ServerConfig;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,7 +15,7 @@ import java.io.InputStream;
 public class Resources {
 
     public static InputStream getResourceAsStream(String filePath) {
-        return SpringIntegration.runClass.getResourceAsStream(filePath);
+        return SpringIntegration.getRunClass().getResourceAsStream(filePath);
     }
 
     public static InputStream getResourceAsStreamByTmp(String filePath) throws FileNotFoundException {
@@ -25,11 +27,8 @@ public class Resources {
     }
 
     public static File getResourceByTmp(String filePath) throws FileNotFoundException {
-        Object tmpPath = YmlUtil.getValue("server.fileTmp");
-        File file = null;
-        if (tmpPath != null) {
-            file = new File(tmpPath.toString() + "/" + filePath);
-        }
+        String tmpPath = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class).getFileTmp();
+        File file = new File(tmpPath + "/" + filePath);
         if (!file.exists()) {
             throw new FileNotFoundException(filePath + " is not a file");
         }

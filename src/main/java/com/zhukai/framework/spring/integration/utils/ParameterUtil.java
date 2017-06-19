@@ -24,8 +24,9 @@ public class ParameterUtil {
             convertValue = Byte.parseByte(preValue.toString());
         } else if (convertTo.isAssignableFrom(Boolean.class)) {
             convertValue = Boolean.parseBoolean(preValue.toString());
+        } else if (convertTo.isAssignableFrom(String.class)) {
+            convertValue = preValue.toString();
         }
-
         return convertValue == null ? preValue : convertValue;
     }
 

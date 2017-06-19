@@ -2,8 +2,8 @@ package com.zhukai.framework.spring.integration.client;
 
 import com.zhukai.framework.spring.integration.annotation.web.*;
 import com.zhukai.framework.spring.integration.common.*;
-import com.zhukai.framework.spring.integration.server.SpringIntegration;
-import com.zhukai.framework.spring.integration.beans.impl.ComponentBeanFactory;
+import com.zhukai.framework.spring.integration.SpringIntegration;
+import com.zhukai.framework.spring.integration.beans.component.ComponentBeanFactory;
 import com.zhukai.framework.spring.integration.context.WebContext;
 import com.zhukai.framework.spring.integration.utils.JsonUtil;
 import com.zhukai.framework.spring.integration.utils.ParameterUtil;
@@ -50,7 +50,7 @@ public abstract class AbstractActionHandle implements Runnable {
             WebContext.refreshSession(request.getCookie(WebContext.JSESSIONID));
             //请求静态资源
             if (request.getPath().startsWith("/public/")) {
-                InputStream inputStream = SpringIntegration.runClass.getResourceAsStream(request.getPath());
+                InputStream inputStream = SpringIntegration.getRunClass().getResourceAsStream(request.getPath());
 
                 String[] arr = request.getPath().split("\\.");
                 if (arr.length > 0) {

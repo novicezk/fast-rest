@@ -2,8 +2,10 @@ package com.zhukai.framework.spring.integration.jdbc.data.jpa;
 
 import com.zhukai.framework.spring.integration.annotation.jpa.ExecuteUpdate;
 import com.zhukai.framework.spring.integration.annotation.jpa.QueryCondition;
+import com.zhukai.framework.spring.integration.beans.configure.ConfigureBeanFactory;
+import com.zhukai.framework.spring.integration.config.ServerConfig;
 import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
-import com.zhukai.framework.spring.integration.server.SpringIntegration;
+import com.zhukai.framework.spring.integration.SpringIntegration;
 import com.zhukai.framework.spring.integration.utils.ReflectUtil;
 import com.zhukai.framework.spring.integration.utils.StringUtil;
 import org.apache.log4j.Logger;
@@ -23,6 +25,7 @@ import java.util.List;
  */
 public class MapperMethod<T> {
     private static Logger logger = Logger.getLogger(MapperMethod.class);
+    private static ServerConfig serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
 
     private Connection conn;
     private Method method;
@@ -233,7 +236,7 @@ public class MapperMethod<T> {
     }
 
     private ResultSet executeQuery(String sql) throws SQLException {
-        if (SpringIntegration.getServerConfig().isShowSQL()) {
+        if (serverConfig.isShowSQL()) {
             logger.info(sql);
         }
         return conn.prepareStatement(sql).executeQuery();
@@ -244,7 +247,7 @@ public class MapperMethod<T> {
     }
 
     private boolean executeUpdate(String sql) throws SQLException {
-        if (SpringIntegration.getServerConfig().isShowSQL()) {
+        if (serverConfig.isShowSQL()) {
             logger.info(sql);
         }
         return conn.prepareStatement(sql).executeUpdate() >= 1;
@@ -255,7 +258,7 @@ public class MapperMethod<T> {
     }
 
     private PreparedStatement fillStatement(String sql, Object[] properties) throws SQLException {
-        if (SpringIntegration.getServerConfig().isShowSQL()) {
+        if (serverConfig.isShowSQL()) {
             logger.info(sql);
             logger.info("parameters：" + Arrays.toString(properties));
         }

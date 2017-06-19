@@ -1,16 +1,13 @@
 package com.zhukai.framework.spring.integration.proxy;
 
-import com.zhukai.framework.spring.integration.annotation.core.Value;
 import com.zhukai.framework.spring.integration.annotation.core.Transactional;
 import com.zhukai.framework.spring.integration.context.WebContext;
 import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
-import com.zhukai.framework.spring.integration.utils.YmlUtil;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import org.apache.log4j.Logger;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 
@@ -20,26 +17,12 @@ import java.sql.Connection;
 public class AopProxy implements MethodInterceptor {
     private static Logger logger = Logger.getLogger(AopProxy.class);
 
-    //该clazz可以不是接口的实现类,用来代理除Repository之外的类
+    //该clazz可以不是接口的实现类,用来service类
     public <T> T getProxyInstance(Class<T> clazz) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(clazz);
         enhancer.setCallback(this);
-        T object = (T) enhancer.create();
-        for (Field field : clazz.getDeclaredFields()) {
-            if (field.isAnnotationPresent(Value.class)) {
-                String valueKey = field.getAnnotation(Value.class).value();
-                String fileName = field.getAnnotation(Value.class).fileName();
-                Object value = fileName.equals("") ? YmlUtil.getValue(valueKey) : YmlUtil.getValue(fileName, valueKey);
-                field.setAccessible(true);
-                try {
-                    field.set(object, value);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return object;
+        return (T) enhancer.create();
     }
 
     @Override

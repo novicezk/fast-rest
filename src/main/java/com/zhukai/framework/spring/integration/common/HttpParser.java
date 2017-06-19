@@ -1,7 +1,7 @@
 package com.zhukai.framework.spring.integration.common;
 
 import com.zhukai.framework.spring.integration.common.constant.RequestType;
-import com.zhukai.framework.spring.integration.server.SpringIntegration;
+import com.zhukai.framework.spring.integration.SpringIntegration;
 import org.apache.log4j.Logger;
 
 import java.io.*;

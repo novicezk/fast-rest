@@ -15,7 +15,7 @@ public class WebContext {
 
     public static final String JSESSIONID = "JSESSIONID";
 
-    private static Map<String, Method> webMethods;
+    private static Map<String, Method> webMethods = new HashMap<>();
 
     private static ThreadLocal<Connection> transaction = new ThreadLocal();
 
@@ -42,10 +42,6 @@ public class WebContext {
 
     public static Map<String, Method> getWebMethods() {
         return webMethods;
-    }
-
-    public static void setWebMethods(Map<String, Method> webMethods) {
-        WebContext.webMethods = webMethods;
     }
 
     public static void refreshSession(String sessionId) {

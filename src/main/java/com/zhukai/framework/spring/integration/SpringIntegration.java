@@ -1,13 +1,15 @@
-package com.zhukai.framework.spring.integration.server;
+package com.zhukai.framework.spring.integration;
 
 
 import com.zhukai.framework.spring.integration.annotation.batch.Scheduled;
-import com.zhukai.framework.spring.integration.beans.impl.ComponentBeanFactory;
+import com.zhukai.framework.spring.integration.beans.component.ComponentBeanFactory;
+import com.zhukai.framework.spring.integration.beans.configure.ConfigureBeanFactory;
 import com.zhukai.framework.spring.integration.client.ActionHandle;
 import com.zhukai.framework.spring.integration.client.ActionHandleNIO;
 import com.zhukai.framework.spring.integration.common.HttpParser;
 import com.zhukai.framework.spring.integration.common.HttpRequest;
 import com.zhukai.framework.spring.integration.common.Session;
+import com.zhukai.framework.spring.integration.config.ServerConfig;
 import com.zhukai.framework.spring.integration.context.WebContext;
 import org.apache.log4j.Logger;
 
@@ -29,32 +31,45 @@ import java.util.concurrent.TimeUnit;
  * Created by zhukai on 17-1-12.
  */
 public class SpringIntegration {
-    public static String CHARSET = "utf-8"; //默认编码
-    public static int BUFFER_SIZE = 1024;
-    public static Class runClass;
 
+    public static final String CHARSET = "utf-8";
+    public static final String DEFAULT_PROPERTIES = "application.properties";
+    public static final int BUFFER_SIZE = 1024;
+
+    public static Selector selector;
+
+    private static final Logger logger = Logger.getLogger(SpringIntegration.class);
+    private static Class runClass;
     private static ServerConfig serverConfig;
 
-    private static Logger logger = Logger.getLogger(SpringIntegration.class);
+    public static Class getRunClass() {
+        return runClass;
+    }
 
     public static void run(Class runClass) {
+        SpringIntegration.runClass = runClass;
         try {
-            SpringIntegration.runClass = runClass;
-            SpringCore.init();
-            runSessionTimeoutCheck();
-            runBatchSchedule();
+            Setup.init();
+        } catch (Exception e) {
+            logger.error("init error", e);
+        }
+        serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
+        System.out.println(serverConfig);
+        runSessionTimeoutCheck();
+        runBatchSchedule();
+        try {
             if (serverConfig.isUseNio()) {
                 startServerNIO();
-            } else {
-                startServer();
+                return;
             }
+            startServer();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("start server error", e);
         }
     }
 
 
-    private static ExecutorService service = Executors.newCachedThreadPool();
+    private static final ExecutorService service = Executors.newCachedThreadPool();
 
     private static void startServer() throws Exception {
         ServerSocket serverSocket = new ServerSocket(serverConfig.getPort());
@@ -64,8 +79,6 @@ public class SpringIntegration {
             service.execute(new ActionHandle(client));
         }
     }
-
-    public static Selector selector;
 
     private static void startServerNIO() throws Exception {
         ServerSocketChannel serverChannel;
@@ -109,7 +122,7 @@ public class SpringIntegration {
         }
     }
 
-    private static ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(5);
+    private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(5);
 
     private static void runSessionTimeoutCheck() {
         scheduledExecutor.scheduleAtFixedRate(() ->
@@ -125,7 +138,7 @@ public class SpringIntegration {
     }
 
     private static void runBatchSchedule() {
-        for (Method method : SpringCore.getBatchMethods()) {
+        for (Method method : Setup.getBatchMethods()) {
             long fixedRate = method.getAnnotation(Scheduled.class).fixedRate();
             long fixedDelay = method.getAnnotation(Scheduled.class).fixedDelay();
             fixedDelay = fixedDelay == 0 ? fixedRate : fixedDelay;
@@ -140,11 +153,4 @@ public class SpringIntegration {
         }
     }
 
-    public static ServerConfig getServerConfig() {
-        return serverConfig;
-    }
-
-    public static void setServerConfig(ServerConfig serverConfig) {
-        SpringIntegration.serverConfig = serverConfig;
-    }
 }

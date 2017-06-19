@@ -19,12 +19,6 @@
             <artifactId>cglib</artifactId>
             <version>3.2.4</version>
         </dependency>
-        <!--yaml 文件操作-->
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>1.17</version>
-        </dependency>
         <!--json 数据处理-->
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -63,7 +57,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.zhukai.framework.spring.integration.demo.TestApplication</mainClass>
+                            <mainClass>com.zhukai.framework.spring.integration.demo.ApplicationDemo</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

@@ -1,7 +1,7 @@
 package com.zhukai.framework.spring.integration.client;
 
 
-import com.zhukai.framework.spring.integration.server.SpringIntegration;
+import com.zhukai.framework.spring.integration.SpringIntegration;
 import com.zhukai.framework.spring.integration.utils.JsonUtil;
 import com.zhukai.framework.spring.integration.common.HttpParser;
 import com.zhukai.framework.spring.integration.common.HttpRequest;

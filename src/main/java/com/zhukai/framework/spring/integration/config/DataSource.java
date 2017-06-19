@@ -1,18 +1,21 @@
-package com.zhukai.framework.spring.integration.jdbc;
+package com.zhukai.framework.spring.integration.config;
+
+import com.zhukai.framework.spring.integration.annotation.core.Configure;
 
 /**
  * Created by zhukai on 17-1-18.
  */
+@Configure(prefix = "datasource")
 public class DataSource {
     private String username;
     private String password;
     private String url;
     private String driverClass;
     //最小数量
-    private int minConn = 2;
+    private Integer minConn = 2;
     //最大连接数
-    private int maxConn = 100;
-    private long timeout = 500;
+    private Integer maxConn = 100;
+    private Long timeout = 500L;
 
     public DataSource() {
     }
@@ -49,28 +52,28 @@ public class DataSource {
         this.driverClass = driverClass;
     }
 
-    public int getMinConn() {
+    public Integer getMinConn() {
         return minConn;
     }
 
-    public void setMinConn(int minConn) {
+    public void setMinConn(Integer minConn) {
         this.minConn = minConn;
     }
 
-    public int getMaxConn() {
+    public Integer getMaxConn() {
         return maxConn;
     }
 
-    public void setMaxConn(int maxConn) {
+    public void setMaxConn(Integer maxConn) {
         this.maxConn = maxConn;
     }
 
-    public long getTimeout() {
+    public Long getTimeout() {
         return timeout;
     }
 
-    public void setTimeout(long waitTime) {
-        this.timeout = waitTime;
+    public void setTimeout(Long timeout) {
+        this.timeout = timeout;
     }
 
     @Override
