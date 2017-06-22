@@ -29,7 +29,7 @@ public class Resources {
         String tmpPath = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class).getFileTmp();
         File file = new File(tmpPath + "/" + filePath);
         if (!file.exists()) {
-            throw new FileNotFoundException(filePath + " is not a file");
+            throw new FileNotFoundException(filePath);
         }
         return file;
     }
