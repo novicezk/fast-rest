@@ -1,6 +1,6 @@
 package com.zhukai.framework.spring.integration.annotation.web;
 
-import com.zhukai.framework.spring.integration.common.constant.RequestType;
+import com.zhukai.framework.spring.integration.constant.RequestType;
 
 import java.lang.annotation.*;
 
@@ -9,7 +9,6 @@ import java.lang.annotation.*;
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 public @interface RequestMapping {
 
     String[] method() default {RequestType.GET, RequestType.POST};

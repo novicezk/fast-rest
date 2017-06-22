@@ -68,9 +68,6 @@ public class DBConnectionPool {
 
     public void init(DataSource source) {
         dataSource = source;
-        if (dataSource == null) {
-            return;
-        }
         try {
             Class.forName(source.getDriverClass());
             for (int i = 0; i < source.getMinConn(); i++) {

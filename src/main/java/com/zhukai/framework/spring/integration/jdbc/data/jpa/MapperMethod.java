@@ -2,12 +2,11 @@ package com.zhukai.framework.spring.integration.jdbc.data.jpa;
 
 import com.zhukai.framework.spring.integration.annotation.jpa.ExecuteUpdate;
 import com.zhukai.framework.spring.integration.annotation.jpa.QueryCondition;
-import com.zhukai.framework.spring.integration.beans.configure.ConfigureBeanFactory;
+import com.zhukai.framework.spring.integration.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.spring.integration.config.ServerConfig;
 import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
-import com.zhukai.framework.spring.integration.SpringIntegration;
-import com.zhukai.framework.spring.integration.utils.ReflectUtil;
-import com.zhukai.framework.spring.integration.utils.StringUtil;
+import com.zhukai.framework.spring.integration.util.ReflectUtil;
+import com.zhukai.framework.spring.integration.util.StringUtil;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Field;
@@ -24,7 +23,7 @@ import java.util.List;
  * Created by zhukai on 17-1-22.
  */
 public class MapperMethod<T> {
-    private static Logger logger = Logger.getLogger(MapperMethod.class);
+    private static final Logger logger = Logger.getLogger(MapperMethod.class);
     private static ServerConfig serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
 
     private Connection conn;
@@ -50,50 +49,51 @@ public class MapperMethod<T> {
         }
     }
 
+
     public Object execute() throws Exception {
-        if (conn == null) {
-            isTransactional = false;
-            conn = DBConnectionPool.getInstance().getConnection();
-        }
+        checkTransactional();
         String methodName = method.getName();
         if (method.isAnnotationPresent(ExecuteUpdate.class)) {
             String sql = method.getAnnotation(ExecuteUpdate.class).value();
             return executeUpdate(sql, args);
-        } else if (method.isAnnotationPresent(QueryCondition.class)) {
+        }
+        if (method.isAnnotationPresent(QueryCondition.class)) {
             String queryCondition = method.getAnnotation(QueryCondition.class).value();
             String sql = JpaUtil.getSelectSqlWithoutProperties(entityClass).append(" WHERE ").append(queryCondition).toString();
             if (List.class.isAssignableFrom(method.getReturnType())) {
                 return getEntityList(sql, args);
-            } else {
-                return getEntity(sql + " LIMIT 1 ", args);
             }
-        } else if (methodName.equals("findOne")) {
-            return getBean(args[0]);
-        } else if (methodName.equals("exists")) {
-            if (args[0] instanceof Object[]) {
-                return existsByProperties((Object[]) args[0]);
-            }
-            return exists(args[0]);
-        } else if (methodName.equals("findAll")) {
-            if (args != null) {
+            return getEntity(sql + " LIMIT 1 ", args);
+        }
+        switch (methodName) {
+            case "findOne":
+                return getBean(args[0]);
+            case "exists":
                 if (args[0] instanceof Object[]) {
-                    return getBeans((Object[]) args[0]);
-                } else if (args[0] instanceof List) {
-                    return getBeansIn((List) args[0]);
+                    return existsByProperties((Object[]) args[0]);
                 }
-            }
-            return getBeans(null);
-        } else if (methodName.equals("delete")) {
-            return delete(args[0]);
-        } else if (methodName.equals("save")) {
-            if (args[0] instanceof List) {
-                return saveBeans((List<T>) args[0]);
-            } else {
+                return exists(args[0]);
+            case "findAll":
+                if (args != null) {
+                    if (args[0] instanceof Object[]) {
+                        return getBeans((Object[]) args[0]);
+                    } else if (args[0] instanceof List) {
+                        return getBeansIn((List) args[0]);
+                    }
+                }
+                return getBeans(null);
+            case "delete":
+                return delete(args[0]);
+            case "save":
+                if (args[0] instanceof List) {
+                    return saveBeans((List<T>) args[0]);
+                }
                 return saveBean((T) args[0]);
-            }
-        } else if (methodName.equals("count")) {
-            return count();
-        } else if (methodName.startsWith("findBy")) {
+            case "count":
+                return count();
+        }
+
+        if (methodName.startsWith("findBy")) {
             StringBuilder propertiesSql = new StringBuilder();
             String propertiesString = methodName.substring(6);
             String[] arr = propertiesString.split("And|Or");
@@ -113,11 +113,17 @@ public class MapperMethod<T> {
             String selectSQL = JpaUtil.getSelectSqlWithoutProperties(entityClass).append(propertiesSql).toString();
             if (List.class.isAssignableFrom(method.getReturnType())) {
                 return getEntityList(selectSQL);
-            } else {
-                return getEntity(selectSQL + " LIMIT 1 ");
             }
+            return getEntity(selectSQL + " LIMIT 1 ");
         }
         throw new NoSuchMethodException(methodName + " is not exists");
+    }
+
+    private void checkTransactional() throws Exception {
+        if (conn == null) {
+            isTransactional = false;
+            conn = DBConnectionPool.getInstance().getConnection();
+        }
     }
 
     private long count() throws Exception {

@@ -1,6 +1,6 @@
 package com.zhukai.framework.spring.integration.proxy;
 
-import com.zhukai.framework.spring.integration.context.WebContext;
+import com.zhukai.framework.spring.integration.WebContext;
 import com.zhukai.framework.spring.integration.jdbc.data.jpa.MapperMethod;
 
 import java.lang.reflect.*;

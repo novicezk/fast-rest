@@ -7,21 +7,20 @@ import com.zhukai.framework.spring.integration.annotation.jpa.Entity;
 import com.zhukai.framework.spring.integration.annotation.jpa.Index;
 import com.zhukai.framework.spring.integration.annotation.web.RequestMapping;
 import com.zhukai.framework.spring.integration.annotation.web.RestController;
-import com.zhukai.framework.spring.integration.beans.BaseBean;
-import com.zhukai.framework.spring.integration.beans.ChildBean;
-import com.zhukai.framework.spring.integration.beans.component.ComponentBean;
-import com.zhukai.framework.spring.integration.beans.component.ComponentBeanFactory;
-import com.zhukai.framework.spring.integration.beans.configure.ConfigureBean;
-import com.zhukai.framework.spring.integration.beans.configure.ConfigureBeanFactory;
-import com.zhukai.framework.spring.integration.beans.properties.PropertiesBeanFactory;
+import com.zhukai.framework.spring.integration.bean.BaseBean;
+import com.zhukai.framework.spring.integration.bean.ChildBean;
+import com.zhukai.framework.spring.integration.bean.component.ComponentBean;
+import com.zhukai.framework.spring.integration.bean.component.ComponentBeanFactory;
+import com.zhukai.framework.spring.integration.bean.configure.ConfigureBean;
+import com.zhukai.framework.spring.integration.bean.configure.ConfigureBeanFactory;
+import com.zhukai.framework.spring.integration.bean.properties.PropertiesBeanFactory;
 import com.zhukai.framework.spring.integration.config.DataSource;
 import com.zhukai.framework.spring.integration.config.ServerConfig;
-import com.zhukai.framework.spring.integration.context.WebContext;
 import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.framework.spring.integration.jdbc.data.jpa.JpaUtil;
-import com.zhukai.framework.spring.integration.utils.PackageUtil;
-import com.zhukai.framework.spring.integration.utils.ReflectUtil;
-import com.zhukai.framework.spring.integration.utils.StringUtil;
+import com.zhukai.framework.spring.integration.util.PackageUtil;
+import com.zhukai.framework.spring.integration.util.ReflectUtil;
+import com.zhukai.framework.spring.integration.util.StringUtil;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Field;
@@ -44,23 +43,24 @@ public class Setup {
     static void init() throws Exception {
         initProperties();
         initConfig();
-        scanComponent();
         DataSource dataSource = ConfigureBeanFactory.getInstance().getBean(DataSource.class);
-        DBConnectionPool.getInstance().init(dataSource);
+        if (dataSource != null) {
+            DBConnectionPool.getInstance().init(dataSource);
+        }
+        scanComponent();
     }
 
     private static void initProperties() {
-        List<String> propertiesList;
+        List<String> propertiesList = new ArrayList<>();
         if (SpringIntegration.getRunClass().isAnnotationPresent(Configurable.class)) {
             Configurable configurable = (Configurable) SpringIntegration.getRunClass().getAnnotation(Configurable.class);
             String[] propertiesArr = configurable.value();
-            propertiesList = Arrays.asList(propertiesArr);
-            if (!propertiesList.contains(SpringIntegration.DEFAULT_PROPERTIES)) {
-                propertiesList.add(SpringIntegration.DEFAULT_PROPERTIES);
+            for (String properties : propertiesArr) {
+                propertiesList.add(properties);
             }
-        } else {
-            propertiesList = new ArrayList<>();
-            propertiesList.add(SpringIntegration.DEFAULT_PROPERTIES);
+        }
+        if (!propertiesList.contains(Constants.DEFAULT_PROPERTIES)) {
+            propertiesList.add(Constants.DEFAULT_PROPERTIES);
         }
         for (String propertiesName : propertiesList) {
             BaseBean baseBean = new BaseBean();
@@ -80,14 +80,11 @@ public class Setup {
         for (Class componentClass : classes) {
             if (componentClass.isAnnotation()) {
                 continue;
-            }
-            if (componentClass.isAnnotationPresent(RestController.class)) {
+            } else if (componentClass.isAnnotationPresent(RestController.class)) {
                 addWebMethod(componentClass);
-            }
-            if (componentClass.isAnnotationPresent(Entity.class)) {
+            } else if (componentClass.isAnnotationPresent(Entity.class)) {
                 checkDatabase(componentClass, conn);
-            }
-            if (componentClass.isAnnotationPresent(Batcher.class)) {
+            } else if (componentClass.isAnnotationPresent(Batcher.class)) {
                 for (Method method : componentClass.getMethods()) {
                     if (method.isAnnotationPresent(Scheduled.class)) {
                         batchMethods.add(method);
@@ -133,9 +130,8 @@ public class Setup {
         for (Field field : fields) {
             if (field.isAnnotationPresent(Autowired.class)) {
                 String childBeanName = field.getAnnotation(Autowired.class).value();
-                childBeanName = childBeanName.equals("") ? field.getType().getName() : childBeanName;
+                String beanName = childBeanName.equals("") ? field.getType().getName() : childBeanName;
                 ChildBean childBean = new ChildBean();
-                childBean.setRegisterName(childBeanName);
                 childBean.setFieldName(field.getName());
                 childBean.setBeanClass(field.getType());
                 if (ReflectUtil.existAnnotation(field.getType(), Component.class)) {
@@ -143,15 +139,16 @@ public class Setup {
                 } else if (ReflectUtil.existAnnotation(field.getType(), Configure.class)) {
                     childBean.setBeanFactory(ConfigureBeanFactory.getInstance());
                 } else if (Properties.class.isAssignableFrom(field.getType())) {
+                    beanName = childBeanName.equals("") ? Constants.DEFAULT_PROPERTIES : childBeanName;
                     childBean.setBeanFactory(PropertiesBeanFactory.getInstance());
                 }
+                childBean.setRegisterName(beanName);
                 children.add(childBean);
             }
         }
         componentBean.setChildren(children);
         componentBean.setRegisterName(registerName);
         ComponentBeanFactory.getInstance().registerBean(componentBean);
-        logger.info("Register in componentBeanFactory: " + registerName + " = " + beanClass.getSimpleName() + ".class");
     }
 
     private static void registerConfigureBean(Class beanClass) {
@@ -163,9 +160,9 @@ public class Setup {
         configureBean.setBeanClass(beanClass);
         configureBean.setRegisterName(registerName);
         configureBean.setPrefix(prefix);
-        configureBean.setProperties(PropertiesBeanFactory.getProperties(propertiesName));
+        Properties properties = PropertiesBeanFactory.getProperties(propertiesName);
+        configureBean.setProperties(properties);
         ConfigureBeanFactory.getInstance().registerBean(configureBean);
-        logger.info("Register in ConfigureBeanFactory: " + registerName + " = " + beanClass.getSimpleName() + ".class");
     }
 
     private static void checkDatabase(Class entityClass, Connection conn) throws Exception {

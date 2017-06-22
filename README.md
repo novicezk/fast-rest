@@ -10,15 +10,7 @@ http服务器、spring-mvc的部分功能、spring的IOC和AOP基础、spring-da
 2. 或在com.zhukai.framework.spring.integration.demo/下直接开发
 
 ## 项目运行的两种方式：
-1. 直接启动com.zhukai.framework.spring.integration.demo/TestApplication
+1. 直接启动com.zhukai.framework.spring.integration.demo/ApplicationDemo
 2. 执行mvn assembly:assembly打包jar，然后java -jar运行target下spring-integration-{版本}-jar-with-dependencies.jar
 
 访问[http://localhost:8080/hello](http://localhost:8080/hello)，出现"hello,world"说明启动正常
-
-## 近期更新：
-1. 增加文件上传下载支持
-2. 添加@PathVariable注解
-3. 添加log4j日志
-4. 启动可配置使用nio或bio处理http请求
-5. 添加spring schedule和session过时设置
-6. 添加获取数据库连接等待机制

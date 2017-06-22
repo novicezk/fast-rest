@@ -11,9 +11,7 @@ public class DataSource {
     private String password;
     private String url;
     private String driverClass;
-    //最小数量
     private Integer minConn = 2;
-    //最大连接数
     private Integer maxConn = 100;
     private Long timeout = 500L;
 

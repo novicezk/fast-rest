@@ -8,16 +8,11 @@ import com.zhukai.framework.spring.integration.annotation.core.Configure;
 @Configure(prefix = "server")
 public class ServerConfig {
 
-    private Long fixedRate = 5L;//扫描间隔(分钟)
-
-    private Long sessionTimeout = 30L;//session过期时间(分钟)
-
+    private Long fixedRate = 300000L;//扫描间隔
+    private Long sessionTimeout = 1800000L;//session过期时间
     private Integer port = 8080;
-
     private Boolean showSQL = false;
-
     private String fileTmp = "/tmp";
-
     private Boolean useNio = true;
 
     public ServerConfig() {

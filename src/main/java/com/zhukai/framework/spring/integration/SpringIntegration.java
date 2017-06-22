@@ -1,16 +1,14 @@
 package com.zhukai.framework.spring.integration;
 
-
 import com.zhukai.framework.spring.integration.annotation.batch.Scheduled;
-import com.zhukai.framework.spring.integration.beans.component.ComponentBeanFactory;
-import com.zhukai.framework.spring.integration.beans.configure.ConfigureBeanFactory;
-import com.zhukai.framework.spring.integration.client.ActionHandle;
-import com.zhukai.framework.spring.integration.client.ActionHandleNIO;
-import com.zhukai.framework.spring.integration.common.HttpParser;
-import com.zhukai.framework.spring.integration.common.HttpRequest;
-import com.zhukai.framework.spring.integration.common.Session;
+import com.zhukai.framework.spring.integration.bean.component.ComponentBeanFactory;
+import com.zhukai.framework.spring.integration.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.spring.integration.config.ServerConfig;
-import com.zhukai.framework.spring.integration.context.WebContext;
+import com.zhukai.framework.spring.integration.handle.ActionHandle;
+import com.zhukai.framework.spring.integration.handle.ActionHandleNIO;
+import com.zhukai.framework.spring.integration.http.HttpParser;
+import com.zhukai.framework.spring.integration.http.Session;
+import com.zhukai.framework.spring.integration.http.request.HttpRequest;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Method;
@@ -32,19 +30,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class SpringIntegration {
 
-    public static final String CHARSET = "utf-8";
-    public static final String DEFAULT_PROPERTIES = "application.properties";
-    public static final int BUFFER_SIZE = 1024;
-
-    public static Selector selector;
-
     private static final Logger logger = Logger.getLogger(SpringIntegration.class);
     private static Class runClass;
     private static ServerConfig serverConfig;
-
-    public static Class getRunClass() {
-        return runClass;
-    }
+    private static Selector selector;
 
     public static void run(Class runClass) {
         SpringIntegration.runClass = runClass;
@@ -54,12 +43,11 @@ public class SpringIntegration {
             logger.error("init error", e);
         }
         serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
-        System.out.println(serverConfig);
         runSessionTimeoutCheck();
         runBatchSchedule();
         try {
             if (serverConfig.isUseNio()) {
-                startServerNIO();
+                startNIOServer();
                 return;
             }
             startServer();
@@ -75,12 +63,13 @@ public class SpringIntegration {
         ServerSocket serverSocket = new ServerSocket(serverConfig.getPort());
         logger.info("Server start on port: " + serverConfig.getPort());
         while (true) {
-            Socket client = serverSocket.accept();
-            service.execute(new ActionHandle(client));
+            Socket socket = serverSocket.accept();
+            HttpRequest request = HttpParser.createRequest(socket);
+            service.execute(new ActionHandle(socket, request));
         }
     }
 
-    private static void startServerNIO() throws Exception {
+    private static void startNIOServer() throws Exception {
         ServerSocketChannel serverChannel;
         selector = Selector.open();
         serverChannel = ServerSocketChannel.open();
@@ -105,7 +94,7 @@ public class SpringIntegration {
                     }
                 } else if (key.isReadable()) {
                     SocketChannel channel = (SocketChannel) key.channel();
-                    HttpRequest request = HttpParser.parseRequest(channel);
+                    HttpRequest request = HttpParser.createRequest(channel);
                     if (request != null) {
                         service.execute(new ActionHandleNIO(channel, request));
                     } else {
@@ -129,12 +118,12 @@ public class SpringIntegration {
                 WebContext.getSessions().keySet().removeIf(sessionID -> {
                     Session session = WebContext.getSessions().get(sessionID);
                     long lastConnectionTime = session.getLastConnectionTime();
-                    if (lastConnectionTime + TimeUnit.MINUTES.toMillis(serverConfig.getSessionTimeout()) < System.currentTimeMillis()) {
+                    if (lastConnectionTime + serverConfig.getSessionTimeout() < System.currentTimeMillis()) {
                         logger.warn("sessionID: " + sessionID + "已过期");
                         return true;
                     }
                     return false;
-                }), serverConfig.getFixedRate(), serverConfig.getFixedRate(), TimeUnit.MINUTES);
+                }), serverConfig.getFixedRate(), serverConfig.getFixedRate(), TimeUnit.MILLISECONDS);
     }
 
     private static void runBatchSchedule() {
@@ -151,6 +140,14 @@ public class SpringIntegration {
                 }
             }, fixedDelay, fixedRate, method.getAnnotation(Scheduled.class).timeUnit());
         }
+    }
+
+    public static Class getRunClass() {
+        return runClass;
+    }
+
+    public static Selector getSelector() {
+        return selector;
     }
 
 }

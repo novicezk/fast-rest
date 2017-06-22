@@ -2,7 +2,7 @@ package com.zhukai.framework.spring.integration.jdbc.data.jpa;
 
 import com.zhukai.framework.spring.integration.annotation.jpa.Column;
 import com.zhukai.framework.spring.integration.annotation.jpa.Id;
-import com.zhukai.framework.spring.integration.utils.ReflectUtil;
+import com.zhukai.framework.spring.integration.util.ReflectUtil;
 import com.zhukai.framework.spring.integration.annotation.jpa.Entity;
 import com.zhukai.framework.spring.integration.annotation.jpa.GeneratedValue;
 
@@ -20,7 +20,6 @@ public class JpaUtil {
 
     public static String convertToSqlColumn(Field field) {
         StringBuilder sqlColumn = new StringBuilder();
-
         if (field.isAnnotationPresent(Column.class)) {
             Column column = field.getAnnotation(Column.class);
             String columnName = getColumnName(field);
@@ -69,15 +68,20 @@ public class JpaUtil {
     public static String getSqlType(Class typeClass) {
         if (typeClass.isAssignableFrom(Integer.class)) {
             return "INTEGER";
-        } else if (typeClass.isAssignableFrom(Long.class)) {
+        }
+        if (typeClass.isAssignableFrom(Long.class)) {
             return "BIGINT";
-        } else if (typeClass.isAssignableFrom(String.class)) {
+        }
+        if (typeClass.isAssignableFrom(String.class)) {
             return "VARCHAR";
-        } else if (typeClass.isAssignableFrom(Double.class)) {
+        }
+        if (typeClass.isAssignableFrom(Double.class)) {
             return "DOUBLE";
-        } else if (typeClass.isAssignableFrom(Float.class)) {
+        }
+        if (typeClass.isAssignableFrom(Float.class)) {
             return "FLOAT";
-        } else if (typeClass.isAnnotationPresent(Entity.class)) {
+        }
+        if (typeClass.isAnnotationPresent(Entity.class)) {
             Field idField = getIdField(typeClass);
             return getSqlType(idField.getType());
         }
@@ -93,9 +97,8 @@ public class JpaUtil {
         if (fieldValue.getClass().isAnnotationPresent(Entity.class)) {
             Field idField = getIdField(fieldValue.getClass());
             return getColumnValueByField(fieldValue, idField);
-        } else {
-            return fieldValue;
         }
+        return fieldValue;
     }
 
     public static Object convertToColumnValue(Object obj) {
@@ -111,9 +114,9 @@ public class JpaUtil {
         }
         if (objValue instanceof String) {
             return "'" + objValue + "'";
-        } else {
-            return objValue;
         }
+        return objValue;
+
     }
 
     public static Field getIdField(Class clazz) {

@@ -1,7 +1,7 @@
 package com.zhukai.framework.spring.integration.proxy;
 
 import com.zhukai.framework.spring.integration.annotation.core.Transactional;
-import com.zhukai.framework.spring.integration.context.WebContext;
+import com.zhukai.framework.spring.integration.WebContext;
 import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
