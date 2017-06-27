@@ -9,6 +9,7 @@ import com.zhukai.framework.spring.integration.http.request.HttpRequest;
 import com.zhukai.framework.spring.integration.util.JsonUtil;
 import org.apache.log4j.Logger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -85,7 +86,7 @@ public class WebServerNIO {
             ByteBuffer buffer = ByteBuffer.allocate(Constants.BUFFER_SIZE);
             sendMessage(socketChannel, httpHeader + "\r\n", buffer);
             if (response.getResult() instanceof InputStream) {
-                sendInputStream(socketChannel, (InputStream) response.getResult(), buffer);
+                sendInputStream(socketChannel, (InputStream) response.getResult());
             } else {
                 String json = JsonUtil.toJson(response.getResult());
                 sendMessage(socketChannel, json, buffer);
@@ -113,14 +114,28 @@ public class WebServerNIO {
         }
     }
 
-    private static void sendInputStream(SocketChannel socketChannel, InputStream in, ByteBuffer buffer) throws Exception {
-        int byteCount;
-        byte[] bytes = new byte[Constants.BUFFER_SIZE];
-        while ((byteCount = in.read(bytes)) != -1) {
-            buffer.clear();
-            buffer.put(bytes, 0, byteCount);
-            buffer.flip();
-            socketChannel.write(buffer);
+    private static void sendInputStream(SocketChannel socketChannel, InputStream in) throws Exception {
+        int inputSize = in.available();
+        if (inputSize < Constants.BUFFER_SIZE) {
+            byte[] bytes = new byte[inputSize];
+            in.read(bytes);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+            socketChannel.write(byteBuffer);
+        } else {
+            //大文件
+            int length;
+            byte tempByte[] = new byte[Constants.BUFFER_SIZE * Constants.BUFFER_SIZE];
+            while ((length = in.read(tempByte)) != -1) {
+                ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                bout.write(tempByte, 0, length);
+                byte[] b = bout.toByteArray();
+                ByteBuffer byteBuffer = ByteBuffer.allocate(b.length);
+                byteBuffer.put(b);
+                byteBuffer.flip();
+                while (byteBuffer.hasRemaining() && socketChannel.isOpen()) {
+                    socketChannel.write(byteBuffer);
+                }
+            }
         }
         in.close();
     }

@@ -6,6 +6,7 @@ package com.zhukai.framework.spring.integration;
 public interface Constants {
     String CHARSET = "utf-8";
     String DEFAULT_PROPERTIES = "application.properties";
+    String MIMETYPE_PROPERTIES = "mimetype.properties";
     int BUFFER_SIZE = 1024;
     String JSESSIONID = "JSESSIONID";
 }
