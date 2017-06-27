@@ -40,14 +40,19 @@ public class Setup {
     private static final Logger logger = Logger.getLogger(Setup.class);
     private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
 
-    static void init() throws Exception {
+    static void init() {
+
         initProperties();
         initConfig();
         DataSource dataSource = ConfigureBeanFactory.getInstance().getBean(DataSource.class);
         if (dataSource != null) {
             DBConnectionPool.getInstance().init(dataSource);
         }
-        scanComponent();
+        try {
+            scanComponent();
+        } catch (Exception e) {
+            logger.error(e);
+        }
     }
 
     private static void initProperties() {

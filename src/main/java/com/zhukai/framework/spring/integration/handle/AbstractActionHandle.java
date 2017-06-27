@@ -42,7 +42,7 @@ public abstract class AbstractActionHandle implements Runnable {
     public void run() {
         try {
             if (request == null) {
-                throw new Exception("request is null");
+                return;
             }
             response = new HttpResponse();
             response.setProtocol(request.getProtocol());

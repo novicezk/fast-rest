@@ -2,7 +2,6 @@ package com.zhukai.framework.spring.integration.handle;
 
 
 import com.zhukai.framework.spring.integration.http.HttpParser;
-import com.zhukai.framework.spring.integration.http.request.HttpRequest;
 import com.zhukai.framework.spring.integration.util.JsonUtil;
 
 import java.io.IOException;
@@ -18,9 +17,9 @@ public class ActionHandle extends AbstractActionHandle {
 
     private Socket socket;
 
-    public ActionHandle(Socket socket, HttpRequest request) {
+    public ActionHandle(Socket socket) {
         this.socket = socket;
-        this.request = request;
+        this.request = HttpParser.createRequest(socket);
     }
 
     @Override

@@ -34,6 +34,15 @@ public class Resources {
         return file;
     }
 
+    public static FileEntity getFileEntityByTmp(String filePath) throws FileNotFoundException {
+        File file = getResourceByTmp(filePath);
+        FileEntity fileEntity = new FileEntity();
+        fileEntity.setFileName(file.getName());
+        fileEntity.setInputStream(new FileInputStream(file));
+        return fileEntity;
+    }
+
+
     public static File saveFile(FileEntity fileEntity) throws IOException {
         return saveFile(fileEntity, true);
     }
