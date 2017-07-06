@@ -11,6 +11,6 @@ http服务器、spring-mvc的部分功能、spring的IOC和AOP基础、spring-da
 
 ## 项目运行的两种方式：
 1. 直接启动com.zhukai.framework.spring.integration.demo/ApplicationDemo
-2. 执行mvn assembly:single打包jar，然后java -jar运行target下spring-integration-{版本}-jar-with-dependencies.jar
+2. 执行mvn assembly:assembly打包jar，然后java -jar运行target下spring-integration-{版本}-jar-with-dependencies.jar
 
 访问[http://localhost:8080/hello](http://localhost:8080/hello)，出现"hello,world"说明启动正常
