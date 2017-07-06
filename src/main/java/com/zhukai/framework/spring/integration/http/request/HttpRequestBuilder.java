@@ -1,13 +1,12 @@
 package com.zhukai.framework.spring.integration.http.request;
 
-import com.zhukai.framework.spring.integration.Constants;
+import com.zhukai.framework.spring.integration.constant.HttpHeaderType;
 import com.zhukai.framework.spring.integration.constant.RequestType;
+import com.zhukai.framework.spring.integration.exception.HttpReadException;
 import com.zhukai.framework.spring.integration.http.FileEntity;
-import com.zhukai.framework.spring.integration.http.reader.HttpReaderFactory;
+import com.zhukai.framework.spring.integration.http.reader.AbstractHttpReader;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,16 +14,16 @@ import java.util.regex.Pattern;
  * Created by homolo on 17-6-20.
  */
 public class HttpRequestBuilder implements RequestBuilder {
-    private HttpReaderFactory readerFactory;
+    private AbstractHttpReader httpReader;
     private HttpRequest request;
 
-    public HttpRequestBuilder(HttpReaderFactory readerFactory) {
-        this.readerFactory = readerFactory;
+    public HttpRequestBuilder(AbstractHttpReader readerFactory) {
+        this.httpReader = readerFactory;
     }
 
     @Override
-    public HttpRequest buildUrl() {
-        String line = readerFactory.readLine();
+    public HttpRequest buildUrl() throws HttpReadException {
+        String line = httpReader.readLine();
         String[] firstLineArr = line.split(" ");
         if (firstLineArr.length < 3) {
             return null;
@@ -49,9 +48,8 @@ public class HttpRequestBuilder implements RequestBuilder {
     }
 
     @Override
-    public HttpRequest buildHead() {
-        String contextLine = readerFactory.readLine();
-        //保存此次请求的headers（包含cookies）
+    public HttpRequest buildHead() throws HttpReadException {
+        String contextLine = httpReader.readLine();
         while (!contextLine.trim().equals("")) {
             if (contextLine.startsWith("Cookie")) {
                 String cookieString = contextLine.substring(contextLine.indexOf(':') + 2);
@@ -65,53 +63,49 @@ public class HttpRequestBuilder implements RequestBuilder {
                 String headerValue = contextLine.substring(contextLine.indexOf(':') + 2);
                 request.setHeader(headerKey, headerValue);
             }
-            contextLine = readerFactory.readLine();
+            contextLine = httpReader.readLine();
         }
         return request;
     }
 
     @Override
-    public HttpRequest buildBody() {
+    public HttpRequest buildBody() throws HttpReadException {
         if (request.getMethod().equals(RequestType.POST)) {
-            int contentLength = Integer.parseInt(request.getHeader("Content-Length").trim());
-            String postString = readerFactory.readLimitSize(contentLength);
-            setRequestPostParameter(postString);
+            String contentType = request.getHeader(HttpHeaderType.CONTENT_TYPE);
+            int contentLength = Integer.parseInt(request.getHeader(HttpHeaderType.CONTENT_LENGTH).trim());
+            setRequestPostParameter(contentType, contentLength);
         }
         return request;
     }
 
     private static final Pattern fileNamePattern = Pattern.compile("filename=\"(.*?)\"");
 
-    private void setRequestPostParameter(String postString) {
-        if (request.getHeader("Content-Type").startsWith("multipart/form-data")) {
-            Matcher matcher = fileNamePattern.matcher(postString);
+    private void setRequestPostParameter(String contentType, int contentLength) throws HttpReadException {
+        if (contentType.startsWith("multipart/form-data")) {
+            String webKit = httpReader.readLine();
+            String contentDisposition = httpReader.readLine();
+            String fileType = httpReader.readLine();
+            Matcher matcher = fileNamePattern.matcher(contentDisposition);
             String fileName = null;
             if (matcher.find()) {
                 fileName = matcher.group(1);
             }
-            String splitString = postString.substring(0, postString.indexOf("\r\n"));
-            int startIndex = postString.indexOf("\r\n\r\n") + 4;
-            int endIndex = postString.indexOf(splitString, 1) - 2;
-            String fileString = postString.substring(startIndex, endIndex);
-            InputStream is;
-            try {
-                is = new ByteArrayInputStream(fileString.getBytes(Constants.CHARSET));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-                return;
-            }
-            FileEntity uploadFile = new FileEntity();
-            uploadFile.setInputStream(is);
-            uploadFile.setFileName(fileName);
+            int strSize = webKit.length() * 2 + contentDisposition.length() + fileType.length() + "\r\n".length() * 6 + 2;
+            int inputStreamSize = contentLength - strSize;
+            httpReader.readLine();
+            InputStream inputStream = httpReader.readFileInputStream(inputStreamSize);
+            FileEntity uploadFile = new FileEntity(fileName, inputStream);
             request.setUploadFile(uploadFile);
-        } else if (request.getHeader("Content-Type").startsWith("application/x-www-form-urlencoded")) {
+            return;
+        }
+        String postString = httpReader.readLimitSize(contentLength);
+        if (contentType.startsWith("application/x-www-form-urlencoded")) {
             String[] paramStringArr = postString.split("&");
             for (String paramString : paramStringArr) {
                 String[] param = paramString.split("=");
                 request.setAttribute(param[0], param[1]);
             }
-        } else if (request.getHeader("Content-Type").startsWith("text/plain") ||
-                request.getHeader("Content-Type").startsWith("application/json")) {
+        } else if (contentType.startsWith("text/plain") || contentType.startsWith("application/json")) {
             request.setRequestContext(postString);
         }
     }

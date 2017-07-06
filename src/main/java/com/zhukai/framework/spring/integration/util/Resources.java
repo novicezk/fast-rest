@@ -3,7 +3,9 @@ package com.zhukai.framework.spring.integration.util;
 import com.zhukai.framework.spring.integration.SpringIntegration;
 import com.zhukai.framework.spring.integration.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.spring.integration.config.ServerConfig;
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.http.FileEntity;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
@@ -12,6 +14,7 @@ import java.nio.file.FileAlreadyExistsException;
  * Created by zhukai on 17-2-20.
  */
 public class Resources {
+    private static final Logger logger = Logger.getLogger(Resources.class);
 
     public static InputStream getResourceAsStream(String filePath) {
         return SpringIntegration.getRunClass().getResourceAsStream(filePath);
@@ -68,13 +71,13 @@ public class Resources {
         if (file.exists() && !cover) {
             throw new FileAlreadyExistsException(path);
         } else if (cover) {
-            new File(path).delete();
+            file.delete();
         }
         InputStream in = fileEntity.getInputStream();
         OutputStream out = null;
         try {
             out = new FileOutputStream(file);
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[IntegrationConstants.BUFFER_SIZE];
             int readIndex;
             while ((readIndex = in.read(buffer)) != -1) {
                 out.write(buffer, 0, readIndex);
@@ -82,7 +85,8 @@ public class Resources {
             out.flush();
             return file;
         } catch (Exception e) {
-            throw e;
+            logger.error("save file error", e);
+            return null;
         } finally {
             if (in != null) in.close();
             if (out != null) out.close();

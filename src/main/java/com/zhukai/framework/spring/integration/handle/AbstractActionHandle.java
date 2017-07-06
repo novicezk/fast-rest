@@ -1,9 +1,12 @@
 package com.zhukai.framework.spring.integration.handle;
 
-import com.zhukai.framework.spring.integration.Constants;
 import com.zhukai.framework.spring.integration.WebContext;
 import com.zhukai.framework.spring.integration.annotation.web.*;
 import com.zhukai.framework.spring.integration.bean.component.ComponentBeanFactory;
+import com.zhukai.framework.spring.integration.constant.HttpHeaderType;
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
+import com.zhukai.framework.spring.integration.exception.RequestNotSupportException;
+import com.zhukai.framework.spring.integration.exception.RequestPathNotFoundException;
 import com.zhukai.framework.spring.integration.http.FileEntity;
 import com.zhukai.framework.spring.integration.http.HttpParser;
 import com.zhukai.framework.spring.integration.http.HttpResponse;
@@ -16,7 +19,6 @@ import org.apache.log4j.Logger;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -40,14 +42,14 @@ public abstract class AbstractActionHandle implements Runnable {
 
     @Override
     public void run() {
+        if (request == null) {
+            return;
+        }
+        response = new HttpResponse();
+        response.setProtocol(request.getProtocol());
+        checkSession();
+        Object returnData;
         try {
-            if (request == null) {
-                return;
-            }
-            response = new HttpResponse();
-            response.setProtocol(request.getProtocol());
-            checkSession();
-            Object returnData;
             if (request.getPath().startsWith("/public/")) {
                 InputStream inputStream = Resources.getResourceAsStream(request.getPath());
                 String[] arr = request.getPath().split("\\.");
@@ -64,7 +66,7 @@ public abstract class AbstractActionHandle implements Runnable {
                 if (result instanceof FileEntity) {
                     FileEntity fileBean = (FileEntity) result;
                     String fileName = fileBean.getFileName();
-                    response.setHeader("Content-Disposition", "filename=" + fileName);
+                    response.setHeader(HttpHeaderType.CONTENT_DISPOSITION, "filename=" + fileName);
                     response.setContentType("application/octet-stream");
                     returnData = fileBean.getInputStream();
                 } else {
@@ -72,9 +74,6 @@ public abstract class AbstractActionHandle implements Runnable {
                 }
             }
             response.setResult(returnData);
-        } catch (InvocationTargetException ite) {
-            logger.error("Request action error", ite);
-            response.setResult(ite.getCause().getMessage());
         } catch (Exception e) {
             logger.error("Request action error", e);
             response.setResult(e.getMessage());
@@ -83,7 +82,7 @@ public abstract class AbstractActionHandle implements Runnable {
         }
     }
 
-    private final Method getMethodByRequestPath(String requestPath) throws Exception {
+    private final Method getMethodByRequestPath(String requestPath) throws RequestPathNotFoundException {
         Method method;
         for (String key : WebContext.getWebMethods().keySet()) {
             if (Pattern.matches(key, requestPath)) {
@@ -91,28 +90,28 @@ public abstract class AbstractActionHandle implements Runnable {
                 return method;
             }
         }
-        throw new Exception("Have not this request path");
+        throw new RequestPathNotFoundException(requestPath);
     }
 
     private final void checkSession() {
-        if (request.getCookie(Constants.JSESSIONID) == null) {
+        if (request.getCookie(IntegrationConstants.JSESSIONID) == null) {
             String sessionId = UUID.randomUUID().toString();
-            request.setCookie(Constants.JSESSIONID, sessionId);
-            response.setCookie(Constants.JSESSIONID, sessionId);
-            logger.info(sessionId + "已连接");
+            request.setCookie(IntegrationConstants.JSESSIONID, sessionId);
+            response.setCookie(IntegrationConstants.JSESSIONID, sessionId);
+            logger.info(sessionId + " has connected");
         }
-        WebContext.refreshSession(request.getCookie(Constants.JSESSIONID));
+        WebContext.refreshSession(request.getCookie(IntegrationConstants.JSESSIONID));
     }
 
     private Object invokeMethod(Method method) throws Exception {
         if (!Arrays.asList(method.getAnnotation(RequestMapping.class).method()).contains(request.getMethod())) {
-            throw new Exception("The method: " + request.getMethod() + " is not supported");
+            throw new RequestNotSupportException();
         }
         Object controllerBean = ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass());
         return method.invoke(controllerBean, getMethodParametersArr(method));
     }
 
-    private Object[] getMethodParametersArr(Method method) {
+    private Object[] getMethodParametersArr(Method method) throws Exception {
         String requestMapperValue = method.getAnnotation(RequestMapping.class).value();
         List<Object> paramValues = new ArrayList<>(5);
         Parameter[] parameters = method.getParameters();
@@ -128,7 +127,7 @@ public abstract class AbstractActionHandle implements Runnable {
         return paramValues.toArray();
     }
 
-    private Object getParameterInstance(Parameter parameter, List<String> pathKeys, List<String> pathValues) {
+    private Object getParameterInstance(Parameter parameter, List<String> pathKeys, List<String> pathValues) throws Exception {
         if (HttpRequest.class.isAssignableFrom(parameter.getType())) {
             return request;
         }
@@ -160,7 +159,7 @@ public abstract class AbstractActionHandle implements Runnable {
     }
 
     private List<String> getPathKeys(String requestMapperValue) {
-        List<String> pathKeys = new ArrayList<>(5);
+        List<String> pathKeys = new ArrayList<>();
         Matcher matcher = Pattern.compile("\\{([^}]+)}").matcher(requestMapperValue);
         while (matcher.find()) {
             pathKeys.add(matcher.group(1));
@@ -169,7 +168,7 @@ public abstract class AbstractActionHandle implements Runnable {
     }
 
     private List<String> getPathValues(String requestMapperValue) {
-        List<String> pathValues = new ArrayList<>(5);
+        List<String> pathValues = new ArrayList<>();
         String regular = requestMapperValue.replaceAll("\\{[^}]*}", "([^/]+)");
         Pattern pattern = Pattern.compile(regular);
         Matcher restMatcher = pattern.matcher(request.getPath());

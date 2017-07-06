@@ -1,6 +1,6 @@
 package com.zhukai.framework.spring.integration.util;
 
-import com.zhukai.framework.spring.integration.Constants;
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +20,6 @@ public class PackageUtil {
 
     public static List<Class> getClassesFromPackage(String pack) {
         List<Class> classes = new ArrayList();
-        // 是否循环搜索子包
         boolean recursive = true;
         String packageName = pack;
         String packageDirName = packageName.replace('.', '/');
@@ -31,7 +30,7 @@ public class PackageUtil {
                 URL url = dirs.nextElement();
                 String protocol = url.getProtocol();
                 if ("file".equals(protocol)) {
-                    String filePath = URLDecoder.decode(url.getFile(), Constants.CHARSET);
+                    String filePath = URLDecoder.decode(url.getFile(), IntegrationConstants.CHARSET);
                     findClassInPackageByFile(packageName, filePath, recursive, classes);
                 } else if ("jar".equals(protocol)) {
                     findClassInPackageByJar(packageDirName, packageName, url, recursive, classes);
@@ -48,7 +47,6 @@ public class PackageUtil {
         if (!dir.exists() || !dir.isDirectory()) {
             return;
         }
-        // 在给定的目录下找到所有的文件，并且进行条件过滤
         File[] dirFiles = dir.listFiles(file -> {
             boolean acceptDir = recursive && file.isDirectory();
             boolean acceptClass = file.getName().endsWith("class");

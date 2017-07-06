@@ -16,6 +16,7 @@ import com.zhukai.framework.spring.integration.bean.configure.ConfigureBeanFacto
 import com.zhukai.framework.spring.integration.bean.properties.PropertiesBeanFactory;
 import com.zhukai.framework.spring.integration.config.DataSource;
 import com.zhukai.framework.spring.integration.config.ServerConfig;
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.framework.spring.integration.jdbc.data.jpa.JpaUtil;
 import com.zhukai.framework.spring.integration.util.PackageUtil;
@@ -27,7 +28,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,7 +45,6 @@ public class Setup {
     private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
 
     static void init() {
-
         initProperties();
         initConfig();
         DataSource dataSource = ConfigureBeanFactory.getInstance().getBean(DataSource.class);
@@ -64,8 +67,8 @@ public class Setup {
                 propertiesList.add(properties);
             }
         }
-        if (!propertiesList.contains(Constants.DEFAULT_PROPERTIES)) {
-            propertiesList.add(Constants.DEFAULT_PROPERTIES);
+        if (!propertiesList.contains(IntegrationConstants.DEFAULT_PROPERTIES)) {
+            propertiesList.add(IntegrationConstants.DEFAULT_PROPERTIES);
         }
         for (String propertiesName : propertiesList) {
             BaseBean baseBean = new BaseBean();
@@ -144,7 +147,7 @@ public class Setup {
                 } else if (ReflectUtil.existAnnotation(field.getType(), Configure.class)) {
                     childBean.setBeanFactory(ConfigureBeanFactory.getInstance());
                 } else if (Properties.class.isAssignableFrom(field.getType())) {
-                    beanName = childBeanName.equals("") ? Constants.DEFAULT_PROPERTIES : childBeanName;
+                    beanName = childBeanName.equals("") ? IntegrationConstants.DEFAULT_PROPERTIES : childBeanName;
                     childBean.setBeanFactory(PropertiesBeanFactory.getInstance());
                 }
                 childBean.setRegisterName(beanName);
@@ -170,7 +173,7 @@ public class Setup {
         ConfigureBeanFactory.getInstance().registerBean(configureBean);
     }
 
-    private static void checkDatabase(Class entityClass, Connection conn) throws Exception {
+    private static void checkDatabase(Class entityClass, Connection conn) throws SQLException {
         if (conn == null) {
             return;
         }
@@ -197,40 +200,41 @@ public class Setup {
         sql.append(")");
         logger.info(sql);
         conn.createStatement().executeUpdate(sql.toString());
-        //添加索引
+        addDBIndex(entityClass, tableName, conn);
+    }
+
+    private static void addDBIndex(Class entityClass, String tableName, Connection conn) throws SQLException {
         Entity entityAnnotation = (Entity) entityClass.getAnnotation(Entity.class);
-        if (entityAnnotation != null) {
-            Index[] indexes = entityAnnotation.indexes();
-            for (Index index : indexes) {
-                StringBuilder indexName = new StringBuilder(index.name());
-                if (StringUtil.isBlank(indexName)) {
-                    indexName.append(tableName).append("_INDEX_");
-                    for (int i = 0; i < index.columns().length; i++) {
-                        indexName.append(JpaUtil.getColumnName(entityClass, index.columns()[i]));
-                        if (i != index.columns().length - 1) {
-                            indexName.append("_");
-                        }
-                    }
-                }
-                StringBuilder indexSql = new StringBuilder("CREATE ");
-                if (index.unique()) {
-                    indexSql.append(" UNIQUE ");
-                }
-                if (index.isFull()) {
-                    indexSql.append(" FULLTEXT ");
-                }
-                indexSql.append(" INDEX ").append(indexName).append(" ON ").append(tableName)
-                        .append("(");
+        Index[] indexes = entityAnnotation.indexes();
+        for (Index index : indexes) {
+            StringBuilder indexName = new StringBuilder(index.name());
+            if (StringUtil.isBlank(indexName)) {
+                indexName.append(tableName).append("_INDEX_");
                 for (int i = 0; i < index.columns().length; i++) {
-                    indexSql.append(JpaUtil.getColumnName(entityClass, index.columns()[i]));
+                    indexName.append(JpaUtil.getColumnName(entityClass, index.columns()[i]));
                     if (i != index.columns().length - 1) {
-                        indexSql.append(",");
+                        indexName.append("_");
                     }
                 }
-                indexSql.append(")");
-                logger.info(indexSql);
-                conn.createStatement().executeUpdate(indexSql.toString());
             }
+            StringBuilder indexSql = new StringBuilder("CREATE ");
+            if (index.unique()) {
+                indexSql.append(" UNIQUE ");
+            }
+            if (index.isFull()) {
+                indexSql.append(" FULLTEXT ");
+            }
+            indexSql.append(" INDEX ").append(indexName).append(" ON ").append(tableName)
+                    .append("(");
+            for (int i = 0; i < index.columns().length; i++) {
+                indexSql.append(JpaUtil.getColumnName(entityClass, index.columns()[i]));
+                if (i != index.columns().length - 1) {
+                    indexSql.append(",");
+                }
+            }
+            indexSql.append(")");
+            logger.info(indexSql);
+            conn.createStatement().executeUpdate(indexSql.toString());
         }
     }
 

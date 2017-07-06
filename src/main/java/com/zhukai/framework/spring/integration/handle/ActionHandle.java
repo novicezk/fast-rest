@@ -1,6 +1,7 @@
 package com.zhukai.framework.spring.integration.handle;
 
 
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.http.HttpParser;
 import com.zhukai.framework.spring.integration.util.JsonUtil;
 
@@ -29,20 +30,21 @@ public class ActionHandle extends AbstractActionHandle {
             if (response == null) {
                 return;
             }
-            out = new PrintStream(socket.getOutputStream(), true);
+            out = new PrintStream(socket.getOutputStream());
             String httpHeader = HttpParser.parseHttpString(response);
-            out.println(httpHeader);
+            out.print(httpHeader);
             if (response.getResult() instanceof InputStream) {
                 InputStream inputStream = (InputStream) response.getResult();
                 int byteCount;
-                byte[] bytes = new byte[1024 * 1024];
+                byte[] bytes = new byte[IntegrationConstants.BUFFER_SIZE * 1024];
                 while ((byteCount = inputStream.read(bytes)) != -1) {
                     out.write(bytes, 0, byteCount);
                 }
                 inputStream.close();
             } else {
-                out.println(JsonUtil.toJson(response.getResult()));
+                out.print(JsonUtil.toJson(response.getResult()));
             }
+            out.flush();
         } catch (Exception e) {
             logger.error("Respond error", e);
         } finally {
@@ -51,7 +53,7 @@ public class ActionHandle extends AbstractActionHandle {
             try {
                 socket.close();
             } catch (IOException e) {
-                logger.error("socket close error", e);
+                logger.error("Socket close error", e);
             }
         }
     }

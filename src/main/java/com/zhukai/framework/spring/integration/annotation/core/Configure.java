@@ -1,7 +1,6 @@
 package com.zhukai.framework.spring.integration.annotation.core;
 
-import com.zhukai.framework.spring.integration.Constants;
-import com.zhukai.framework.spring.integration.SpringIntegration;
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,5 +17,5 @@ public @interface Configure {
 
     String prefix() default "";
 
-    String properties() default Constants.DEFAULT_PROPERTIES;
+    String properties() default IntegrationConstants.DEFAULT_PROPERTIES;
 }

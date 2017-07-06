@@ -6,21 +6,18 @@ import java.lang.reflect.Method;
  * Created by zhukai on 17-1-16.
  */
 public class TypeUtil {
-    public static <T> T convert(Object preValue, Class<T> convertTo) {
+
+    public static <T> T convert(Object preValue, Class<T> convertTo) throws Exception {
         if (StringUtil.isBlank(preValue)) {
             return null;
         }
         if (convertTo.equals(String.class)) {
             return (T) preValue.toString();
         } else if (isBasicType(convertTo)) {
-            try {
-                String simpleName = convertTo.getSimpleName();
-                simpleName = simpleName.equals("Integer") ? "Int" : simpleName;
-                Method method = convertTo.getMethod("parse" + simpleName, String.class);
-                return (T) method.invoke(null, preValue.toString());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            String simpleName = convertTo.getSimpleName();
+            simpleName = simpleName.equals("Integer") ? "Int" : simpleName;
+            Method method = convertTo.getMethod("parse" + simpleName, String.class);
+            return (T) method.invoke(null, preValue.toString());
         }
         return (T) preValue;
     }

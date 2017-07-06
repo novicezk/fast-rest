@@ -10,6 +10,14 @@ public class FileEntity {
     private String fileName;
     private InputStream inputStream;
 
+    public FileEntity() {
+    }
+
+    public FileEntity(String fileName, InputStream inputStream) {
+        this.fileName = fileName;
+        this.inputStream = inputStream;
+    }
+
     public InputStream getInputStream() {
         return inputStream;
     }

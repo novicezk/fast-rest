@@ -1,6 +1,6 @@
 package com.zhukai.framework.spring.integration.bean.properties;
 
-import com.zhukai.framework.spring.integration.Constants;
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.SpringIntegration;
 import com.zhukai.framework.spring.integration.bean.BaseBean;
 import com.zhukai.framework.spring.integration.bean.BeanFactory;
@@ -20,9 +20,8 @@ import java.util.Properties;
  */
 public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
     private static final Logger logger = Logger.getLogger(PropertiesBeanFactory.class);
+    
     private static Map<String, Properties> propertiesMap = Collections.synchronizedMap(new HashMap());
-
-
     private static PropertiesBeanFactory instance = new PropertiesBeanFactory();
 
     private PropertiesBeanFactory() {
@@ -44,7 +43,7 @@ public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
     @Override
     public <T> T getBean(Class<T> requiredType) {
         String beanName = ReflectUtil.getBeanRegisterName(requiredType);
-        beanName = StringUtil.isBlank(beanName) ? Constants.DEFAULT_PROPERTIES : beanName;
+        beanName = StringUtil.isBlank(beanName) ? IntegrationConstants.DEFAULT_PROPERTIES : beanName;
         return (T) getBean(beanName);
     }
 

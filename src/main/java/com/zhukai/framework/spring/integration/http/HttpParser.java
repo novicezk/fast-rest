@@ -1,9 +1,11 @@
 package com.zhukai.framework.spring.integration.http;
 
-import com.zhukai.framework.spring.integration.Constants;
-import com.zhukai.framework.spring.integration.http.reader.HttpReaderFactory;
-import com.zhukai.framework.spring.integration.http.reader.IOHttpReaderFactory;
-import com.zhukai.framework.spring.integration.http.reader.NIOHttpReaderFactory;
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
+import com.zhukai.framework.spring.integration.constant.HttpHeaderType;
+import com.zhukai.framework.spring.integration.exception.HttpReadException;
+import com.zhukai.framework.spring.integration.http.reader.AbstractHttpReader;
+import com.zhukai.framework.spring.integration.http.reader.HttpReader;
+import com.zhukai.framework.spring.integration.http.reader.HttpReaderNIO;
 import com.zhukai.framework.spring.integration.http.request.HttpRequest;
 import com.zhukai.framework.spring.integration.http.request.HttpRequestBuilder;
 import com.zhukai.framework.spring.integration.http.request.HttpRequestDirector;
@@ -25,18 +27,22 @@ public class HttpParser {
     private static final Properties mimeTypes = new Properties();
 
     public static HttpRequest createRequest(Socket socket) {
-        InputStream inputStream;
         try {
-            inputStream = socket.getInputStream();
-        } catch (IOException e) {
-            logger.error(e);
+            InputStream inputStream = socket.getInputStream();
+            return directorRequest(new HttpReader(inputStream));
+        } catch (Exception e) {
+            logger.error("create request error", e);
             return null;
         }
-        return directorRequest(new IOHttpReaderFactory(inputStream));
     }
 
     public static HttpRequest createRequest(SocketChannel channel) {
-        return directorRequest(new NIOHttpReaderFactory(channel));
+        try {
+            return directorRequest(new HttpReaderNIO(channel));
+        } catch (HttpReadException e) {
+            logger.error("create request error", e);
+            return null;
+        }
     }
 
     public static String parseHttpString(HttpResponse response) throws IOException {
@@ -44,20 +50,21 @@ public class HttpParser {
         sb.append(response.getProtocol()).append(" ")
                 .append(response.getStatusCode()).append(" ")
                 .append(response.getStatusCodeStr()).append("\r\n")
-                .append("Content-Type: ").append(response.getContentType())
-                .append("\r\n");
-        if (response.getResult() instanceof InputStream && response.getHeaderValue("Content-Length") == null) {
+                .append(HttpHeaderType.CONTENT_TYPE).append(": ")
+                .append(response.getContentType()).append("\r\n");
+        if (response.getResult() instanceof InputStream && response.getHeaderValue(HttpHeaderType.CONTENT_LENGTH) == null) {
             int contentLength = ((InputStream) response.getResult()).available();
-            response.setHeader("Content-Length", String.valueOf(contentLength));
+            response.setHeader(HttpHeaderType.CONTENT_LENGTH, String.valueOf(contentLength));
         }
         response.getHeaders().keySet().forEach(key -> sb.append(key).append(": ")
                 .append(response.getHeaders().get(key)).append("\r\n"));
-        response.getCookies().keySet().forEach(key -> sb.append("Set-Cookie: ").append(key)
+        response.getCookies().keySet().forEach(key -> sb.append(HttpHeaderType.SET_COOKIE).append(": ").append(key)
                 .append("=").append(response.getCookies().get(key)).append(";Path=/").append("\r\n"));
+        sb.append("\r\n");
         return sb.toString();
     }
 
-    private static HttpRequest directorRequest(HttpReaderFactory readerFactory) {
+    private static HttpRequest directorRequest(AbstractHttpReader readerFactory) throws HttpReadException {
         RequestBuilder requestBuilder = new HttpRequestBuilder(readerFactory);
         HttpRequestDirector director = new HttpRequestDirector(requestBuilder);
         return director.createRequest();
@@ -71,7 +78,7 @@ public class HttpParser {
 
     static {
         try {
-            mimeTypes.load(HttpParser.class.getResourceAsStream("/" + Constants.MIMETYPE_PROPERTIES));
+            mimeTypes.load(HttpParser.class.getResourceAsStream("/" + IntegrationConstants.MIMETYPE_PROPERTIES));
         } catch (IOException e) {
             logger.error(e);
         }

@@ -1,5 +1,7 @@
 package com.zhukai.framework.spring.integration.http.request;
 
+import com.zhukai.framework.spring.integration.exception.HttpReadException;
+
 /**
  * Created by homolo on 17-6-20.
  */
@@ -10,7 +12,7 @@ public class HttpRequestDirector {
         this.builder = builder;
     }
 
-    public HttpRequest createRequest() {
+    public HttpRequest createRequest() throws HttpReadException {
         HttpRequest request = builder.buildUrl();
         if (request != null) {
             builder.buildHead();

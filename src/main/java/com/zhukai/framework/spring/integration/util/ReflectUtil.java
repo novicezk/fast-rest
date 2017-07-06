@@ -1,6 +1,7 @@
 package com.zhukai.framework.spring.integration.util;
 
 import com.zhukai.framework.spring.integration.annotation.core.Component;
+import org.apache.log4j.Logger;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -16,6 +17,7 @@ import java.util.List;
  * Created by zhukai on 16-12-15.
  */
 public class ReflectUtil {
+    private static final Logger logger = Logger.getLogger(ReflectUtil.class);
 
     public static Object getFieldValue(Object object, String fieldName) {
         Field field = getDeclaredField(object.getClass(), fieldName);
@@ -23,7 +25,7 @@ public class ReflectUtil {
         try {
             return field.get(object);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            logger.error(e);
             return null;
         }
     }
@@ -34,7 +36,7 @@ public class ReflectUtil {
         try {
             field.set(obj, value);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 
@@ -66,10 +68,8 @@ public class ReflectUtil {
         try {
             Method method = obj.getClass().getMethod(methodName, paramsClass);
             returnValue = method.invoke(obj, params);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e);
         }
         return returnValue;
     }
@@ -84,7 +84,7 @@ public class ReflectUtil {
             Constructor constructor = objClass.getConstructor(paramsClass);
             obj = constructor.newInstance(params);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e);
         }
         return (T) obj;
     }

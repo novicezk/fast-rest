@@ -1,6 +1,6 @@
 package com.zhukai.framework.spring.integration.server;
 
-import com.zhukai.framework.spring.integration.Constants;
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.config.ServerConfig;
 import com.zhukai.framework.spring.integration.handle.ActionHandleNIO;
 import com.zhukai.framework.spring.integration.http.HttpParser;
@@ -83,8 +83,8 @@ public class WebServerNIO {
             socketChannel = (SocketChannel) key.channel();
             HttpResponse response = (HttpResponse) key.attachment();
             String httpHeader = HttpParser.parseHttpString(response);
-            ByteBuffer buffer = ByteBuffer.allocate(Constants.BUFFER_SIZE);
-            sendMessage(socketChannel, httpHeader + "\r\n", buffer);
+            ByteBuffer buffer = ByteBuffer.allocate(IntegrationConstants.BUFFER_SIZE);
+            sendMessage(socketChannel, httpHeader, buffer);
             if (response.getResult() instanceof InputStream) {
                 sendInputStream(socketChannel, (InputStream) response.getResult());
             } else {
@@ -98,7 +98,6 @@ public class WebServerNIO {
                 socketChannel.shutdownInput();
                 socketChannel.close();
             }
-
         }
     }
 
@@ -107,7 +106,7 @@ public class WebServerNIO {
         while (endIndex < message.length()) {
             buffer.clear();
             int startIndex = endIndex;
-            endIndex = Math.min(endIndex + Constants.BUFFER_SIZE / 3, message.length());
+            endIndex = Math.min(endIndex + IntegrationConstants.BUFFER_SIZE / 3, message.length());
             buffer.put(message.substring(startIndex, endIndex).getBytes());
             buffer.flip();
             socketChannel.write(buffer);
@@ -116,7 +115,7 @@ public class WebServerNIO {
 
     private static void sendInputStream(SocketChannel socketChannel, InputStream in) throws Exception {
         int inputSize = in.available();
-        if (inputSize < Constants.BUFFER_SIZE) {
+        if (inputSize < IntegrationConstants.BUFFER_SIZE) {
             byte[] bytes = new byte[inputSize];
             in.read(bytes);
             ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
@@ -124,7 +123,7 @@ public class WebServerNIO {
         } else {
             //大文件
             int length;
-            byte tempByte[] = new byte[Constants.BUFFER_SIZE * Constants.BUFFER_SIZE];
+            byte tempByte[] = new byte[IntegrationConstants.BUFFER_SIZE * 1024];
             while ((length = in.read(tempByte)) != -1) {
                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
                 bout.write(tempByte, 0, length);

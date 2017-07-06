@@ -1,6 +1,6 @@
 package com.zhukai.framework.spring.integration.http.request;
 
-import com.zhukai.framework.spring.integration.Constants;
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.WebContext;
 import com.zhukai.framework.spring.integration.http.FileEntity;
 import com.zhukai.framework.spring.integration.http.Session;
@@ -24,7 +24,7 @@ public class HttpRequest {
     private FileEntity uploadFile;
 
     public Session getSession() {
-        String sessionId = getCookie(Constants.JSESSIONID);
+        String sessionId = getCookie(IntegrationConstants.JSESSIONID);
         return WebContext.getSession(sessionId);
     }
 
