@@ -1,7 +1,5 @@
 package com.zhukai.framework.spring.integration.util;
 
-import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
@@ -30,7 +28,7 @@ public class PackageUtil {
                 URL url = dirs.nextElement();
                 String protocol = url.getProtocol();
                 if ("file".equals(protocol)) {
-                    String filePath = URLDecoder.decode(url.getFile(), IntegrationConstants.CHARSET);
+                    String filePath = URLDecoder.decode(url.getFile(), "utf-8");
                     findClassInPackageByFile(packageName, filePath, recursive, classes);
                 } else if ("jar".equals(protocol)) {
                     findClassInPackageByJar(packageDirName, packageName, url, recursive, classes);

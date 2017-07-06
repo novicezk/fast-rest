@@ -17,6 +17,7 @@ import com.zhukai.framework.spring.integration.bean.properties.PropertiesBeanFac
 import com.zhukai.framework.spring.integration.config.DataSource;
 import com.zhukai.framework.spring.integration.config.ServerConfig;
 import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
+import com.zhukai.framework.spring.integration.exception.IntegrationInitException;
 import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.framework.spring.integration.jdbc.data.jpa.JpaUtil;
 import com.zhukai.framework.spring.integration.util.PackageUtil;
@@ -44,17 +45,17 @@ public class Setup {
     private static final Logger logger = Logger.getLogger(Setup.class);
     private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
 
-    static void init() {
-        initProperties();
-        initConfig();
-        DataSource dataSource = ConfigureBeanFactory.getInstance().getBean(DataSource.class);
-        if (dataSource != null) {
-            DBConnectionPool.getInstance().init(dataSource);
-        }
+    static void init() throws IntegrationInitException {
         try {
+            initProperties();
+            initConfig();
+            DataSource dataSource = ConfigureBeanFactory.getInstance().getBean(DataSource.class);
+            if (dataSource != null) {
+                DBConnectionPool.getInstance().init(dataSource);
+            }
             scanComponent();
         } catch (Exception e) {
-            logger.error(e);
+            throw new IntegrationInitException(e);
         }
     }
 

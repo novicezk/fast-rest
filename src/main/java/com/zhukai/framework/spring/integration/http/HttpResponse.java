@@ -1,5 +1,7 @@
 package com.zhukai.framework.spring.integration.http;
 
+import com.zhukai.framework.spring.integration.SpringIntegration;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,7 +10,7 @@ import java.util.Map;
  */
 public class HttpResponse<T> {
 
-    private String contentType = "text/plain; charset=utf-8";
+    private String contentType = "text/plain; charset=" + SpringIntegration.getServerConfig().getCharset();
     private String fileName;
     private int statusCode = 200;
     private String statusCodeStr = "OK";

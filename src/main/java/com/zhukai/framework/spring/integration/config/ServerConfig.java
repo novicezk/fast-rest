@@ -14,6 +14,7 @@ public class ServerConfig {
     private Boolean showSQL = false;
     private String fileTmp = "/tmp";
     private Boolean useNio = true;
+    private String charset = "utf-8";
 
     public ServerConfig() {
     }
@@ -66,6 +67,14 @@ public class ServerConfig {
         this.useNio = useNio;
     }
 
+    public String getCharset() {
+        return charset;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+
     @Override
     public String toString() {
         return "ServerConfig{" +
@@ -75,6 +84,7 @@ public class ServerConfig {
                 ", showSQL=" + showSQL +
                 ", fileTmp='" + fileTmp + '\'' +
                 ", useNio=" + useNio +
+                ", charset='" + charset + '\'' +
                 '}';
     }
 }

@@ -1,6 +1,7 @@
 package com.zhukai.framework.spring.integration.jdbc;
 
 import com.zhukai.framework.spring.integration.config.DataSource;
+import com.zhukai.framework.spring.integration.exception.DBConnectTimeoutException;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -35,14 +36,14 @@ public class DBConnectionPool {
         try {
             con.setAutoCommit(true);
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
         freeConnPool.addLast(con);
         checkOutSize--;
         notify();
     }
 
-    public synchronized Connection getConnection(boolean isFirst) throws Exception {
+    public synchronized Connection getConnection(boolean isFirst) throws SQLException, InterruptedException, DBConnectTimeoutException {
         if (freeConnPool.size() > 0) {
             checkOutSize++;
             return freeConnPool.poll();
@@ -55,7 +56,7 @@ public class DBConnectionPool {
             wait(dataSource.getTimeout());
             return getConnection(false);
         } else {
-            throw new Exception("获取数据库连接超时");
+            throw new DBConnectTimeoutException();
         }
     }
 
@@ -66,21 +67,17 @@ public class DBConnectionPool {
         return getConnection(true);
     }
 
-    public void init(DataSource source) {
+    public void init(DataSource source) throws ClassNotFoundException, SQLException {
         dataSource = source;
-        try {
-            Class.forName(source.getDriverClass());
-            for (int i = 0; i < source.getMinConn(); i++) {
-                Connection connection = DriverManager.getConnection(source.getUrl(),
-                        source.getUsername(), source.getPassword());
-                freeConnPool.add(connection);
-            }
-        } catch (Exception e) {
-            logger.error("init datasource error", e);
+        Class.forName(source.getDriverClass());
+        for (int i = 0; i < source.getMinConn(); i++) {
+            Connection connection = DriverManager.getConnection(source.getUrl(),
+                    source.getUsername(), source.getPassword());
+            freeConnPool.add(connection);
         }
     }
 
-    public static void commit(Connection conn) throws Exception {
+    public static void commit(Connection conn) throws SQLException {
         try {
             conn.commit();
             logger.info("Transactional over ");

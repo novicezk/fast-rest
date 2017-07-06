@@ -19,5 +19,5 @@ public class ApplicationDemo {
     public String hello() {
         return "hello,world";
     }
-    
+
 }

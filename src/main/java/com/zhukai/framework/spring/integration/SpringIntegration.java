@@ -4,6 +4,7 @@ import com.zhukai.framework.spring.integration.annotation.batch.Scheduled;
 import com.zhukai.framework.spring.integration.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.spring.integration.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.spring.integration.config.ServerConfig;
+import com.zhukai.framework.spring.integration.exception.IntegrationInitException;
 import com.zhukai.framework.spring.integration.http.Session;
 import com.zhukai.framework.spring.integration.server.WebServer;
 import com.zhukai.framework.spring.integration.server.WebServerNIO;
@@ -23,7 +24,12 @@ public class SpringIntegration {
 
     public static void run(Class runClass) {
         SpringIntegration.runClass = runClass;
-        Setup.init();
+        try {
+            Setup.init();
+        } catch (IntegrationInitException e) {
+            logger.error("init error", e);
+            return;
+        }
         serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
         runSessionTimeoutCheck();
         runBatchSchedule();
@@ -51,17 +57,19 @@ public class SpringIntegration {
 
     private static void runBatchSchedule() {
         for (Method method : Setup.getBatchMethods()) {
-            long fixedRate = method.getAnnotation(Scheduled.class).fixedRate();
-            long fixedDelay = method.getAnnotation(Scheduled.class).fixedDelay();
+            Scheduled scheduled = method.getAnnotation(Scheduled.class);
+            long fixedRate = scheduled.fixedRate();
+            long fixedDelay = scheduled.fixedDelay();
             fixedDelay = fixedDelay == 0 ? fixedRate : fixedDelay;
-            logger.info("Batch method: " + method.getName());
+
+            logger.info("Batcher method: " + method.getName());
             scheduledExecutor.scheduleAtFixedRate(() -> {
                 try {
                     method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()), new Object[]{});
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }, fixedDelay, fixedRate, method.getAnnotation(Scheduled.class).timeUnit());
+            }, fixedDelay, fixedRate, scheduled.timeUnit());
         }
     }
 
@@ -69,4 +77,7 @@ public class SpringIntegration {
         return runClass;
     }
 
+    public static ServerConfig getServerConfig() {
+        return serverConfig;
+    }
 }
