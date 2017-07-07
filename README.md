@@ -31,7 +31,14 @@ Integration是个参考Spring Boot的轻量级java框架，不依赖任何现有
 ```
 4. 最简单的hello,world。
 文件结构：
-![](https://homolo.top/demo_project.png)
+```$xslt
+src
+--main
+----java
+------com
+--------Application.java
+--------HelloController.java
+```
 Application.java
 ```$xslt
 package com;
