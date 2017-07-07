@@ -5,7 +5,7 @@ import com.zhukai.framework.spring.integration.SpringIntegration;
 import com.zhukai.framework.spring.integration.bean.BaseBean;
 import com.zhukai.framework.spring.integration.bean.BeanFactory;
 import com.zhukai.framework.spring.integration.util.ReflectUtil;
-import com.zhukai.framework.spring.integration.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
     @Override
     public <T> T getBean(Class<T> requiredType) {
         String beanName = ReflectUtil.getBeanRegisterName(requiredType);
-        beanName = StringUtil.isBlank(beanName) ? IntegrationConstants.DEFAULT_PROPERTIES : beanName;
+        beanName = StringUtils.isBlank(beanName) ? IntegrationConstants.DEFAULT_PROPERTIES : beanName;
         return (T) getBean(beanName);
     }
 

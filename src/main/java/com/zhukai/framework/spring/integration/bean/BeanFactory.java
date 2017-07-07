@@ -1,7 +1,7 @@
 package com.zhukai.framework.spring.integration.bean;
 
 import com.zhukai.framework.spring.integration.util.ReflectUtil;
-import com.zhukai.framework.spring.integration.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Created by zhukai on 17-1-17.
@@ -20,7 +20,7 @@ public interface BeanFactory<Bean> {
 
     default <T> T getBean(Class<T> requiredType) {
         String beanName = ReflectUtil.getBeanRegisterName(requiredType);
-        beanName = StringUtil.isBlank(beanName) ? requiredType.getName() : beanName;
+        beanName = StringUtils.isBlank(beanName) ? requiredType.getName() : beanName;
         return (T) getBean(beanName);
     }
 }

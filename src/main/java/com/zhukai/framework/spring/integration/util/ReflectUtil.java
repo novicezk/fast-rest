@@ -1,6 +1,7 @@
 package com.zhukai.framework.spring.integration.util;
 
 import com.zhukai.framework.spring.integration.annotation.core.Component;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.lang.annotation.Annotation;
@@ -42,7 +43,7 @@ public class ReflectUtil {
 
     //根据fieldName获得entityClass的属性，也可以是private或父类继承的
     public static Field getDeclaredField(Class entityClass, String fieldName) {
-        if (StringUtil.isBlank(fieldName) || entityClass == null) {
+        if (StringUtils.isBlank(fieldName) || entityClass == null) {
             return null;
         }
         try {

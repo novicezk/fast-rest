@@ -5,6 +5,8 @@ import com.zhukai.framework.spring.integration.annotation.batch.Scheduled;
 import com.zhukai.framework.spring.integration.annotation.core.*;
 import com.zhukai.framework.spring.integration.annotation.jpa.Entity;
 import com.zhukai.framework.spring.integration.annotation.jpa.Index;
+import com.zhukai.framework.spring.integration.annotation.web.ControllerAdvice;
+import com.zhukai.framework.spring.integration.annotation.web.ExceptionHandler;
 import com.zhukai.framework.spring.integration.annotation.web.RequestMapping;
 import com.zhukai.framework.spring.integration.annotation.web.RestController;
 import com.zhukai.framework.spring.integration.bean.BaseBean;
@@ -22,7 +24,7 @@ import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.framework.spring.integration.jdbc.data.jpa.JpaUtil;
 import com.zhukai.framework.spring.integration.util.PackageUtil;
 import com.zhukai.framework.spring.integration.util.ReflectUtil;
-import com.zhukai.framework.spring.integration.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Field;
@@ -31,6 +33,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -42,6 +45,7 @@ import java.util.regex.Pattern;
 public class Setup {
 
     private static List<Method> batchMethods = new ArrayList<>();
+    private static List<Method> exceptionHandlerMethods = new ArrayList<>();
     private static final Logger logger = Logger.getLogger(Setup.class);
     private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
 
@@ -61,8 +65,8 @@ public class Setup {
 
     private static void initProperties() {
         List<String> propertiesList = new ArrayList<>();
-        if (SpringIntegration.getRunClass().isAnnotationPresent(Configurable.class)) {
-            Configurable configurable = (Configurable) SpringIntegration.getRunClass().getAnnotation(Configurable.class);
+        if (SpringIntegration.getRunClass().isAnnotationPresent(EnableConfigure.class)) {
+            EnableConfigure configurable = (EnableConfigure) SpringIntegration.getRunClass().getAnnotation(EnableConfigure.class);
             String[] propertiesArr = configurable.value();
             for (String properties : propertiesArr) {
                 propertiesList.add(properties);
@@ -93,12 +97,16 @@ public class Setup {
                 addWebMethod(componentClass);
             } else if (componentClass.isAnnotationPresent(Entity.class)) {
                 checkDatabase(componentClass, conn);
+            } else if (componentClass.isAnnotationPresent(ControllerAdvice.class)) {
+                addMethodToList(componentClass, exceptionHandlerMethods, ExceptionHandler.class);
+                Collections.sort(exceptionHandlerMethods, (method1, method2) -> {
+                    int method1Seq = method1.getAnnotation(ExceptionHandler.class).catchSeq();
+                    int method2Seq = method2.getAnnotation(ExceptionHandler.class).catchSeq();
+                    if (method1Seq == method2Seq) return 0;
+                    return method1Seq > method2Seq ? 1 : -1;
+                });
             } else if (componentClass.isAnnotationPresent(Batcher.class)) {
-                for (Method method : componentClass.getMethods()) {
-                    if (method.isAnnotationPresent(Scheduled.class)) {
-                        batchMethods.add(method);
-                    }
-                }
+                addMethodToList(componentClass, batchMethods, Scheduled.class);
             }
             String registerName = ReflectUtil.getBeanRegisterName(componentClass);
             if (registerName != null) {
@@ -108,6 +116,15 @@ public class Setup {
             }
         }
         DBConnectionPool.getInstance().freeConnection(conn);
+    }
+
+    private static void addMethodToList(Class componentClass, List list, Class methodAnnotation) {
+        Method[] methods = componentClass.getMethods();
+        for (int i = 0; i < methods.length; i++) {
+            if (methods[i].isAnnotationPresent(methodAnnotation)) {
+                list.add(methods[i]);
+            }
+        }
     }
 
     private static void addWebMethod(Class webClass) {
@@ -128,6 +145,7 @@ public class Setup {
             }
         }
     }
+
 
     private static void registerComponentBean(Class beanClass, String registerName) throws ClassNotFoundException {
         registerName = registerName.equals("") ? beanClass.getName() : registerName;
@@ -209,7 +227,7 @@ public class Setup {
         Index[] indexes = entityAnnotation.indexes();
         for (Index index : indexes) {
             StringBuilder indexName = new StringBuilder(index.name());
-            if (StringUtil.isBlank(indexName)) {
+            if (StringUtils.isBlank(indexName)) {
                 indexName.append(tableName).append("_INDEX_");
                 for (int i = 0; i < index.columns().length; i++) {
                     indexName.append(JpaUtil.getColumnName(entityClass, index.columns()[i]));
@@ -239,7 +257,11 @@ public class Setup {
         }
     }
 
-    static List<Method> getBatchMethods() {
+    public static List<Method> getBatchMethods() {
         return batchMethods;
+    }
+
+    public static List<Method> getExceptionHandlerMethods() {
+        return exceptionHandlerMethods;
     }
 }

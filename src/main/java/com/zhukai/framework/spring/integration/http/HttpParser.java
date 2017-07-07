@@ -1,7 +1,7 @@
 package com.zhukai.framework.spring.integration.http;
 
-import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.constant.HttpHeaderType;
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.exception.HttpReadException;
 import com.zhukai.framework.spring.integration.http.reader.AbstractHttpReader;
 import com.zhukai.framework.spring.integration.http.reader.HttpReader;
@@ -10,7 +10,7 @@ import com.zhukai.framework.spring.integration.http.request.HttpRequest;
 import com.zhukai.framework.spring.integration.http.request.HttpRequestBuilder;
 import com.zhukai.framework.spring.integration.http.request.HttpRequestDirector;
 import com.zhukai.framework.spring.integration.http.request.RequestBuilder;
-import com.zhukai.framework.spring.integration.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class HttpParser {
             InputStream inputStream = socket.getInputStream();
             return directorRequest(new HttpReader(inputStream));
         } catch (Exception e) {
-            logger.error("create request error", e);
+            logger.error("Create request error", e);
             return null;
         }
     }
@@ -40,7 +40,7 @@ public class HttpParser {
         try {
             return directorRequest(new HttpReaderNIO(channel));
         } catch (HttpReadException e) {
-            logger.error("create request error", e);
+            logger.error("Create request error", e);
             return null;
         }
     }
@@ -73,7 +73,7 @@ public class HttpParser {
 
     public static String getContentType(String extensionName) {
         String type = mimeTypes.getProperty(extensionName);
-        return StringUtil.isBlank(type) ? "application/octet-stream" : type;
+        return StringUtils.isBlank(type) ? "application/octet-stream" : type;
     }
 
     static {

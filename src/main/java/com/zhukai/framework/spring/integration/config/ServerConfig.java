@@ -10,7 +10,7 @@ public class ServerConfig {
 
     private Long fixedRate = 300000L;//扫描间隔
     private Long sessionTimeout = 1800000L;//session过期时间
-    private Integer port = 8080;
+    private Integer port = 9001;
     private Boolean showSQL = false;
     private String fileTmp = "/tmp";
     private Boolean useNio = true;

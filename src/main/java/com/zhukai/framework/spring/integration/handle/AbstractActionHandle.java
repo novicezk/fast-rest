@@ -1,5 +1,6 @@
 package com.zhukai.framework.spring.integration.handle;
 
+import com.zhukai.framework.spring.integration.Setup;
 import com.zhukai.framework.spring.integration.WebContext;
 import com.zhukai.framework.spring.integration.annotation.web.*;
 import com.zhukai.framework.spring.integration.bean.component.ComponentBeanFactory;
@@ -15,14 +16,15 @@ import com.zhukai.framework.spring.integration.http.request.HttpRequest;
 import com.zhukai.framework.spring.integration.util.JsonUtil;
 import com.zhukai.framework.spring.integration.util.Resources;
 import com.zhukai.framework.spring.integration.util.TypeUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -62,7 +64,7 @@ public abstract class AbstractActionHandle implements Runnable {
             } else {
                 Method method = getMethodByRequestPath(request.getPath());
                 isRestUrl = method.getAnnotation(RequestMapping.class).value().contains("{");
-                Object result = invokeMethod(method);
+                Object result = invokeRequestMethod(method);
                 if (result instanceof FileEntity) {
                     FileEntity fileBean = (FileEntity) result;
                     String fileName = fileBean.getFileName();
@@ -103,26 +105,52 @@ public abstract class AbstractActionHandle implements Runnable {
         WebContext.refreshSession(request.getCookie(IntegrationConstants.JSESSIONID));
     }
 
-    private Object invokeMethod(Method method) throws Exception {
-        if (!Arrays.asList(method.getAnnotation(RequestMapping.class).method()).contains(request.getMethod())) {
+    private Object invokeRequestMethod(Method method) throws Exception {
+        if (!ArrayUtils.contains(method.getAnnotation(RequestMapping.class).method(), request.getMethod())) {
             throw new RequestNotSupportException();
         }
-        Object controllerBean = ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass());
-        return method.invoke(controllerBean, getMethodParametersArr(method));
+        try {
+            return invokeMethod(method);
+        } catch (InvocationTargetException e) {
+            for (Method exceptionMethod : Setup.getExceptionHandlerMethods()) {
+                exceptionMethod.getAnnotation(ExceptionHandler.class).value();
+                Throwable cause = e.getCause();
+                for (Class throwableClass : exceptionMethod.getAnnotation(ExceptionHandler.class).value()) {
+                    if (throwableClass.isAssignableFrom(cause.getClass())) {
+                        return invokeMethod(exceptionMethod, cause);
+                    }
+                }
+            }
+            throw e;
+        }
     }
 
-    private Object[] getMethodParametersArr(Method method) throws Exception {
-        String requestMapperValue = method.getAnnotation(RequestMapping.class).value();
+    private Object invokeMethod(Method method) throws Exception {
+        return invokeMethod(method, null);
+    }
+
+
+    private Object invokeMethod(Method method, Throwable e) throws Exception {
+        Object object = ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass());
+        return method.invoke(object, getMethodParametersArr(method, e));
+    }
+
+    private Object[] getMethodParametersArr(Method method, Throwable e) throws Exception {
         List<Object> paramValues = new ArrayList<>(5);
         Parameter[] parameters = method.getParameters();
         List<String> pathKeys = null;
         List<String> pathValues = null;
-        if (isRestUrl) {
+        if (isRestUrl && method.isAnnotationPresent(RequestMapping.class)) {
+            String requestMapperValue = method.getAnnotation(RequestMapping.class).value();
             pathKeys = getPathKeys(requestMapperValue);
             pathValues = getPathValues(requestMapperValue);
         }
         for (Parameter parameter : parameters) {
-            paramValues.add(getParameterInstance(parameter, pathKeys, pathValues));
+            if (Throwable.class.isAssignableFrom(parameter.getType())) {
+                paramValues.add(e);
+            } else {
+                paramValues.add(getParameterInstance(parameter, pathKeys, pathValues));
+            }
         }
         return paramValues.toArray();
     }
@@ -140,6 +168,10 @@ public abstract class AbstractActionHandle implements Runnable {
         if (FileEntity.class.isAssignableFrom(parameter.getType())) {
             return request.getUploadFile();
         }
+        Annotation[] annotations = parameter.getAnnotations();
+        if (annotations.length == 0) {
+            return null;
+        }
         Annotation parameterAnnotation = parameter.getAnnotations()[0];
         Object parameterValue = null;
         if (parameterAnnotation instanceof RequestParam) {
@@ -154,6 +186,8 @@ public abstract class AbstractActionHandle implements Runnable {
         } else if (parameterAnnotation instanceof PathVariable && isRestUrl) {
             String value = ((PathVariable) parameterAnnotation).value();
             parameterValue = pathValues.get(pathKeys.indexOf(value));
+        } else {
+            return null;
         }
         return TypeUtil.convert(parameterValue, parameter.getType());
     }

@@ -1,5 +1,7 @@
 package com.zhukai.framework.spring.integration.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.reflect.Method;
 
 /**
@@ -8,7 +10,7 @@ import java.lang.reflect.Method;
 public class TypeUtil {
 
     public static <T> T convert(Object preValue, Class<T> convertTo) throws Exception {
-        if (StringUtil.isBlank(preValue)) {
+        if (preValue == null || StringUtils.isBlank(preValue.toString())) {
             return null;
         }
         if (convertTo.equals(String.class)) {

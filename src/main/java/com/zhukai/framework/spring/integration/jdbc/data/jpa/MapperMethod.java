@@ -6,7 +6,7 @@ import com.zhukai.framework.spring.integration.bean.configure.ConfigureBeanFacto
 import com.zhukai.framework.spring.integration.config.ServerConfig;
 import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
 import com.zhukai.framework.spring.integration.util.ReflectUtil;
-import com.zhukai.framework.spring.integration.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Field;
@@ -101,7 +101,7 @@ public class MapperMethod<T> {
                 if (i == 0) {
                     propertiesSql.append(" WHERE ");
                 }
-                propertiesSql.append(JpaUtil.getColumnName(entityClass, StringUtil.letterToLowerCase(arr[i])))
+                propertiesSql.append(JpaUtil.getColumnName(entityClass, StringUtils.uncapitalize(arr[i])))
                         .append("=").append(JpaUtil.convertToColumnValue(args[i]));
                 String afterString = propertiesString.substring(propertiesString.indexOf(arr[i]) + arr[i].length());
                 if (afterString.startsWith("And")) {
