@@ -8,7 +8,7 @@ Integration是个参考Spring Boot的轻量级java框架，不依赖任何现有
 4. 源代码可修改，使其更为契合项目开发
 
 # 快速使用
-1. [下载源码](https://github.com/zhukai-git/integration) 
+1. 下载该项目，git clone或下载zip
 2. 进入integration项目，执行mvn install
 3. 新建maven项目，添加该框架jar包依赖，示例pom文件：
 ```
