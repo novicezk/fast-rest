@@ -61,13 +61,12 @@ public class SpringIntegration {
             long fixedRate = scheduled.fixedRate();
             long fixedDelay = scheduled.fixedDelay();
             fixedDelay = fixedDelay == 0 ? fixedRate : fixedDelay;
-
             logger.info("Batcher method: " + method.getName());
             scheduledExecutor.scheduleAtFixedRate(() -> {
                 try {
                     method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()), new Object[]{});
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Batcher method execute error", e);
                 }
             }, fixedDelay, fixedRate, scheduled.timeUnit());
         }

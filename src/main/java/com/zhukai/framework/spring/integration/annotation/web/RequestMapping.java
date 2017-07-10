@@ -13,6 +13,6 @@ public @interface RequestMapping {
 
     String[] method() default {RequestType.GET, RequestType.POST};
 
-    String value() default "";
+    String value();
 
 }
