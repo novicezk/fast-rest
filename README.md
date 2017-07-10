@@ -39,7 +39,7 @@ src
 --------Application.java
 --------HelloController.java
 ```
-Application.java
+Application.java(项目启动入口，必须放在一个包下，其他类需要放在它的同级或子级包下)
 ```$xslt
 package com;
 
