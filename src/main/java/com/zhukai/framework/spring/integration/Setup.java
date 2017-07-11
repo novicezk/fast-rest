@@ -89,7 +89,7 @@ public class Setup {
 
     private static void scanComponent() throws Exception {
         Connection conn = DBConnectionPool.getInstance().getConnection();
-        List<Class> classes = PackageUtil.getClassesFromPackage(SpringIntegration.getRunClass().getPackage().getName());
+        List<Class> classes = PackageUtil.getAllClassesByMainClass(SpringIntegration.getRunClass());
         for (Class componentClass : classes) {
             if (componentClass.isAnnotation()) {
                 continue;

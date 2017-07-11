@@ -15,56 +15,50 @@ import java.util.jar.JarFile;
  * Created by zhukai on 17-1-12.
  */
 public class PackageUtil {
-
-    public static List<Class> getClassesFromPackage(String pack) {
+    /**
+     * @param runClass
+     * @return runClass同包或子级包的所有类
+     * @throws Exception
+     */
+    public static List<Class> getAllClassesByMainClass(Class runClass) throws Exception {
         List<Class> classes = new ArrayList();
-        boolean recursive = true;
-        String packageName = pack;
+        String packageName = runClass.getPackage().getName();
         String packageDirName = packageName.replace('.', '/');
-        Enumeration<URL> dirs;
-        try {
-            dirs = Thread.currentThread().getContextClassLoader().getResources(packageDirName);
-            while (dirs.hasMoreElements()) {
-                URL url = dirs.nextElement();
-                String protocol = url.getProtocol();
-                if ("file".equals(protocol)) {
-                    String filePath = URLDecoder.decode(url.getFile(), "utf-8");
-                    findClassInPackageByFile(packageName, filePath, recursive, classes);
-                } else if ("jar".equals(protocol)) {
-                    findClassInPackageByJar(packageDirName, packageName, url, recursive, classes);
-                }
+        Enumeration<URL> dirs = runClass.getClassLoader().getResources(packageDirName);
+        while (dirs.hasMoreElements()) {
+            URL url = dirs.nextElement();
+            String protocol = url.getProtocol();
+            if ("file".equals(protocol)) {
+                String filePath = URLDecoder.decode(url.getFile(), "utf-8");
+                findClassInPackageByFile(packageName, filePath, classes);
+            } else if ("jar".equals(protocol)) {
+                findClassInPackageByJar(packageDirName, packageName, url, classes);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return classes;
     }
 
-    private static void findClassInPackageByFile(String packageName, String filePath, final boolean recursive, List<Class> classes) {
+    private static void findClassInPackageByFile(String packageName, String filePath, List<Class> classes) throws Exception {
         File dir = new File(filePath);
         if (!dir.exists() || !dir.isDirectory()) {
             return;
         }
         File[] dirFiles = dir.listFiles(file -> {
-            boolean acceptDir = recursive && file.isDirectory();
+            boolean acceptDir = file.isDirectory();
             boolean acceptClass = file.getName().endsWith("class");
             return acceptDir || acceptClass;
         });
         for (File file : dirFiles) {
             if (file.isDirectory()) {
-                findClassInPackageByFile(packageName + "." + file.getName(), file.getAbsolutePath(), recursive, classes);
+                findClassInPackageByFile(packageName + "." + file.getName(), file.getAbsolutePath(), classes);
             } else {
                 String className = file.getName().substring(0, file.getName().length() - 6);
-                try {
-                    classes.add(Thread.currentThread().getContextClassLoader().loadClass(packageName + "." + className));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                classes.add(Thread.currentThread().getContextClassLoader().loadClass(packageName + "." + className));
             }
         }
     }
 
-    private static void findClassInPackageByJar(String packageDirName, String packageName, URL url, final boolean recursive, List<Class> classes) throws IOException, ClassNotFoundException {
+    private static void findClassInPackageByJar(String packageDirName, String packageName, URL url, List<Class> classes) throws IOException, ClassNotFoundException {
         JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
         Enumeration<JarEntry> entries = jar.entries();
         while (entries.hasMoreElements()) {
@@ -77,12 +71,9 @@ public class PackageUtil {
                 int idx = name.lastIndexOf('/');
                 if (idx != -1) {
                     packageName = name.substring(0, idx).replace('/', '.');
-                }
-                if ((idx != -1) || recursive) {
-                    if (name.endsWith(".class") && !entry.isDirectory()) {
-                        String className = name.substring(packageName.length() + 1, name.length() - 6);
-                        classes.add(Class.forName(packageName + '.' + className));
-                    }
+                } else if (name.endsWith(".class") && !entry.isDirectory()) {
+                    String className = name.substring(packageName.length() + 1, name.length() - 6);
+                    classes.add(Class.forName(packageName + '.' + className));
                 }
             }
         }
