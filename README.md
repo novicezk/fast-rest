@@ -69,6 +69,6 @@ public class HelloController {
 ```
 5. 启动项目，访问[http://localhost:8080/hello](http://localhost:8080/hello)，出现hello,world。两种启动方式：
    + 开发工具启动com.Application
-   + 使用assembly插件打成jar包，java -jar执行，见[开发文档](https://github.com/zhukai-git/integration/wiki)
+   + 使用assembly插件打成jar包，java -jar执行，见[使用文档](https://github.com/zhukai-git/integration/wiki)
    
-# 更多说明请阅读[开发文档](https://github.com/zhukai-git/integration/wiki)
+# 更多说明请阅读[使用文档](https://github.com/zhukai-git/integration/wiki)
