@@ -35,13 +35,13 @@ Integration是个参考Spring Boot的轻量级java框架，不依赖任何现有
 src
 --main
 ----java
-------com.zhukai.project
+------com
 --------Application.java
 --------HelloController.java
 ```
-Application.java(项目启动入口，必须放在一个唯一命名的包下，其他类需要放在它的同级或子级包下)
+Application.java(项目启动入口，必须放在一个包下，其他类需要放在它的同级或子级包下)
 ```$xslt
-package com.zhukai.project;
+package com;
 
 import com.zhukai.framework.spring.integration.SpringIntegration;
 
@@ -53,7 +53,7 @@ public class Application {
 ```
 HelloController.java
 ```$xslt
-package com.zhukai.project;
+package com;
 
 import com.zhukai.framework.spring.integration.annotation.web.RequestMapping;
 import com.zhukai.framework.spring.integration.annotation.web.RestController;
@@ -61,7 +61,7 @@ import com.zhukai.framework.spring.integration.annotation.web.RestController;
 @RestController
 public class HelloController {
     
-    @RequestMapping("hello")
+    @RequestMapping("/hello")
     public String hello() {
         return "hello,world";
     }
