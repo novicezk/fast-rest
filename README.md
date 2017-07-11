@@ -61,7 +61,7 @@ import com.zhukai.framework.spring.integration.annotation.web.RestController;
 @RestController
 public class HelloController {
     
-    @RequestMapping("hello")
+    @RequestMapping("/hello")
     public String hello() {
         return "hello,world";
     }
