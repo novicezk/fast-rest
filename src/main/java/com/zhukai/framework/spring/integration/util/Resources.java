@@ -1,8 +1,6 @@
 package com.zhukai.framework.spring.integration.util;
 
 import com.zhukai.framework.spring.integration.SpringIntegration;
-import com.zhukai.framework.spring.integration.bean.configure.ConfigureBeanFactory;
-import com.zhukai.framework.spring.integration.config.ServerConfig;
 import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.http.FileEntity;
 import org.apache.log4j.Logger;
@@ -29,7 +27,7 @@ public class Resources {
     }
 
     public static File getResourceByTmp(String filePath) throws FileNotFoundException {
-        String tmpPath = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class).getFileTmp();
+        String tmpPath = SpringIntegration.getServerConfig().getFileTmp();
         File file = new File(tmpPath + "/" + filePath);
         if (!file.exists()) {
             throw new FileNotFoundException(filePath);
@@ -51,7 +49,7 @@ public class Resources {
     }
 
     public static File saveFile(FileEntity fileEntity, boolean cover) throws IOException {
-        String fileTmp = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class).getFileTmp();
+        String fileTmp = SpringIntegration.getServerConfig().getFileTmp();
         return saveFile(fileEntity, fileTmp + "/" + fileEntity.getFileName(), cover);
     }
 

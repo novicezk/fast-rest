@@ -13,11 +13,12 @@ import java.sql.Connection;
 
 /**
  * Created by zhukai on 17-1-22.
+ * <p>
+ * cglib代理，用于service类
  */
 public class AopProxy implements MethodInterceptor {
     private static Logger logger = Logger.getLogger(AopProxy.class);
 
-    //该clazz可以不是接口的实现类,用来service类
     public <T> T getProxyInstance(Class<T> clazz) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(clazz);

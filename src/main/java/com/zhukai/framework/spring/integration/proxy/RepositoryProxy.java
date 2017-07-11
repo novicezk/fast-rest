@@ -7,8 +7,9 @@ import java.lang.reflect.*;
 
 /**
  * Created by zhukai on 17-1-22.
+ * <p>
+ * 只用来代理Repository类
  */
-//只用来代理Repository类
 public class RepositoryProxy implements InvocationHandler {
 
     private Class mapperInterface;
