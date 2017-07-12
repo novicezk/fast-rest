@@ -2,9 +2,6 @@ package com.zhukai.framework.spring.integration.util;
 
 import com.google.gson.Gson;
 
-/**
- * Created by zhukai on 17-1-26.
- */
 public class JsonUtil {
     private static final Gson gson = new Gson();
 

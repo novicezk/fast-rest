@@ -5,9 +5,6 @@ import com.zhukai.framework.spring.integration.SpringIntegration;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by zhukai on 17-2-16.
- */
 public class HttpResponse<T> {
 
     private String contentType = "text/plain; charset=" + SpringIntegration.getServerConfig().getCharset();

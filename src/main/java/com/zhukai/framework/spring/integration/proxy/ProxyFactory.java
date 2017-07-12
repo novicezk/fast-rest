@@ -4,9 +4,6 @@ import com.zhukai.framework.spring.integration.annotation.core.Repository;
 import com.zhukai.framework.spring.integration.annotation.core.Service;
 import com.zhukai.framework.spring.integration.util.ReflectUtil;
 
-/**
- * Created by homolo on 17-6-20.
- */
 public class ProxyFactory {
     public static Object createInstance(Class clazz) {
         if (clazz.isAnnotationPresent(Repository.class)) {

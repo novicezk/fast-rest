@@ -19,9 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by zhukai on 17-1-22.
- */
 public class MapperMethod<T> {
     private static final Logger logger = Logger.getLogger(MapperMethod.class);
     private static ServerConfig serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
@@ -92,7 +89,6 @@ public class MapperMethod<T> {
             case "count":
                 return count();
         }
-
         if (methodName.startsWith("findBy")) {
             StringBuilder propertiesSql = new StringBuilder();
             String propertiesString = methodName.substring(6);
@@ -178,7 +174,6 @@ public class MapperMethod<T> {
         }
         return null;
     }
-
 
     private <ID> boolean exists(ID ID) throws Exception {
         Field idField = JpaUtil.getIdField(entityClass);

@@ -6,9 +6,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Created by homolo on 17-6-20.
- */
 public abstract class AbstractHttpReader {
     private static final String DEFAULT_PARSE_CHARSET = "utf-8";
 

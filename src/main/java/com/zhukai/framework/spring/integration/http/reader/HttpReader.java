@@ -4,9 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Created by homolo on 17-6-20.
- */
 public class HttpReader extends AbstractHttpReader {
     private InputStream inputStream;
 

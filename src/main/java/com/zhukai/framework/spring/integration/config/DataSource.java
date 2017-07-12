@@ -2,9 +2,6 @@ package com.zhukai.framework.spring.integration.config;
 
 import com.zhukai.framework.spring.integration.annotation.core.Configure;
 
-/**
- * Created by zhukai on 17-1-18.
- */
 @Configure(prefix = "datasource")
 public class DataSource {
     private String username;

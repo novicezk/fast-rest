@@ -4,9 +4,6 @@ package com.zhukai.framework.spring.integration.jdbc.data.jpa;
 import java.io.Serializable;
 import java.util.List;
 
-/**
- * Created by zhukai on 17-1-22.
- */
 public interface CrudRepository<T, ID extends Serializable> {
 
     boolean save(T bean);

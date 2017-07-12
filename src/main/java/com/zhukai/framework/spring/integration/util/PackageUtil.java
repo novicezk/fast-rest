@@ -11,9 +11,6 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-/**
- * Created by zhukai on 17-1-12.
- */
 public class PackageUtil {
     /**
      * @param runClass

@@ -11,11 +11,6 @@ import org.apache.log4j.Logger;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 
-/**
- * Created by zhukai on 17-1-22.
- * <p>
- * cglib代理，用于service类
- */
 public class AopProxy implements MethodInterceptor {
     private static Logger logger = Logger.getLogger(AopProxy.class);
 
@@ -30,7 +25,7 @@ public class AopProxy implements MethodInterceptor {
     public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
         Connection connection = null;
         if (method.isAnnotationPresent(Transactional.class)) {
-            logger.info("Transactional begin...");
+            logger.info("Transactional begin");
             connection = DBConnectionPool.getInstance().getConnection();
             connection.setAutoCommit(false);
             WebContext.setTransaction(connection);

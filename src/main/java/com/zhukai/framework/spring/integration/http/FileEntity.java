@@ -2,9 +2,6 @@ package com.zhukai.framework.spring.integration.http;
 
 import java.io.InputStream;
 
-/**
- * Created by zhukai on 17-3-9.
- */
 public class FileEntity {
 
     private String fileName;

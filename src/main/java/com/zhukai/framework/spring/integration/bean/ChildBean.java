@@ -1,11 +1,7 @@
 package com.zhukai.framework.spring.integration.bean;
 
-/**
- * Created by zhukai on 17-1-17.
- */
 public class ChildBean extends BaseBean {
-
-
+    
     private BeanFactory beanFactory;
 
     private String fieldName;

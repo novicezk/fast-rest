@@ -10,9 +10,6 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by homolo on 17-6-20.
- */
 public class HttpRequestBuilder implements RequestBuilder {
     private AbstractHttpReader httpReader;
     private HttpRequest request;

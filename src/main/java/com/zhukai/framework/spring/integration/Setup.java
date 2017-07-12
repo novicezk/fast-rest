@@ -39,9 +39,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by zhukai on 17-2-14.
- */
 public class Setup {
 
     private static List<Method> batchMethods = new ArrayList<>();
@@ -145,7 +142,6 @@ public class Setup {
             }
         }
     }
-
 
     private static void registerComponentBean(Class beanClass, String registerName) throws ClassNotFoundException {
         registerName = registerName.equals("") ? beanClass.getName() : registerName;
@@ -257,7 +253,7 @@ public class Setup {
         }
     }
 
-    public static List<Method> getBatchMethods() {
+    static List<Method> getBatchMethods() {
         return batchMethods;
     }
 

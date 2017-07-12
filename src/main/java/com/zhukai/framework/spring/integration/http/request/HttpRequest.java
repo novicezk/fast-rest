@@ -8,9 +8,6 @@ import com.zhukai.framework.spring.integration.http.Session;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by zhukai on 17-1-12.
- */
 public class HttpRequest {
 
     private Map<String, Object> attributes;

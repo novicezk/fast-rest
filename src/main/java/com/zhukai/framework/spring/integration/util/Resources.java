@@ -8,9 +8,6 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
 
-/**
- * Created by zhukai on 17-2-20.
- */
 public class Resources {
     private static final Logger logger = Logger.getLogger(Resources.class);
 
@@ -43,16 +40,32 @@ public class Resources {
         return fileEntity;
     }
 
-
+    /**
+     * @param fileEntity
+     * @return 保存后的文件
+     * @throws IOException
+     */
     public static File saveFile(FileEntity fileEntity) throws IOException {
         return saveFile(fileEntity, true);
     }
 
+    /**
+     * @param fileEntity
+     * @param cover      是否覆盖重名文件
+     * @return 保存后的文件
+     * @throws IOException
+     */
     public static File saveFile(FileEntity fileEntity, boolean cover) throws IOException {
         String fileTmp = SpringIntegration.getServerConfig().getFileTmp();
         return saveFile(fileEntity, fileTmp + "/" + fileEntity.getFileName(), cover);
     }
 
+    /**
+     * @param fileEntity
+     * @param path       文件的全名，如/home/username/test.zip
+     * @return 保存后的文件
+     * @throws IOException
+     */
     public static File saveFile(FileEntity fileEntity, String path) throws IOException {
         return saveFile(fileEntity, path, true);
     }
@@ -61,7 +74,7 @@ public class Resources {
      * @param fileEntity
      * @param path       文件的全名，如/home/username/test.zip
      * @param cover      是否覆盖重名文件
-     * @return
+     * @return 保存后的文件
      * @throws IOException
      */
     public static File saveFile(FileEntity fileEntity, String path, boolean cover) throws IOException {

@@ -19,9 +19,6 @@ import java.net.Socket;
 import java.nio.channels.SocketChannel;
 import java.util.Properties;
 
-/**
- * Created by zhukai on 17-1-17.
- */
 public class HttpParser {
     private static final Logger logger = Logger.getLogger(HttpParser.class);
     private static final Properties mimeTypes = new Properties();
@@ -45,6 +42,7 @@ public class HttpParser {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static String parseHttpString(HttpResponse response) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append(response.getProtocol()).append(" ")

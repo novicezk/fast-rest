@@ -9,9 +9,6 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Created by homolo on 17-6-27.
- */
 public class WebServer {
     private static final Logger logger = Logger.getLogger(WebServer.class);
     private static final ExecutorService service = Executors.newCachedThreadPool();

@@ -30,19 +30,21 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by zhukai on 17-2-19.
- */
 public abstract class AbstractActionHandle implements Runnable {
     protected static Logger logger = Logger.getLogger(AbstractActionHandle.class);
 
     protected HttpRequest request;
     protected HttpResponse response;
+
+    /**
+     * url contains '{...}'
+     */
     private boolean isRestUrl = false;
 
     protected abstract void respond();
 
     @Override
+    @SuppressWarnings("unchecked")
     public void run() {
         if (request == null) {
             return;
@@ -84,7 +86,7 @@ public abstract class AbstractActionHandle implements Runnable {
         }
     }
 
-    private final Method getMethodByRequestPath(String requestPath) throws RequestPathNotFoundException {
+    private Method getMethodByRequestPath(String requestPath) throws RequestPathNotFoundException {
         Method method;
         for (String key : WebContext.getWebMethods().keySet()) {
             if (Pattern.matches(key, requestPath)) {
@@ -95,7 +97,7 @@ public abstract class AbstractActionHandle implements Runnable {
         throw new RequestPathNotFoundException(requestPath);
     }
 
-    private final void checkSession() {
+    private void checkSession() {
         if (request.getCookie(IntegrationConstants.JSESSIONID) == null) {
             String sessionId = UUID.randomUUID().toString();
             request.setCookie(IntegrationConstants.JSESSIONID, sessionId);
@@ -105,6 +107,7 @@ public abstract class AbstractActionHandle implements Runnable {
         WebContext.refreshSession(request.getCookie(IntegrationConstants.JSESSIONID));
     }
 
+    @SuppressWarnings("unchecked")
     private Object invokeRequestMethod(Method method) throws Exception {
         if (!ArrayUtils.contains(method.getAnnotation(RequestMapping.class).method(), request.getMethod())) {
             throw new RequestNotSupportException();

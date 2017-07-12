@@ -11,16 +11,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * Created by zhukai on 17-1-17.
- */
 public class ConfigureBeanFactory implements BeanFactory<ConfigureBean> {
 
     private static final Logger logger = Logger.getLogger(ConfigureBeanFactory.class);
     private static ConfigureBeanFactory instance = new ConfigureBeanFactory();
-    private final Map<String, Object> configureMap = Collections.synchronizedMap(new HashMap());
+    private final Map<String, Object> configureMap = Collections.synchronizedMap(new HashMap<>());
 
-    public static final ConfigureBeanFactory getInstance() {
+    public static ConfigureBeanFactory getInstance() {
         return instance;
     }
 
@@ -63,7 +60,7 @@ public class ConfigureBeanFactory implements BeanFactory<ConfigureBean> {
                     }
                 }
             }
-            if (configureBean.getBeanClass().equals(DataSource.class) && ((DataSource) object).getUrl() == null) {
+            if (configureBean.getBeanClass().equals(DataSource.class) && object != null && ((DataSource) object).getUrl() == null) {
                 return;
             }
             logger.info(object);

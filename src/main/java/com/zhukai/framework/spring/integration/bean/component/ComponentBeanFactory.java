@@ -10,18 +10,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by zhukai on 17-1-17.
- */
 public class ComponentBeanFactory implements BeanFactory<ComponentBean> {
 
     private static final Logger logger = Logger.getLogger(ComponentBeanFactory.class);
 
     private static ComponentBeanFactory instance = new ComponentBeanFactory();
-    private final Map<String, ComponentBean> componentBeanMap = Collections.synchronizedMap(new HashMap());
-    private final Map<String, Object> singletonBeanMap = Collections.synchronizedMap(new HashMap());
+    private final Map<String, ComponentBean> componentBeanMap = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, Object> singletonBeanMap = Collections.synchronizedMap(new HashMap<>());
 
-    public static final ComponentBeanFactory getInstance() {
+    public static ComponentBeanFactory getInstance() {
         return instance;
     }
 
@@ -31,7 +28,7 @@ public class ComponentBeanFactory implements BeanFactory<ComponentBean> {
     @Override
     public Object getBean(String beanName) {
         if (!componentBeanMap.containsKey(beanName)) {
-            logger.warn("ComponentBeanFactory中不存在" + beanName);
+            logger.warn("ComponentBeanFactory not exits " + beanName);
             return null;
         }
         ComponentBean componentBean = componentBeanMap.get(beanName);

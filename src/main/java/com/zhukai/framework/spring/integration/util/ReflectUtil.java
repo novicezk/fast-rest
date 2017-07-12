@@ -14,9 +14,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by zhukai on 16-12-15.
- */
 public class ReflectUtil {
     private static final Logger logger = Logger.getLogger(ReflectUtil.class);
 
@@ -41,7 +38,9 @@ public class ReflectUtil {
         }
     }
 
-    //根据fieldName获得entityClass的属性，也可以是private或父类继承的
+    /**
+     * 根据fieldName获得entityClass的属性，也可以是private或父类继承的
+     */
     public static Field getDeclaredField(Class entityClass, String fieldName) {
         if (StringUtils.isBlank(fieldName) || entityClass == null) {
             return null;
@@ -53,7 +52,6 @@ public class ReflectUtil {
         }
     }
 
-
     public static List<String> getFieldNames(Class entityClass) {
         Field[] fields = entityClass.getDeclaredFields();
         List<String> fieldNames = new ArrayList();
@@ -62,7 +60,6 @@ public class ReflectUtil {
         }
         return fieldNames;
     }
-
 
     public static Object invokeMethod(Object obj, String methodName, Class<?>[] paramsClass, Object[] params) {
         Object returnValue = null;
@@ -90,6 +87,11 @@ public class ReflectUtil {
         return (T) obj;
     }
 
+    /**
+     * @param objectClass
+     * @param annotationClass
+     * @return 递归检测objectClass是否被annotationClass注解标记
+     */
     public static boolean existAnnotation(Class objectClass, Class<? extends Annotation> annotationClass) {
         if (objectClass.equals(Target.class) || objectClass.equals(Retention.class) || objectClass.equals(Documented.class)) {
             return false;
@@ -107,7 +109,10 @@ public class ReflectUtil {
         return false;
     }
 
-    //返回空表示没有使用@Component注解
+    /**
+     * @param objectClass
+     * @return 若objectClass存在Component注解，则返回Component的value，否则返回null
+     */
     public static String getBeanRegisterName(Class objectClass) {
         if (objectClass.isAnnotation()) {
             return null;

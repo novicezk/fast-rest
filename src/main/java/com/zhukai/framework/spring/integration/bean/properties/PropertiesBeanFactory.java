@@ -15,13 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * Created by homolo on 17-6-14.
- */
 public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
     private static final Logger logger = Logger.getLogger(PropertiesBeanFactory.class);
-    
-    private static Map<String, Properties> propertiesMap = Collections.synchronizedMap(new HashMap());
+
+    private static Map<String, Properties> propertiesMap = Collections.synchronizedMap(new HashMap<>());
     private static PropertiesBeanFactory instance = new PropertiesBeanFactory();
 
     private PropertiesBeanFactory() {
@@ -35,16 +32,25 @@ public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
         return propertiesMap.get(key);
     }
 
+    /**
+     * please use getProperties
+     */
     @Override
+    @Deprecated
     public Object getBean(String beanName) {
         return propertiesMap.get(beanName);
     }
 
+    /**
+     * please use getProperties
+     */
+    @Deprecated
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         String beanName = ReflectUtil.getBeanRegisterName(requiredType);
         beanName = StringUtils.isBlank(beanName) ? IntegrationConstants.DEFAULT_PROPERTIES : beanName;
-        return (T) getBean(beanName);
+        return (T) propertiesMap.get(beanName);
     }
 
     @Override

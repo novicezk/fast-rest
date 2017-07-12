@@ -9,9 +9,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.LinkedList;
 
-/**
- * Created by zhukai on 17-1-18.
- */
 public class DBConnectionPool {
     private static Logger logger = Logger.getLogger(DBConnectionPool.class);
 
@@ -19,15 +16,15 @@ public class DBConnectionPool {
     private LinkedList<Connection> freeConnPool = new LinkedList<>();
     private DataSource dataSource;
 
+    public static DBConnectionPool getInstance() {
+        return instance;
+    }
+
     private DBConnectionPool() {
 
     }
 
     private static DBConnectionPool instance = new DBConnectionPool();
-
-    public static DBConnectionPool getInstance() {
-        return instance;
-    }
 
     public synchronized void freeConnection(Connection con) {
         if (con == null) {
@@ -41,23 +38,6 @@ public class DBConnectionPool {
         freeConnPool.addLast(con);
         checkOutSize--;
         notify();
-    }
-
-    public synchronized Connection getConnection(boolean isFirst) throws SQLException, InterruptedException, DBConnectTimeoutException {
-        if (freeConnPool.size() > 0) {
-            checkOutSize++;
-            return freeConnPool.poll();
-        } else if (checkOutSize < dataSource.getMaxConn()) {
-            Connection connection = DriverManager.getConnection(dataSource.getUrl(),
-                    dataSource.getUsername(), dataSource.getPassword());
-            checkOutSize++;
-            return connection;
-        } else if (isFirst) {
-            wait(dataSource.getTimeout());
-            return getConnection(false);
-        } else {
-            throw new DBConnectTimeoutException();
-        }
     }
 
     public Connection getConnection() throws Exception {
@@ -80,7 +60,7 @@ public class DBConnectionPool {
     public static void commit(Connection conn) throws SQLException {
         try {
             conn.commit();
-            logger.info("Transactional over ");
+            logger.info("Transactional over");
         } catch (SQLException ex) {
             conn.rollback();
             logger.error("Transactional rollback：", ex);
@@ -89,5 +69,20 @@ public class DBConnectionPool {
         }
     }
 
-
+    private synchronized Connection getConnection(boolean isFirst) throws SQLException, InterruptedException, DBConnectTimeoutException {
+        if (freeConnPool.size() > 0) {
+            checkOutSize++;
+            return freeConnPool.poll();
+        } else if (checkOutSize < dataSource.getMaxConn()) {
+            Connection connection = DriverManager.getConnection(dataSource.getUrl(),
+                    dataSource.getUsername(), dataSource.getPassword());
+            checkOutSize++;
+            return connection;
+        } else if (isFirst) {
+            wait(dataSource.getTimeout());
+            return getConnection(false);
+        } else {
+            throw new DBConnectTimeoutException();
+        }
+    }
 }

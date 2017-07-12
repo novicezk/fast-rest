@@ -1,8 +1,5 @@
 package com.zhukai.framework.spring.integration.exception;
 
-/**
- * Created by homolo on 17-7-5.
- */
 public class IntegrationInitException extends Exception {
 
     public IntegrationInitException() {

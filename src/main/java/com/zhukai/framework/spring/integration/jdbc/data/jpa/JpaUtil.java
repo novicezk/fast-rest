@@ -13,10 +13,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by zhukai on 17-1-19.
- */
 public class JpaUtil {
+
+    public static String getTableName(Class clazz) {
+        String tableName = "";
+        if (clazz.isAnnotationPresent(Entity.class)) {
+            tableName = ((Entity) clazz.getAnnotation(Entity.class)).name();
+        }
+        tableName = tableName.equals("") ? clazz.getSimpleName().toLowerCase() : tableName;
+        return tableName;
+    }
+
+    public static String getColumnName(Class clazz, String fieldName) {
+        Field field = ReflectUtil.getDeclaredField(clazz, fieldName);
+        return getColumnName(field);
+    }
 
     public static String convertToSqlColumn(Field field) {
         StringBuilder sqlColumn = new StringBuilder();
@@ -26,7 +37,7 @@ public class JpaUtil {
             sqlColumn.append(columnName).append(" ");
             String columnType = getSqlType(field.getType());
             sqlColumn.append(columnType);
-            if (columnType.equals("VARCHAR")) {
+            if ("VARCHAR".equals(columnType)) {
                 sqlColumn.append("(").append(column.length()).append(")");
             }
             if (!column.nullable()) {
@@ -39,11 +50,10 @@ public class JpaUtil {
             sqlColumn.append(field.getName()).append(" ");
             String columnType = getSqlType(field.getType());
             sqlColumn.append(columnType);
-            if (columnType.equals("VARCHAR")) {
+            if ("VARCHAR".equals(columnType)) {
                 sqlColumn.append("(").append(255).append(")");
             }
         }
-
         if (field.isAnnotationPresent(Id.class)) {
             sqlColumn.append(" PRIMARY KEY ");
         }
@@ -51,7 +61,6 @@ public class JpaUtil {
             sqlColumn.append(" AUTO_INCREMENT ");
         }
         sqlColumn.append(",");
-
         if (field.getType().isAnnotationPresent(Entity.class)) {
             sqlColumn.append("FOREIGN KEY(").append(getColumnName(field))
                     .append(") REFERENCES ");
@@ -61,47 +70,10 @@ public class JpaUtil {
             sqlColumn.append(tableName).append("(")
                     .append(idFieldName).append(")").append(",");
         }
-
         return sqlColumn.toString();
     }
 
-    public static String getSqlType(Class typeClass) {
-        if (typeClass.isAssignableFrom(Integer.class)) {
-            return "INTEGER";
-        }
-        if (typeClass.isAssignableFrom(Long.class)) {
-            return "BIGINT";
-        }
-        if (typeClass.isAssignableFrom(String.class)) {
-            return "VARCHAR";
-        }
-        if (typeClass.isAssignableFrom(Double.class)) {
-            return "DOUBLE";
-        }
-        if (typeClass.isAssignableFrom(Float.class)) {
-            return "FLOAT";
-        }
-        if (typeClass.isAnnotationPresent(Entity.class)) {
-            Field idField = getIdField(typeClass);
-            return getSqlType(idField.getType());
-        }
-        return null;
-    }
-
-
-    public static Object getColumnValueByField(Object obj, Field field) {
-        Object fieldValue = ReflectUtil.getFieldValue(obj, field.getName());
-        if (fieldValue == null) {
-            return null;
-        }
-        if (fieldValue.getClass().isAnnotationPresent(Entity.class)) {
-            Field idField = getIdField(fieldValue.getClass());
-            return getColumnValueByField(fieldValue, idField);
-        }
-        return fieldValue;
-    }
-
-    public static Object convertToColumnValue(Object obj) {
+    static Object convertToColumnValue(Object obj) {
         if (obj == null) {
             return null;
         }
@@ -119,20 +91,12 @@ public class JpaUtil {
 
     }
 
-    public static Field getIdField(Class clazz) {
+    static Field getIdField(Class clazz) {
         return Arrays.stream(clazz.getDeclaredFields()).filter(e -> e.isAnnotationPresent(Id.class)).findFirst().get();
     }
 
-    public static String getTableName(Class clazz) {
-        String tableName = "";
-        if (clazz.isAnnotationPresent(Entity.class)) {
-            tableName = ((Entity) clazz.getAnnotation(Entity.class)).name();
-        }
-        tableName = tableName.equals("") ? clazz.getSimpleName().toLowerCase() : tableName;
-        return tableName;
-    }
 
-    public static String getColumnName(Field field) {
+    static String getColumnName(Field field) {
         String columnName = "";
         if (field.isAnnotationPresent(Column.class)) {
             columnName = field.getAnnotation(Column.class).name();
@@ -141,53 +105,11 @@ public class JpaUtil {
         return columnName;
     }
 
-    public static String getColumnName(Class clazz, String fieldName) {
-        Field field = ReflectUtil.getDeclaredField(clazz, fieldName);
-        return getColumnName(field);
-    }
-
-    protected static List<Field> getJoinFields(Class clazz) {
-        List<Field> joinFields = new ArrayList<>();
-        for (Field field : clazz.getDeclaredFields()) {
-            if (field.getType().isAnnotationPresent(Entity.class)) {
-                joinFields.add(field);
-            }
-        }
-        return joinFields;
-    }
-
-    protected static StringBuilder getSelectSqlWithoutProperties(Class clazz) {
+    static StringBuilder getSelectSqlWithoutProperties(Class clazz) {
         return getSelectMainSql(clazz).append(getJoinSql(clazz));
     }
 
-    protected static StringBuilder getJoinSql(Class clazz) {
-        StringBuilder sql = new StringBuilder();
-        List<Field> joinFields = getJoinFields(clazz);
-        if (joinFields == null || joinFields.isEmpty()) {
-            return sql;
-        }
-        String mainTableName = getTableName(clazz);
-        for (Field joinField : joinFields) {
-            String joinTableName = getTableName(joinField.getType());
-            String foreignKeyName = getColumnName(joinField);
-            sql.append(" LEFT JOIN ").append(joinTableName)
-                    .append(" ON ").append(mainTableName).append(".")
-                    .append(foreignKeyName).append("=").append(joinTableName)
-                    .append(".").append(getColumnName(getIdField(joinField.getType())))
-                    .append(" ");
-            sql.append(getJoinSql(joinField.getType()));
-        }
-        return sql;
-    }
-
-    protected static StringBuilder getSelectMainSql(Class clazz) {
-        StringBuilder sql = new StringBuilder();
-        String mainTableName = getTableName(clazz);
-        sql.append("SELECT * FROM ").append(mainTableName).append(" ");
-        return sql;
-    }
-
-    protected static <T> T convertToEntity(Class<T> convertClazz, ResultSet resultSet) throws Exception {
+    static <T> T convertToEntity(Class<T> convertClazz, ResultSet resultSet) throws Exception {
         String mainTableName = getTableName(convertClazz);
         T entity = ReflectUtil.createInstance(convertClazz, null);
         for (Field field : convertClazz.getDeclaredFields()) {
@@ -205,7 +127,7 @@ public class JpaUtil {
         return entity;
     }
 
-    protected static String getSelectSQL(Class clazz, Object[] properties) throws Exception {
+    static String getSelectSQL(Class clazz, Object[] properties) throws Exception {
         StringBuilder sql = new StringBuilder();
         sql.append(getSelectSqlWithoutProperties(clazz));
         if (properties != null) {
@@ -216,7 +138,9 @@ public class JpaUtil {
                 Class fieldClass = clazz;
                 String columnTableName = getTableName(clazz);
                 for (int j = 0; j < arr.length - 1; j++) {
-                    fieldClass = ReflectUtil.getDeclaredField(fieldClass, arr[i]).getType();
+                    Field field = ReflectUtil.getDeclaredField(fieldClass, arr[i]);
+                    if (field == null) continue;
+                    fieldClass = field.getType();
                     columnTableName = getTableName(fieldClass);
                 }
                 sql.append(columnTableName).append(".").append(getColumnName(fieldClass, arr[arr.length - 1]));
@@ -228,7 +152,7 @@ public class JpaUtil {
         return sql.toString();
     }
 
-    protected static <T> String getSaveSQL(T bean) throws SQLException {
+    static <T> String getSaveSQL(T bean) throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO ");
         String tableName = getTableName(bean.getClass());
@@ -253,7 +177,7 @@ public class JpaUtil {
         return sql.toString();
     }
 
-    protected static <T> String getUpdateSQL(T bean) throws SQLException {
+    static <T> String getUpdateSQL(T bean) throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("UPDATE ");
         String tableName = getTableName(bean.getClass());
@@ -275,6 +199,80 @@ public class JpaUtil {
         Object id = ReflectUtil.getFieldValue(bean, idField.getName());
         sql.append(" WHERE ").append(idFieldName).append("=").append(convertToColumnValue(id));
         return sql.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String getSqlType(Class typeClass) {
+        if (typeClass.isAssignableFrom(Integer.class)) {
+            return "INTEGER";
+        }
+        if (typeClass.isAssignableFrom(Long.class)) {
+            return "BIGINT";
+        }
+        if (typeClass.isAssignableFrom(String.class)) {
+            return "VARCHAR";
+        }
+        if (typeClass.isAssignableFrom(Double.class)) {
+            return "DOUBLE";
+        }
+        if (typeClass.isAssignableFrom(Float.class)) {
+            return "FLOAT";
+        }
+        if (typeClass.isAnnotationPresent(Entity.class)) {
+            Field idField = getIdField(typeClass);
+            return getSqlType(idField.getType());
+        }
+        return null;
+    }
+
+
+    private static Object getColumnValueByField(Object obj, Field field) {
+        Object fieldValue = ReflectUtil.getFieldValue(obj, field.getName());
+        if (fieldValue == null) {
+            return null;
+        }
+        if (fieldValue.getClass().isAnnotationPresent(Entity.class)) {
+            Field idField = getIdField(fieldValue.getClass());
+            return getColumnValueByField(fieldValue, idField);
+        }
+        return fieldValue;
+    }
+
+    private static List<Field> getJoinFields(Class clazz) {
+        List<Field> joinFields = new ArrayList<>();
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.getType().isAnnotationPresent(Entity.class)) {
+                joinFields.add(field);
+            }
+        }
+        return joinFields;
+    }
+
+    private static StringBuilder getJoinSql(Class clazz) {
+        StringBuilder sql = new StringBuilder();
+        List<Field> joinFields = getJoinFields(clazz);
+        if (joinFields == null || joinFields.isEmpty()) {
+            return sql;
+        }
+        String mainTableName = getTableName(clazz);
+        for (Field joinField : joinFields) {
+            String joinTableName = getTableName(joinField.getType());
+            String foreignKeyName = getColumnName(joinField);
+            sql.append(" LEFT JOIN ").append(joinTableName)
+                    .append(" ON ").append(mainTableName).append(".")
+                    .append(foreignKeyName).append("=").append(joinTableName)
+                    .append(".").append(getColumnName(getIdField(joinField.getType())))
+                    .append(" ");
+            sql.append(getJoinSql(joinField.getType()));
+        }
+        return sql;
+    }
+
+    private static StringBuilder getSelectMainSql(Class clazz) {
+        StringBuilder sql = new StringBuilder();
+        String mainTableName = getTableName(clazz);
+        sql.append("SELECT * FROM ").append(mainTableName).append(" ");
+        return sql;
     }
 
 }

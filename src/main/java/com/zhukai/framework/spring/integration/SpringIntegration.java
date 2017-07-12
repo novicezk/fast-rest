@@ -14,9 +14,6 @@ import java.lang.reflect.Method;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by zhukai on 17-1-12.
- */
 public class SpringIntegration {
     private static final Logger logger = Logger.getLogger(SpringIntegration.class);
     private static Class runClass;

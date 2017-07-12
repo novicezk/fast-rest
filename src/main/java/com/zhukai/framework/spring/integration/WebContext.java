@@ -8,9 +8,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by zhukai on 17-1-12.
- */
 public class WebContext {
 
     private static Map<String, Method> webMethods = new HashMap<>();

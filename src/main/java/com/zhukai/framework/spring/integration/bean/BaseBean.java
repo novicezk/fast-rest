@@ -1,8 +1,5 @@
 package com.zhukai.framework.spring.integration.bean;
 
-/**
- * Created by zhukai on 17-1-17.
- */
 public class BaseBean {
 
     private Class beanClass;

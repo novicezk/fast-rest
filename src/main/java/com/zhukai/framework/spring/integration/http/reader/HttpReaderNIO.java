@@ -7,9 +7,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-/**
- * Created by homolo on 17-6-20.
- */
 public class HttpReaderNIO extends AbstractHttpReader {
 
     private SocketChannel channel;
@@ -45,8 +42,8 @@ public class HttpReaderNIO extends AbstractHttpReader {
                 }
             }
             return out.toByteArray();
-        } catch (IOException e) {
-            throw e;
+        } catch (IOException ioe) {
+            throw ioe;
         } finally {
             out.close();
         }

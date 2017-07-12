@@ -5,9 +5,6 @@ import com.zhukai.framework.spring.integration.bean.ChildBean;
 
 import java.util.List;
 
-/**
- * Created by zhukai on 17-1-17.
- */
 public class ComponentBean extends BaseBean {
 
     private List<ChildBean> children;

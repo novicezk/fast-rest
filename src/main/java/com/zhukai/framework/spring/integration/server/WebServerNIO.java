@@ -22,9 +22,6 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Created by homolo on 17-6-27.
- */
 public class WebServerNIO {
     private static final Logger logger = Logger.getLogger(WebServerNIO.class);
     private static final ExecutorService service = Executors.newCachedThreadPool();
@@ -56,6 +53,10 @@ public class WebServerNIO {
         } catch (Exception e) {
             logger.error(e);
         }
+    }
+
+    public static Selector getSelector() {
+        return selector;
     }
 
     private static void acceptKey(SelectionKey key) throws IOException {
@@ -139,7 +140,4 @@ public class WebServerNIO {
         in.close();
     }
 
-    public static Selector getSelector() {
-        return selector;
-    }
 }

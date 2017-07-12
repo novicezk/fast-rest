@@ -4,11 +4,15 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
 
-/**
- * Created by zhukai on 17-1-16.
- */
 public class TypeUtil {
 
+    /**
+     * @param preValue  待转换值
+     * @param convertTo 需要转成的类型
+     * @return 转换后的值
+     * @throws Exception
+     */
+    @SuppressWarnings("unchecked")
     public static <T> T convert(Object preValue, Class<T> convertTo) throws Exception {
         if (preValue == null || StringUtils.isBlank(preValue.toString())) {
             return null;

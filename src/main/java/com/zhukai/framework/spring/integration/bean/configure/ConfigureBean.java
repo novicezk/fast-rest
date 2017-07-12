@@ -4,9 +4,6 @@ import com.zhukai.framework.spring.integration.bean.BaseBean;
 
 import java.util.Properties;
 
-/**
- * Created by zhukai on 17-1-17.
- */
 public class ConfigureBean extends BaseBean {
     private Properties properties;
     private String prefix;

@@ -10,10 +10,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 
-
-/**
- * Created by zhukai on 17-1-12.
- */
 public class ActionHandle extends AbstractActionHandle {
 
     private Socket socket;
