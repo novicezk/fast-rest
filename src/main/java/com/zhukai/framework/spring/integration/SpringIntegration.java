@@ -11,6 +11,7 @@ import com.zhukai.framework.spring.integration.server.WebServerNIO;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -40,11 +41,12 @@ public class SpringIntegration {
     private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(5);
 
     private static void runSessionTimeoutCheck() {
+        Map<String, Session> sessionMap = HttpServletContext.getInstance().getSessions();
         scheduledExecutor.scheduleAtFixedRate(() ->
-                WebContext.getSessions().keySet().removeIf(sessionID -> {
-                    Session session = WebContext.getSessions().get(sessionID);
-                    long lastConnectionTime = session.getLastConnectionTime();
-                    if (lastConnectionTime + serverConfig.getSessionTimeout() < System.currentTimeMillis()) {
+                sessionMap.keySet().removeIf(sessionID -> {
+                    Session session = sessionMap.get(sessionID);
+                    long lastAccessedTime = session.getLastAccessedTime();
+                    if (lastAccessedTime + serverConfig.getSessionTimeout() < System.currentTimeMillis()) {
                         logger.warn("sessionID: " + sessionID + " is timeout");
                         return true;
                     }

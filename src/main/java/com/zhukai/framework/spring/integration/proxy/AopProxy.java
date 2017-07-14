@@ -1,7 +1,7 @@
 package com.zhukai.framework.spring.integration.proxy;
 
+import com.zhukai.framework.spring.integration.HttpServletContext;
 import com.zhukai.framework.spring.integration.annotation.core.Transactional;
-import com.zhukai.framework.spring.integration.WebContext;
 import com.zhukai.framework.spring.integration.jdbc.DBConnectionPool;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
@@ -28,7 +28,7 @@ public class AopProxy implements MethodInterceptor {
             logger.info("Transactional begin");
             connection = DBConnectionPool.getInstance().getConnection();
             connection.setAutoCommit(false);
-            WebContext.setTransaction(connection);
+            HttpServletContext.getInstance().setTransaction(connection);
         }
         Object result = proxy.invokeSuper(obj, args);
         if (connection != null) {

@@ -32,16 +32,14 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Setup {
 
     private static List<Method> batchMethods = new ArrayList<>();
+    private static Map<String, Method> webMethods = new HashMap<>();
     private static List<Method> exceptionHandlerMethods = new ArrayList<>();
     private static final Logger logger = Logger.getLogger(Setup.class);
     private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
@@ -138,7 +136,7 @@ public class Setup {
                 if (matcher.find()) {
                     methodPath = methodPath.replaceAll("\\{[^}]*}", "([^/]+)");
                 }
-                WebContext.getWebMethods().put(webPath + methodPath, method);
+                webMethods.put(webPath + methodPath, method);
             }
         }
     }
@@ -259,5 +257,9 @@ public class Setup {
 
     public static List<Method> getExceptionHandlerMethods() {
         return exceptionHandlerMethods;
+    }
+
+    public static Map<String, Method> getWebMethods() {
+        return webMethods;
     }
 }

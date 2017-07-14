@@ -1,7 +1,7 @@
 package com.zhukai.framework.spring.integration.handle;
 
+import com.zhukai.framework.spring.integration.HttpServletContext;
 import com.zhukai.framework.spring.integration.Setup;
-import com.zhukai.framework.spring.integration.WebContext;
 import com.zhukai.framework.spring.integration.annotation.web.*;
 import com.zhukai.framework.spring.integration.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.spring.integration.constant.HttpHeaderType;
@@ -19,6 +19,7 @@ import com.zhukai.framework.spring.integration.util.TypeUtil;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
+import javax.servlet.http.Cookie;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -88,9 +89,9 @@ public abstract class AbstractActionHandle implements Runnable {
 
     private Method getMethodByRequestPath(String requestPath) throws RequestPathNotFoundException {
         Method method;
-        for (String key : WebContext.getWebMethods().keySet()) {
+        for (String key : Setup.getWebMethods().keySet()) {
             if (Pattern.matches(key, requestPath)) {
-                method = WebContext.getWebMethods().get(key);
+                method = Setup.getWebMethods().get(key);
                 return method;
             }
         }
@@ -98,13 +99,13 @@ public abstract class AbstractActionHandle implements Runnable {
     }
 
     private void checkSession() {
-        if (request.getCookie(IntegrationConstants.JSESSIONID) == null) {
+        if (request.getSessionId() == null) {
             String sessionId = UUID.randomUUID().toString();
-            request.setCookie(IntegrationConstants.JSESSIONID, sessionId);
+            request.addCookie(new Cookie(IntegrationConstants.JSESSIONID, sessionId));
             response.setCookie(IntegrationConstants.JSESSIONID, sessionId);
             logger.info(sessionId + " has connected");
         }
-        WebContext.refreshSession(request.getCookie(IntegrationConstants.JSESSIONID));
+        HttpServletContext.getInstance().refreshSession(request.getSessionId());
     }
 
     @SuppressWarnings("unchecked")

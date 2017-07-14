@@ -13,12 +13,12 @@ import java.util.jar.JarFile;
 
 public class PackageUtil {
     /**
-     * @param runClass
+     * @param runClass 目标类
      * @return runClass同包或子级包的所有类
      * @throws Exception
      */
     public static List<Class> getAllClassesByMainClass(Class runClass) throws Exception {
-        List<Class> classes = new ArrayList();
+        List<Class> classes = new ArrayList<>();
         String packageName = runClass.getPackage().getName();
         String packageDirName = packageName.replace('.', '/');
         Enumeration<URL> dirs = runClass.getClassLoader().getResources(packageDirName);

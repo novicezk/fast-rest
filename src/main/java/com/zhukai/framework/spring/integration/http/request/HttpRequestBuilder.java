@@ -6,6 +6,7 @@ import com.zhukai.framework.spring.integration.exception.HttpReadException;
 import com.zhukai.framework.spring.integration.http.FileEntity;
 import com.zhukai.framework.spring.integration.http.reader.AbstractHttpReader;
 
+import javax.servlet.http.Cookie;
 import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,7 +39,7 @@ public class HttpRequestBuilder implements RequestBuilder {
             String[] pathParameter = pathArr[1].split("&");
             for (String param : pathParameter) {
                 String[] keyValue = param.split("=");
-                request.setParameter(keyValue[0], keyValue.length > 1 ? keyValue[1] : "");
+                request.getParameterMap().put(keyValue[0], keyValue.length > 1 ? keyValue[1] : "");
             }
         }
         return request;
@@ -53,12 +54,12 @@ public class HttpRequestBuilder implements RequestBuilder {
                 String[] cookieArr = cookieString.split(";");
                 for (String cookie : cookieArr) {
                     String[] keyValue = cookie.split("=");
-                    request.setCookie(keyValue[0].trim(), keyValue[1].trim());
+                    request.addCookie(new Cookie(keyValue[0].trim(), keyValue[1].trim()));
                 }
             } else {
                 String headerKey = contextLine.substring(0, contextLine.indexOf(':'));
                 String headerValue = contextLine.substring(contextLine.indexOf(':') + 2);
-                request.setHeader(headerKey, headerValue);
+                request.putHeader(headerKey, headerValue);
             }
             contextLine = httpReader.readLine();
         }
@@ -87,7 +88,7 @@ public class HttpRequestBuilder implements RequestBuilder {
             if (matcher.find()) {
                 fileName = matcher.group(1);
             }
-            int strSize = webKit.length() * 2 + contentDisposition.length() + fileType.length() + "\r\n".length() * 6 + 2;
+            int strSize = webKit.length() * 2 + contentDisposition.getBytes().length + fileType.length() + "\r\n".length() * 6 + 2;
             int inputStreamSize = contentLength - strSize;
             httpReader.readLine();
             InputStream inputStream = httpReader.readFileInputStream(inputStreamSize);

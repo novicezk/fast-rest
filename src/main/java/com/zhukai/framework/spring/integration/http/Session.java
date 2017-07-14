@@ -1,51 +1,127 @@
 package com.zhukai.framework.spring.integration.http;
 
+import com.zhukai.framework.spring.integration.HttpServletContext;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionContext;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Session {
+public class Session implements HttpSession {
 
     private String sessionId;
-
-    private long lastConnectionTime;
-
+    private long lastAccessedTime;
+    private long creationTime;
     private Map<String, Object> attributes;
 
     public Session(String sessionId) {
         this.sessionId = sessionId;
+        creationTime = System.currentTimeMillis();
+        attributes = new HashMap<>();
     }
 
-    public String getSessionId() {
+    @Override
+    public long getCreationTime() {
+        return creationTime;
+    }
+
+    @Override
+    public String getId() {
         return sessionId;
     }
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
+    @Override
+    public long getLastAccessedTime() {
+        return lastAccessedTime;
     }
 
-    public Object getAttribute(String key) {
-        if (this.attributes == null) {
-            this.attributes = new HashMap<>();
-        }
-        return attributes.get(key);
+    public void setLastAccessedTime(long lastAccessedTime) {
+        this.lastAccessedTime = lastAccessedTime;
     }
 
-    public Object getAttributes() {
-        return attributes;
+    @Override
+    public ServletContext getServletContext() {
+        return HttpServletContext.getInstance();
     }
 
-    public void setAttribute(String key, Object value) {
-        if (this.attributes == null) {
-            this.attributes = new HashMap<>();
-        }
-        this.attributes.put(key, value);
+    @Override
+    public Object getAttribute(String s) {
+        return attributes.get(s);
     }
 
-    public long getLastConnectionTime() {
-        return lastConnectionTime;
+    @Override
+    public void setAttribute(String s, Object o) {
+        attributes.put(s, o);
     }
 
-    public void setLastConnectionTime(long lastConnectionTime) {
-        this.lastConnectionTime = lastConnectionTime;
+    @Override
+    public void removeAttribute(String s) {
+        attributes.remove(s);
+    }
+
+    @Override
+    public void invalidate() {
+        HttpServletContext.getInstance().getSessions().remove(sessionId);
+    }
+
+    @Override
+    public boolean isNew() {
+        return false;
+    }
+
+    @Override
+    @Deprecated
+    /**
+     * use serverConfig.sessionTimeout
+     */
+    public void setMaxInactiveInterval(int i) {
+
+    }
+
+    @Override
+    @Deprecated
+    /**
+     * use serverConfig.sessionTimeout
+     */
+    public int getMaxInactiveInterval() {
+        return 0;
+    }
+
+    @Override
+    @Deprecated
+    public Enumeration getAttributeNames() {
+        return null;
+    }
+
+    @Override
+    @Deprecated
+    public Object getValue(String s) {
+        return null;
+    }
+
+    @Override
+    @Deprecated
+    public HttpSessionContext getSessionContext() {
+        return null;
+    }
+
+    @Override
+    @Deprecated
+    public String[] getValueNames() {
+        return new String[0];
+    }
+
+    @Override
+    @Deprecated
+    public void removeValue(String s) {
+
+    }
+
+    @Override
+    @Deprecated
+    public void putValue(String s, Object o) {
+
     }
 }
