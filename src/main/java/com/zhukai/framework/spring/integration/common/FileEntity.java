@@ -1,4 +1,4 @@
-package com.zhukai.framework.spring.integration.http;
+package com.zhukai.framework.spring.integration.common;
 
 import java.io.InputStream;
 

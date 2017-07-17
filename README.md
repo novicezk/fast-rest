@@ -24,7 +24,7 @@ Integration是个参考Spring Boot的轻量级java框架，不依赖任何现有
         <dependency>
             <groupId>com.zhukai.framework</groupId>
             <artifactId>spring-integration</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
         </dependency>
     </dependencies>
 </project>

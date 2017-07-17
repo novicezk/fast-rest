@@ -6,8 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpResponse<Result> {
-
-    private String contentType = "text/plain; charset=" + SpringIntegration.getServerConfig().getCharset();
+    private String contentType;
     private String fileName;
     private int statusCode = 200;
     private String statusCodeStr = "OK";
@@ -25,7 +24,7 @@ public class HttpResponse<Result> {
     }
 
     public String getContentType() {
-        return contentType;
+        return contentType == null ? "text/plain; charset=" + SpringIntegration.getServerConfig().getCharset() : contentType;
     }
 
     public void setContentType(String contentType) {

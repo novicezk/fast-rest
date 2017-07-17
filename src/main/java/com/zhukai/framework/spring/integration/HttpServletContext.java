@@ -15,20 +15,13 @@ import java.net.URL;
 import java.sql.Connection;
 import java.util.*;
 
-/**
- * Created by homolo on 17-7-14.
- */
 public class HttpServletContext implements ServletContext {
-
     private static final Logger logger = Logger.getLogger(HttpServletContext.class);
-    private Map<String, Object> attributes = Collections.synchronizedMap(new HashMap<>());
-
     private static HttpServletContext instance = new HttpServletContext();
 
-    private ThreadLocal<Connection> transaction = new ThreadLocal();
-
+    private Map<String, Object> attributes = Collections.synchronizedMap(new HashMap<>());
+    private ThreadLocal<Connection> transaction = new ThreadLocal<>();
     private Map<String, Session> sessions = Collections.synchronizedMap(new HashMap<>());
-
 
     public static HttpServletContext getInstance() {
         return instance;
@@ -38,12 +31,10 @@ public class HttpServletContext implements ServletContext {
 
     }
 
-
     @Override
     public String getMimeType(String s) {
         return HttpParser.getContentType(s);
     }
-
 
     @Override
     public URL getResource(String s) throws MalformedURLException {
@@ -55,24 +46,20 @@ public class HttpServletContext implements ServletContext {
         return Resources.getResourceAsStream(s);
     }
 
-
     @Override
     public void log(String s) {
         logger.info(s);
     }
-
 
     @Override
     public void log(String s, Throwable throwable) {
         logger.error(s, throwable);
     }
 
-
     @Override
     public Object getAttribute(String s) {
         return attributes.get(s);
     }
-
 
     @Override
     public void setAttribute(String s, Object o) {
@@ -83,32 +70,6 @@ public class HttpServletContext implements ServletContext {
     public void removeAttribute(String s) {
         attributes.remove(s);
     }
-
-    @Override
-    public String getServletContextName() {
-        return null;
-    }
-
-    @Override
-    public String getRealPath(String s) {
-        return null;
-    }
-
-    @Override
-    public String getServerInfo() {
-        return null;
-    }
-
-    @Override
-    public int getMajorVersion() {
-        return 0;
-    }
-
-    @Override
-    public int getMinorVersion() {
-        return 0;
-    }
-
 
     public Connection getTransaction() {
         return transaction.get();
@@ -136,17 +97,43 @@ public class HttpServletContext implements ServletContext {
     }
 
     @Override
-    /**
-     * TODO
-     */
+    @Deprecated
+    public String getServletContextName() {
+        return null;
+    }
+
+    @Override
+    @Deprecated
+    public String getRealPath(String s) {
+        return null;
+    }
+
+    @Override
+    @Deprecated
+    public String getServerInfo() {
+        return null;
+    }
+
+    @Override
+    @Deprecated
+    public int getMajorVersion() {
+        return 0;
+    }
+
+    @Override
+    @Deprecated
+    public int getMinorVersion() {
+        return 0;
+    }
+
+    @Override
+    @Deprecated
     public ServletContext getContext(String s) {
         return null;
     }
 
     @Override
-    /**
-     * TODO
-     */
+    @Deprecated
     public Servlet getServlet(String s) throws ServletException {
         return null;
     }

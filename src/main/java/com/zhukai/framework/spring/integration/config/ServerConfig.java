@@ -9,7 +9,7 @@ public class ServerConfig {
     private Long sessionTimeout = 1800000L;//session过期时间
     private Integer port = 8080;
     private Boolean showSQL = false;
-    private String fileTmp = "/tmp";
+    private String fileTmp = "/tmp/";
     private Boolean useNio = true;
     private String charset = "utf-8";
 

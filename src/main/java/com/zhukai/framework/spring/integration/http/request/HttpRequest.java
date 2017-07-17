@@ -2,55 +2,74 @@ package com.zhukai.framework.spring.integration.http.request;
 
 import com.zhukai.framework.spring.integration.HttpServletContext;
 import com.zhukai.framework.spring.integration.SpringIntegration;
+import com.zhukai.framework.spring.integration.common.MultipartFile;
 import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
-import com.zhukai.framework.spring.integration.http.FileEntity;
+import com.zhukai.framework.spring.integration.http.Session;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.Principal;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class HttpRequest implements HttpServletRequest {
-
     private Map<String, Object> attributes;
     private Map<String, String> parameters;
     private Map<String, String> headers;
     private Map<String, Cookie> cookies;
+    private Map<String, MultipartFile> multipartFiles;
     private String method;
-    private String path;
+    private String servletPath;
     private String protocol;
     private String requestContext;
-    private FileEntity uploadFile;
-    private String scheme;
-    private String encoding;
+    private String characterEncoding;
+    private InputStream requestData;
 
     public HttpRequest() {
         init();
+    }
+
+    private void init() {
+        attributes = new HashMap<>();
+        parameters = new HashMap<>();
+        headers = new HashMap<>();
+        cookies = new HashMap<>();
+        multipartFiles = new HashMap<>();
+        characterEncoding = SpringIntegration.getServerConfig().getCharset();
     }
 
     public void setMethod(String method) {
         this.method = method;
     }
 
-    public String getPath() {
-        return path;
+    @Override
+    public String getMethod() {
+        return method;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setServletPath(String servletPath) {
+        this.servletPath = servletPath;
+    }
+
+    @Override
+    public String getServletPath() {
+        return servletPath;
     }
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+    @Override
+    public String getProtocol() {
+        return protocol;
     }
 
     public String getRequestContext() {
@@ -61,25 +80,35 @@ public class HttpRequest implements HttpServletRequest {
         this.requestContext = requestContext;
     }
 
-    public FileEntity getUploadFile() {
-        return uploadFile;
-    }
-
-    public void setUploadFile(FileEntity uploadFile) {
-        this.uploadFile = uploadFile;
-    }
-
-    public void setScheme(String scheme) {
-        this.scheme = scheme;
+    @Override
+    public String getCharacterEncoding() {
+        return characterEncoding;
     }
 
     @Override
-    public String getAuthType() {
-        return getHeader("Authorization");
+    public void setCharacterEncoding(String characterEncoding) {
+        this.characterEncoding = characterEncoding;
     }
 
-    public void addCookie(Cookie cookie) {
-        cookies.put(cookie.getName(), cookie);
+    public InputStream getRequestData() {
+        return requestData;
+    }
+
+    public void setRequestData(InputStream requestData) {
+        this.requestData = requestData;
+    }
+
+    public void putMultipartFile(MultipartFile multipartFile) {
+        multipartFiles.put(multipartFile.getName(), multipartFile);
+    }
+
+    public MultipartFile getMultipartFile(String key) {
+        return multipartFiles.get(key);
+    }
+
+    public MultipartFile[] getAllMultipartFile() {
+        MultipartFile[] files = new MultipartFile[0];
+        return multipartFiles.values().toArray(files);
     }
 
     @Override
@@ -88,55 +117,31 @@ public class HttpRequest implements HttpServletRequest {
         return cookies.values().toArray(arr);
     }
 
-    @Override
-    public String getHeader(String s) {
-        return headers.get(s);
-    }
-
-    public void putHeader(String s, String v) {
-        headers.put(s, v);
-    }
-
-    public Map<String, String> getHeaders() {
-        return headers;
+    public void addCookie(Cookie cookie) {
+        cookies.put(cookie.getName(), cookie);
     }
 
     @Override
-    public String getMethod() {
-        return method;
-    }
-
-
-    @Override
-    public String getPathTranslated() {
-        return headers.get("Host") + path;
-    }
-
-
-    @Override
-    public String getRequestedSessionId() {
-        return null;
-    }
-
-
-    @Override
-    public String getServletPath() {
-        return path;
-    }
-
-
-    @Override
-    public HttpSession getSession() {
-        return HttpServletContext.getInstance().getSession(getSessionId());
-    }
-
-    public String getSessionId() {
-        return cookies.get(IntegrationConstants.JSESSIONID).getValue();
+    public String getParameter(String s) {
+        return this.parameters.get(s);
     }
 
     @Override
-    public boolean isRequestedSessionIdValid() {
-        return HttpServletContext.getInstance().getSessions().containsKey(getSessionId());
+    public String[] getParameterValues(String s) {
+        String[] arr = new String[0];
+        return parameters.values().toArray(arr);
+    }
+
+    @Override
+    public Map getParameterMap() {
+        return parameters;
+    }
+
+    @Override
+    public Enumeration getAttributeNames() {
+        Set<String> names = new HashSet<>();
+        names.addAll(this.attributes.keySet());
+        return Collections.enumeration(names);
     }
 
     @Override
@@ -154,15 +159,42 @@ public class HttpRequest implements HttpServletRequest {
         attributes.remove(s);
     }
 
-
     @Override
-    public String getCharacterEncoding() {
-        return encoding;
+    public String getHeader(String s) {
+        return headers.get(s);
+    }
+
+    public void putHeader(String s, String v) {
+        headers.put(s, v);
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
     }
 
     @Override
-    public void setCharacterEncoding(String s) {
-        encoding = s;
+    public String getRequestedSessionId() {
+        return cookies.get(IntegrationConstants.JSESSIONID).getValue();
+    }
+
+    @Override
+    public Session getSession() {
+        return HttpServletContext.getInstance().getSession(getRequestedSessionId());
+    }
+
+    @Override
+    public boolean isRequestedSessionIdValid() {
+        return HttpServletContext.getInstance().getSessions().containsKey(getRequestedSessionId());
+    }
+
+    @Override
+    public String getAuthType() {
+        return getHeader("Authorization");
+    }
+
+    @Override
+    public String getPathTranslated() {
+        return headers.get("Host") + servletPath;
     }
 
     @Override
@@ -178,41 +210,12 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        return null;
-    }
-
-    @Override
-    public String getParameter(String s) {
-        return this.parameters.get(s);
-    }
-
-
-    @Override
-    public String[] getParameterValues(String s) {
-        String[] arr = new String[0];
-        return parameters.values().toArray(arr);
-    }
-
-    @Override
-    public Map getParameterMap() {
-        return parameters;
-    }
-
-    @Override
-    public String getProtocol() {
-        return protocol;
+        return new HttpServletInputStream(requestData);
     }
 
     @Override
     public String getScheme() {
-        //返回协议HTTP
-        return null;
-    }
-
-
-    @Override
-    public String getServerName() {
-        return null;
+        return getProtocol().split("/")[0];
     }
 
     @Override
@@ -220,65 +223,94 @@ public class HttpRequest implements HttpServletRequest {
         return SpringIntegration.getServerConfig().getPort();
     }
 
-
     @Override
-    public String getRemoteAddr() {
-        //客户端IP
-        return null;
-    }
-
-    @Override
-    public String getRemoteHost() {
-        //客户端主机名
-        return null;
+    public String getLocalName() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            return "unknown";
+        }
     }
 
     @Override
     public Locale getLocale() {
-        return Locale.CHINESE;
+        return Locale.getDefault();
+    }
+
+
+    @Override
+    public String getLocalAddr() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            return "unknown";
+        }
     }
 
     @Override
-    public boolean isSecure() {
-        return false;
+    public int getLocalPort() {
+        return SpringIntegration.getServerConfig().getPort();
+    }
+
+    private class HttpServletInputStream extends ServletInputStream {
+
+        private final InputStream in;
+
+        HttpServletInputStream(InputStream inputStream) {
+            in = inputStream;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return in.read();
+        }
+
+        @Override
+        public int read(byte b[], int off, int len) throws IOException {
+            return in.read(b, off, len);
+        }
     }
 
     @Override
-    public RequestDispatcher getRequestDispatcher(String s) {
+    @Deprecated
+    public String getRemoteAddr() {
         return null;
     }
 
     @Override
-    public String getRealPath(String s) {
+    @Deprecated
+    public String getRemoteHost() {
         return null;
     }
 
     @Override
+    @Deprecated
+    public String getServerName() {
+        return null;
+    }
+
+    @Override
+    @Deprecated
     public int getRemotePort() {
         return 0;
     }
 
     @Override
-    public String getLocalName() {
+    @Deprecated
+    public boolean isSecure() {
+        return false;
+    }
+
+    @Override
+    @Deprecated
+    public String getRealPath(String s) {
         return null;
     }
 
     @Override
-    public String getLocalAddr() {
+    @Deprecated
+    public RequestDispatcher getRequestDispatcher(String s) {
         return null;
-    }
-
-    @Override
-    public int getLocalPort() {
-        return 0;
-    }
-
-    private void init() {
-        attributes = new HashMap<>();
-        parameters = new HashMap<>();
-        headers = new HashMap<>();
-        cookies = new HashMap<>();
-        encoding = SpringIntegration.getServerConfig().getCharset();
     }
 
     @Override
@@ -296,12 +328,6 @@ public class HttpRequest implements HttpServletRequest {
     @Override
     @Deprecated
     public Enumeration getLocales() {
-        return null;
-    }
-
-    @Override
-    @Deprecated
-    public Enumeration getAttributeNames() {
         return null;
     }
 
@@ -333,7 +359,7 @@ public class HttpRequest implements HttpServletRequest {
     @Override
     @Deprecated
     public String getContextPath() {
-        return path;
+        return null;
     }
 
     @Override
@@ -365,7 +391,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     @Deprecated
-    public HttpSession getSession(boolean b) {
+    public Session getSession(boolean b) {
         return getSession();
     }
 

@@ -2,7 +2,6 @@ package com.zhukai.framework.spring.integration.http;
 
 import com.zhukai.framework.spring.integration.HttpServletContext;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 import java.util.Enumeration;
@@ -10,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Session implements HttpSession {
-
     private String sessionId;
     private long lastAccessedTime;
     private long creationTime;
@@ -42,7 +40,7 @@ public class Session implements HttpSession {
     }
 
     @Override
-    public ServletContext getServletContext() {
+    public HttpServletContext getServletContext() {
         return HttpServletContext.getInstance();
     }
 
@@ -67,6 +65,7 @@ public class Session implements HttpSession {
     }
 
     @Override
+    @Deprecated
     public boolean isNew() {
         return false;
     }

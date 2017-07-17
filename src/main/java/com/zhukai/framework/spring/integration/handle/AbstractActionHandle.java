@@ -4,14 +4,14 @@ import com.zhukai.framework.spring.integration.HttpServletContext;
 import com.zhukai.framework.spring.integration.Setup;
 import com.zhukai.framework.spring.integration.annotation.web.*;
 import com.zhukai.framework.spring.integration.bean.component.ComponentBeanFactory;
+import com.zhukai.framework.spring.integration.common.FileEntity;
+import com.zhukai.framework.spring.integration.common.MultipartFile;
 import com.zhukai.framework.spring.integration.constant.HttpHeaderType;
 import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.exception.RequestNotSupportException;
 import com.zhukai.framework.spring.integration.exception.RequestPathNotFoundException;
-import com.zhukai.framework.spring.integration.http.FileEntity;
 import com.zhukai.framework.spring.integration.http.HttpParser;
 import com.zhukai.framework.spring.integration.http.HttpResponse;
-import com.zhukai.framework.spring.integration.http.Session;
 import com.zhukai.framework.spring.integration.http.request.HttpRequest;
 import com.zhukai.framework.spring.integration.util.JsonUtil;
 import com.zhukai.framework.spring.integration.util.Resources;
@@ -20,6 +20,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -55,9 +57,9 @@ public abstract class AbstractActionHandle implements Runnable {
         checkSession();
         Object returnData;
         try {
-            if (request.getPath().startsWith("/public/")) {
-                InputStream inputStream = Resources.getResourceAsStream(request.getPath());
-                String[] arr = request.getPath().split("\\.");
+            if (request.getServletPath().startsWith("/public/")) {
+                InputStream inputStream = Resources.getResourceAsStream(request.getServletPath());
+                String[] arr = request.getServletPath().split("\\.");
                 if (arr.length > 0) {
                     String extensionName = arr[arr.length - 1];
                     String contentType = HttpParser.getContentType(extensionName);
@@ -65,7 +67,7 @@ public abstract class AbstractActionHandle implements Runnable {
                 }
                 returnData = inputStream;
             } else {
-                Method method = getMethodByRequestPath(request.getPath());
+                Method method = getMethodByRequestPath(request.getServletPath());
                 isRestUrl = method.getAnnotation(RequestMapping.class).value().contains("{");
                 Object result = invokeRequestMethod(method);
                 if (result instanceof FileEntity) {
@@ -99,13 +101,13 @@ public abstract class AbstractActionHandle implements Runnable {
     }
 
     private void checkSession() {
-        if (request.getSessionId() == null) {
+        if (request.getRequestedSessionId() == null) {
             String sessionId = UUID.randomUUID().toString();
             request.addCookie(new Cookie(IntegrationConstants.JSESSIONID, sessionId));
             response.setCookie(IntegrationConstants.JSESSIONID, sessionId);
             logger.info(sessionId + " has connected");
         }
-        HttpServletContext.getInstance().refreshSession(request.getSessionId());
+        HttpServletContext.getInstance().refreshSession(request.getRequestedSessionId());
     }
 
     @SuppressWarnings("unchecked")
@@ -160,17 +162,21 @@ public abstract class AbstractActionHandle implements Runnable {
     }
 
     private Object getParameterInstance(Parameter parameter, List<String> pathKeys, List<String> pathValues) throws Exception {
-        if (HttpRequest.class.isAssignableFrom(parameter.getType())) {
+        if (HttpServletRequest.class.isAssignableFrom(parameter.getType())) {
             return request;
         }
-        if (Session.class.isAssignableFrom(parameter.getType())) {
+        if (HttpSession.class.isAssignableFrom(parameter.getType())) {
             return request.getSession();
         }
         if (HttpResponse.class.isAssignableFrom(parameter.getType())) {
             return response;
         }
-        if (FileEntity.class.isAssignableFrom(parameter.getType())) {
-            return request.getUploadFile();
+        if (MultipartFile.class.isAssignableFrom(parameter.getType())) {
+            String fileName = parameter.getAnnotation(RequestParam.class).value();
+            return request.getMultipartFile(fileName);
+        }
+        if (MultipartFile[].class.isAssignableFrom(parameter.getType())) {
+            return request.getAllMultipartFile();
         }
         Annotation[] annotations = parameter.getAnnotations();
         if (annotations.length == 0) {
@@ -209,7 +215,7 @@ public abstract class AbstractActionHandle implements Runnable {
         List<String> pathValues = new ArrayList<>();
         String regular = requestMapperValue.replaceAll("\\{[^}]*}", "([^/]+)");
         Pattern pattern = Pattern.compile(regular);
-        Matcher restMatcher = pattern.matcher(request.getPath());
+        Matcher restMatcher = pattern.matcher(request.getServletPath());
         if (restMatcher.find()) {
             for (int i = 1; i <= restMatcher.groupCount(); i++) {
                 pathValues.add(restMatcher.group(i));

@@ -10,6 +10,7 @@ import com.zhukai.framework.spring.integration.http.request.HttpRequest;
 import com.zhukai.framework.spring.integration.http.request.HttpRequestBuilder;
 import com.zhukai.framework.spring.integration.http.request.HttpRequestDirector;
 import com.zhukai.framework.spring.integration.http.request.RequestBuilder;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -36,7 +37,7 @@ public class HttpParser {
     public static HttpRequest createRequest(SocketChannel channel) {
         try {
             return directorRequest(new HttpReaderNIO(channel));
-        } catch (HttpReadException e) {
+        } catch (HttpReadException | FileUploadException e) {
             logger.error("Create request error", e);
             return null;
         }
@@ -62,7 +63,7 @@ public class HttpParser {
         return sb.toString();
     }
 
-    private static HttpRequest directorRequest(AbstractHttpReader readerFactory) throws HttpReadException {
+    private static HttpRequest directorRequest(AbstractHttpReader readerFactory) throws HttpReadException, FileUploadException {
         RequestBuilder requestBuilder = new HttpRequestBuilder(readerFactory);
         HttpRequestDirector director = new HttpRequestDirector(requestBuilder);
         return director.createRequest();

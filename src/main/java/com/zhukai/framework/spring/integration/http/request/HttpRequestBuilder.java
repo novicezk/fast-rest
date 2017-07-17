@@ -1,15 +1,18 @@
 package com.zhukai.framework.spring.integration.http.request;
 
+import com.zhukai.framework.spring.integration.common.MultipartFile;
 import com.zhukai.framework.spring.integration.constant.HttpHeaderType;
 import com.zhukai.framework.spring.integration.constant.RequestType;
 import com.zhukai.framework.spring.integration.exception.HttpReadException;
-import com.zhukai.framework.spring.integration.http.FileEntity;
 import com.zhukai.framework.spring.integration.http.reader.AbstractHttpReader;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import javax.servlet.http.Cookie;
 import java.io.InputStream;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
 
 public class HttpRequestBuilder implements RequestBuilder {
     private AbstractHttpReader httpReader;
@@ -34,7 +37,7 @@ public class HttpRequestBuilder implements RequestBuilder {
         request = new HttpRequest();
         request.setMethod(firstLineArr[0]);
         request.setProtocol(firstLineArr[2]);
-        request.setPath(path);
+        request.setServletPath(path);
         if (pathArr.length > 1) {
             String[] pathParameter = pathArr[1].split("&");
             for (String param : pathParameter) {
@@ -67,7 +70,7 @@ public class HttpRequestBuilder implements RequestBuilder {
     }
 
     @Override
-    public HttpRequest buildBody() throws HttpReadException {
+    public HttpRequest buildBody() throws HttpReadException, FileUploadException {
         if (request.getMethod().equals(RequestType.POST)) {
             String contentType = request.getHeader(HttpHeaderType.CONTENT_TYPE);
             int contentLength = Integer.parseInt(request.getHeader(HttpHeaderType.CONTENT_LENGTH).trim());
@@ -76,24 +79,13 @@ public class HttpRequestBuilder implements RequestBuilder {
         return request;
     }
 
-    private static final Pattern fileNamePattern = Pattern.compile("filename=\"(.*?)\"");
-
-    private void setRequestPostParameter(String contentType, int contentLength) throws HttpReadException {
+    private void setRequestPostParameter(String contentType, int contentLength) throws HttpReadException, FileUploadException {
         if (contentType.startsWith("multipart/form-data")) {
-            String webKit = httpReader.readLine();
-            String contentDisposition = httpReader.readLine();
-            String fileType = httpReader.readLine();
-            Matcher matcher = fileNamePattern.matcher(contentDisposition);
-            String fileName = null;
-            if (matcher.find()) {
-                fileName = matcher.group(1);
-            }
-            int strSize = webKit.length() * 2 + contentDisposition.getBytes().length + fileType.length() + "\r\n".length() * 6 + 2;
-            int inputStreamSize = contentLength - strSize;
-            httpReader.readLine();
-            InputStream inputStream = httpReader.readFileInputStream(inputStreamSize);
-            FileEntity uploadFile = new FileEntity(fileName, inputStream);
-            request.setUploadFile(uploadFile);
+            InputStream inputStream = httpReader.readFileInputStream(contentLength);
+            request.setRequestData(inputStream);
+            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+            List<FileItem> fileItems = upload.parseRequest(request);
+            fileItems.forEach(item -> request.putMultipartFile(new MultipartFile(item)));
             return;
         }
         String postString = httpReader.readLimitSize(contentLength);
