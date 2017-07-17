@@ -97,7 +97,7 @@ public abstract class AbstractActionHandle implements Runnable {
                 return method;
             }
         }
-        throw new RequestPathNotFoundException(requestPath);
+        throw new RequestPathNotFoundException(requestPath + " not found");
     }
 
     private void checkSession() {
@@ -113,7 +113,7 @@ public abstract class AbstractActionHandle implements Runnable {
     @SuppressWarnings("unchecked")
     private Object invokeRequestMethod(Method method) throws Exception {
         if (!ArrayUtils.contains(method.getAnnotation(RequestMapping.class).method(), request.getMethod())) {
-            throw new RequestNotSupportException();
+            throw new RequestNotSupportException(request.getServletPath()+" "+request.getMethod()+" is not support");
         }
         try {
             return invokeMethod(method);
@@ -134,7 +134,6 @@ public abstract class AbstractActionHandle implements Runnable {
     private Object invokeMethod(Method method) throws Exception {
         return invokeMethod(method, null);
     }
-
 
     private Object invokeMethod(Method method, Throwable e) throws Exception {
         Object object = ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass());

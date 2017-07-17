@@ -56,7 +56,7 @@ public class MultipartFile {
 
     public void transferTo(File dest) throws Exception {
         if (dest.exists() && !dest.delete()) {
-            throw new IOException("Destination file [" + dest.getAbsolutePath() + "] already exists and could not be deleted");
+            throw new IOException(dest.getAbsolutePath() + " already exists and could not be deleted");
         } else {
             this.fileItem.write(dest);
         }
