@@ -3,7 +3,6 @@ package com.zhukai.framework.fast.rest.handle;
 import com.zhukai.framework.fast.rest.HttpServletContext;
 import com.zhukai.framework.fast.rest.Setup;
 import com.zhukai.framework.fast.rest.annotation.web.*;
-import com.zhukai.framework.spring.integration.annotation.web.*;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.common.FileEntity;
 import com.zhukai.framework.fast.rest.common.MultipartFile;
