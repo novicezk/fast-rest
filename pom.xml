@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.zhukai.framework</groupId>
-    <artifactId>spring-integration</artifactId>
+    <artifactId>fast-rest</artifactId>
     <version>1.2</version>
 
     <properties>
