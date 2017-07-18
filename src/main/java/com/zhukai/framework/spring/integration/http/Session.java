@@ -4,9 +4,7 @@ import com.zhukai.framework.spring.integration.HttpServletContext;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Session implements HttpSession {
     private String sessionId;
@@ -65,6 +63,13 @@ public class Session implements HttpSession {
     }
 
     @Override
+    public Enumeration getAttributeNames() {
+        Set<String> names = new HashSet<>();
+        names.addAll(this.attributes.keySet());
+        return Collections.enumeration(names);
+    }
+
+    @Override
     @Deprecated
     public boolean isNew() {
         return false;
@@ -86,12 +91,6 @@ public class Session implements HttpSession {
      */
     public int getMaxInactiveInterval() {
         return 0;
-    }
-
-    @Override
-    @Deprecated
-    public Enumeration getAttributeNames() {
-        return null;
     }
 
     @Override

@@ -4,13 +4,13 @@ import com.zhukai.framework.spring.integration.HttpServletContext;
 import com.zhukai.framework.spring.integration.SpringIntegration;
 import com.zhukai.framework.spring.integration.common.MultipartFile;
 import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
-import com.zhukai.framework.spring.integration.http.Session;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,7 +98,7 @@ public class HttpRequest implements HttpServletRequest {
         this.requestData = requestData;
     }
 
-    public void putMultipartFile(MultipartFile multipartFile) {
+    public void addMultipartFile(MultipartFile multipartFile) {
         multipartFiles.put(multipartFile.getName(), multipartFile);
     }
 
@@ -178,7 +178,7 @@ public class HttpRequest implements HttpServletRequest {
     }
 
     @Override
-    public Session getSession() {
+    public HttpSession getSession() {
         return HttpServletContext.getInstance().getSession(getRequestedSessionId());
     }
 
@@ -245,6 +245,20 @@ public class HttpRequest implements HttpServletRequest {
         } catch (UnknownHostException e) {
             return "unknown";
         }
+    }
+
+    @Override
+    public Enumeration getHeaderNames() {
+        Set<String> names = new HashSet<>();
+        names.addAll(this.headers.keySet());
+        return Collections.enumeration(names);
+    }
+
+    @Override
+    public Enumeration getParameterNames() {
+        Set<String> names = new HashSet<>();
+        names.addAll(this.parameters.keySet());
+        return Collections.enumeration(names);
     }
 
     @Override
@@ -352,12 +366,6 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     @Deprecated
-    public Enumeration getParameterNames() {
-        return null;
-    }
-
-    @Override
-    @Deprecated
     public String getContextPath() {
         return null;
     }
@@ -391,19 +399,13 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     @Deprecated
-    public Session getSession(boolean b) {
+    public HttpSession getSession(boolean b) {
         return getSession();
     }
 
     @Override
     @Deprecated
     public Enumeration getHeaders(String s) {
-        return null;
-    }
-
-    @Override
-    @Deprecated
-    public Enumeration getHeaderNames() {
         return null;
     }
 

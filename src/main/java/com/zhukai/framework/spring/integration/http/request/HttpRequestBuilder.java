@@ -85,7 +85,7 @@ public class HttpRequestBuilder implements RequestBuilder {
             request.setRequestData(inputStream);
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
             List<FileItem> fileItems = upload.parseRequest(request);
-            fileItems.forEach(item -> request.putMultipartFile(new MultipartFile(item)));
+            fileItems.forEach(item -> request.addMultipartFile(new MultipartFile(item)));
             return;
         }
         String postString = httpReader.readLimitSize(contentLength);

@@ -97,6 +97,13 @@ public class HttpServletContext implements ServletContext {
     }
 
     @Override
+    public Enumeration getAttributeNames() {
+        Set<String> names = new HashSet<>();
+        names.addAll(this.attributes.keySet());
+        return Collections.enumeration(names);
+    }
+
+    @Override
     @Deprecated
     public String getServletContextName() {
         return null;
@@ -177,12 +184,6 @@ public class HttpServletContext implements ServletContext {
     @Override
     @Deprecated
     public Enumeration getInitParameterNames() {
-        return null;
-    }
-
-    @Override
-    @Deprecated
-    public Enumeration getAttributeNames() {
         return null;
     }
 
