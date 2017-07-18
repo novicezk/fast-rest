@@ -47,7 +47,7 @@ public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
     @Deprecated
     @Override
     public <T> T getBean(Class<T> requiredType) {
-        String beanName = ReflectUtil.getBeanRegisterName(requiredType);
+        String beanName = ReflectUtil.getComponentValue(requiredType);
         beanName = StringUtils.isBlank(beanName) ? IntegrationConstants.DEFAULT_PROPERTIES : beanName;
         return requiredType.cast(propertiesMap.get(beanName));
     }

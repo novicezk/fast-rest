@@ -102,7 +102,7 @@ public class Setup {
             } else if (componentClass.isAnnotationPresent(Batcher.class)) {
                 addMethodToList(componentClass, batchMethods, Scheduled.class);
             }
-            String registerName = ReflectUtil.getBeanRegisterName(componentClass);
+            String registerName = ReflectUtil.getComponentValue(componentClass);
             if (registerName != null) {
                 registerComponentBean(componentClass, registerName);
             } else if (componentClass.isAnnotationPresent(Configure.class)) {

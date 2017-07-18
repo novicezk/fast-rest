@@ -119,7 +119,7 @@ public abstract class AbstractActionHandle implements Runnable {
             for (Method exceptionMethod : Setup.getExceptionHandlerMethods()) {
                 exceptionMethod.getAnnotation(ExceptionHandler.class).value();
                 Throwable cause = e.getCause();
-                for (Class throwableClass : exceptionMethod.getAnnotation(ExceptionHandler.class).value()) {
+                for (Class<? extends Throwable> throwableClass : exceptionMethod.getAnnotation(ExceptionHandler.class).value()) {
                     if (throwableClass.isAssignableFrom(cause.getClass())) {
                         return invokeMethod(exceptionMethod, cause);
                     }

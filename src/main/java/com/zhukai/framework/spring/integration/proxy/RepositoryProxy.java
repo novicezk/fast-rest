@@ -21,7 +21,7 @@ public class RepositoryProxy implements InvocationHandler {
     @SuppressWarnings("unchecked")
     public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
         Type[] actualTypes = ((ParameterizedType) mapperInterface.getGenericInterfaces()[0]).getActualTypeArguments();
-        Class entityClass = (Class) actualTypes[0];
+        Class<?> entityClass = (Class<?>) actualTypes[0];
         Connection conn = HttpServletContext.getInstance().getTransaction();
         MapperMethod mapperMethod = new MapperMethod(method, args, entityClass, conn);
         Object result = mapperMethod.execute();

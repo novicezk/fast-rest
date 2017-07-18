@@ -42,7 +42,7 @@ public class HttpRequestBuilder implements RequestBuilder {
             String[] pathParameter = pathArr[1].split("&");
             for (String param : pathParameter) {
                 String[] keyValue = param.split("=");
-                request.getParameterMap().put(keyValue[0], keyValue.length > 1 ? keyValue[1] : "");
+                request.putParameter(keyValue[0], keyValue.length > 1 ? keyValue[1] : "");
             }
         }
         return request;

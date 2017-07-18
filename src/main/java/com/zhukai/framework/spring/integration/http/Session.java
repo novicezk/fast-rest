@@ -77,18 +77,12 @@ public class Session implements HttpSession {
 
     @Override
     @Deprecated
-    /**
-     * use serverConfig.sessionTimeout
-     */
     public void setMaxInactiveInterval(int i) {
 
     }
 
     @Override
     @Deprecated
-    /**
-     * use serverConfig.sessionTimeout
-     */
     public int getMaxInactiveInterval() {
         return 0;
     }

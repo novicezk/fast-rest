@@ -122,7 +122,7 @@ public class ReflectUtil {
      * @param objectClass
      * @return 若objectClass存在Component注解，则返回Component的value，否则返回null
      */
-    public static String getBeanRegisterName(Class objectClass) {
+    public static String getComponentValue(Class objectClass) {
         if (objectClass.isAnnotation()) {
             return null;
         }

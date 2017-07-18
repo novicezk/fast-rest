@@ -138,6 +138,10 @@ public class HttpRequest implements HttpServletRequest {
         return parameters;
     }
 
+    public void putParameter(String s, String o) {
+        parameters.put(s, o);
+    }
+
     @Override
     public Enumeration getAttributeNames() {
         Set<String> names = new HashSet<>();
