@@ -63,7 +63,7 @@ public class SpringIntegration {
             logger.info("Batcher method: " + method.getName());
             scheduledExecutor.scheduleAtFixedRate(() -> {
                 try {
-                    method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()), new Object[]{});
+                    method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()));
                 } catch (Exception e) {
                     logger.error("Batcher method execute error", e);
                 }

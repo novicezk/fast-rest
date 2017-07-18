@@ -1,7 +1,7 @@
 package com.zhukai.framework.spring.integration.server;
 
-import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.config.ServerConfig;
+import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
 import com.zhukai.framework.spring.integration.handle.ActionHandleNIO;
 import com.zhukai.framework.spring.integration.http.HttpParser;
 import com.zhukai.framework.spring.integration.http.HttpResponse;
@@ -122,7 +122,6 @@ public class WebServerNIO {
             ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
             socketChannel.write(byteBuffer);
         } else {
-            //大文件
             int length;
             byte tempByte[] = new byte[IntegrationConstants.BUFFER_SIZE * 1024];
             while ((length = in.read(tempByte)) != -1) {

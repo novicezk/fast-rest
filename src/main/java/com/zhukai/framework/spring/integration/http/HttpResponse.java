@@ -5,7 +5,7 @@ import com.zhukai.framework.spring.integration.SpringIntegration;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpResponse<Result> {
+public class HttpResponse {
     private String contentType;
     private String fileName;
     private int statusCode = 200;
@@ -13,13 +13,13 @@ public class HttpResponse<Result> {
     private String protocol;
     private Map<String, String> cookies = new HashMap<>();
     private Map<String, String> headers = new HashMap<>();
-    private Result result;
+    private Object result;
 
-    public Result getResult() {
+    public Object getResult() {
         return result;
     }
 
-    public void setResult(Result result) {
+    public void setResult(Object result) {
         this.result = result;
     }
 

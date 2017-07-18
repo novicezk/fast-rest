@@ -84,7 +84,16 @@ public class ReflectUtil {
         } catch (Exception e) {
             logger.error(e);
         }
-        return (T) obj;
+        return objClass.cast(obj);
+    }
+
+    public static <T> T createInstance(Class<T> objClass) {
+        try {
+            return objClass.newInstance();
+        } catch (ReflectiveOperationException e) {
+            logger.error(e);
+            return null;
+        }
     }
 
     /**

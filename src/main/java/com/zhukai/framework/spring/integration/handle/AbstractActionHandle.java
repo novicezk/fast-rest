@@ -47,7 +47,6 @@ public abstract class AbstractActionHandle implements Runnable {
     protected abstract void respond();
 
     @Override
-    @SuppressWarnings("unchecked")
     public void run() {
         if (request == null) {
             return;
@@ -110,10 +109,9 @@ public abstract class AbstractActionHandle implements Runnable {
         HttpServletContext.getInstance().refreshSession(request.getRequestedSessionId());
     }
 
-    @SuppressWarnings("unchecked")
     private Object invokeRequestMethod(Method method) throws Exception {
         if (!ArrayUtils.contains(method.getAnnotation(RequestMapping.class).method(), request.getMethod())) {
-            throw new RequestNotSupportException(request.getServletPath()+" "+request.getMethod()+" is not support");
+            throw new RequestNotSupportException(request.getServletPath() + " " + request.getMethod() + " is not support");
         }
         try {
             return invokeMethod(method);

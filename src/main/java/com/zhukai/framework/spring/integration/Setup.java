@@ -27,6 +27,7 @@ import com.zhukai.framework.spring.integration.util.ReflectUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -63,9 +64,7 @@ public class Setup {
         if (SpringIntegration.getRunClass().isAnnotationPresent(EnableConfigure.class)) {
             EnableConfigure configurable = (EnableConfigure) SpringIntegration.getRunClass().getAnnotation(EnableConfigure.class);
             String[] propertiesArr = configurable.value();
-            for (String properties : propertiesArr) {
-                propertiesList.add(properties);
-            }
+            propertiesList.addAll(Arrays.asList(propertiesArr));
         }
         if (!propertiesList.contains(IntegrationConstants.DEFAULT_PROPERTIES)) {
             propertiesList.add(IntegrationConstants.DEFAULT_PROPERTIES);
@@ -94,7 +93,7 @@ public class Setup {
                 checkDatabase(componentClass, conn);
             } else if (componentClass.isAnnotationPresent(ControllerAdvice.class)) {
                 addMethodToList(componentClass, exceptionHandlerMethods, ExceptionHandler.class);
-                Collections.sort(exceptionHandlerMethods, (method1, method2) -> {
+                exceptionHandlerMethods.sort((method1, method2) -> {
                     int method1Seq = method1.getAnnotation(ExceptionHandler.class).catchSeq();
                     int method2Seq = method2.getAnnotation(ExceptionHandler.class).catchSeq();
                     if (method1Seq == method2Seq) return 0;
@@ -113,11 +112,11 @@ public class Setup {
         DBConnectionPool.getInstance().freeConnection(conn);
     }
 
-    private static void addMethodToList(Class componentClass, List list, Class methodAnnotation) {
+    private static void addMethodToList(Class componentClass, List<Method> list, Class<? extends Annotation> methodAnnotation) {
         Method[] methods = componentClass.getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            if (methods[i].isAnnotationPresent(methodAnnotation)) {
-                list.add(methods[i]);
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(methodAnnotation)) {
+                list.add(method);
             }
         }
     }

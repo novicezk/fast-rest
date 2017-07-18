@@ -18,7 +18,7 @@ public class AopProxy implements MethodInterceptor {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(clazz);
         enhancer.setCallback(this);
-        return (T) enhancer.create();
+        return clazz.cast(enhancer.create());
     }
 
     @Override

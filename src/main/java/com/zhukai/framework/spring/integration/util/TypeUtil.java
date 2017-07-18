@@ -12,24 +12,23 @@ public class TypeUtil {
      * @return 转换后的值
      * @throws Exception
      */
-    @SuppressWarnings("unchecked")
     public static <T> T convert(Object preValue, Class<T> convertTo) throws Exception {
         if (preValue == null || StringUtils.isBlank(preValue.toString())) {
             return null;
         }
         if (convertTo.equals(String.class)) {
-            return (T) preValue.toString();
+            return convertTo.cast(preValue.toString());
         } else if (isBasicType(convertTo)) {
             String simpleName = convertTo.getSimpleName();
             simpleName = simpleName.equals("Integer") ? "Int" : simpleName;
             Method method = convertTo.getMethod("parse" + simpleName, String.class);
-            return (T) method.invoke(null, preValue.toString());
+            return convertTo.cast(method.invoke(null, preValue.toString()));
         }
-        return (T) preValue;
+        return convertTo.cast(preValue);
     }
 
     public static boolean isBasicType(Object object) {
-        return object == null ? false : isBasicType(object.getClass());
+        return object != null && isBasicType(object.getClass());
     }
 
     public static boolean isBasicType(Class clazz) {

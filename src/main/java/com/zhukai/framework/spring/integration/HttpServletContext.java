@@ -80,10 +80,7 @@ public class HttpServletContext implements ServletContext {
     }
 
     public Session getSession(String sessionId) {
-        if (sessions.get(sessionId) == null) {
-            sessions.put(sessionId, new Session(sessionId));
-        }
-        return sessions.get(sessionId);
+        return sessions.computeIfAbsent(sessionId, Session::new);
     }
 
     public Map<String, Session> getSessions() {

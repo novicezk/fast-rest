@@ -11,15 +11,13 @@ public interface BeanFactory<Bean> {
 
     void registerBean(Bean baseBean);
 
-    @SuppressWarnings("unchecked")
-    default <T> T getBean(String beanName, T requiredType) {
-        return (T) getBean(beanName);
+    default <T> T getBean(String beanName, Class<T> requiredType) {
+        return requiredType.cast(getBean(beanName));
     }
 
-    @SuppressWarnings("unchecked")
     default <T> T getBean(Class<T> requiredType) {
         String beanName = ReflectUtil.getBeanRegisterName(requiredType);
         beanName = StringUtils.isBlank(beanName) ? requiredType.getName() : beanName;
-        return (T) getBean(beanName);
+        return requiredType.cast(getBean(beanName));
     }
 }

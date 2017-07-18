@@ -4,6 +4,7 @@ import com.zhukai.framework.spring.integration.HttpServletContext;
 import com.zhukai.framework.spring.integration.SpringIntegration;
 import com.zhukai.framework.spring.integration.common.MultipartFile;
 import com.zhukai.framework.spring.integration.constant.IntegrationConstants;
+import com.zhukai.framework.spring.integration.http.Session;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.RequestDispatcher;
@@ -178,7 +179,7 @@ public class HttpRequest implements HttpServletRequest {
     }
 
     @Override
-    public HttpSession getSession() {
+    public Session getSession() {
         return HttpServletContext.getInstance().getSession(getRequestedSessionId());
     }
 

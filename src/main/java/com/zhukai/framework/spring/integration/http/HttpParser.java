@@ -43,7 +43,6 @@ public class HttpParser {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static String parseHttpString(HttpResponse response) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append(response.getProtocol()).append(" ")

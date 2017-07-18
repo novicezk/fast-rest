@@ -1,10 +1,10 @@
 package com.zhukai.framework.spring.integration.jdbc.data.jpa;
 
 import com.zhukai.framework.spring.integration.annotation.jpa.Column;
-import com.zhukai.framework.spring.integration.annotation.jpa.Id;
-import com.zhukai.framework.spring.integration.util.ReflectUtil;
 import com.zhukai.framework.spring.integration.annotation.jpa.Entity;
 import com.zhukai.framework.spring.integration.annotation.jpa.GeneratedValue;
+import com.zhukai.framework.spring.integration.annotation.jpa.Id;
+import com.zhukai.framework.spring.integration.util.ReflectUtil;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -201,21 +201,20 @@ public class JpaUtil {
         return sql.toString();
     }
 
-    @SuppressWarnings("unchecked")
     private static String getSqlType(Class typeClass) {
-        if (typeClass.isAssignableFrom(Integer.class)) {
+        if (typeClass.equals(Integer.class)) {
             return "INTEGER";
         }
-        if (typeClass.isAssignableFrom(Long.class)) {
+        if (typeClass.equals(Long.class)) {
             return "BIGINT";
         }
-        if (typeClass.isAssignableFrom(String.class)) {
+        if (typeClass.equals(String.class)) {
             return "VARCHAR";
         }
-        if (typeClass.isAssignableFrom(Double.class)) {
+        if (typeClass.equals(Double.class)) {
             return "DOUBLE";
         }
-        if (typeClass.isAssignableFrom(Float.class)) {
+        if (typeClass.equals(Float.class)) {
             return "FLOAT";
         }
         if (typeClass.isAnnotationPresent(Entity.class)) {

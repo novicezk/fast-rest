@@ -46,7 +46,7 @@ public class MapperMethod<T> {
         }
     }
 
-
+    @SuppressWarnings("unchecked")
     public Object execute() throws Exception {
         checkTransactional();
         String methodName = method.getName();
@@ -75,7 +75,8 @@ public class MapperMethod<T> {
                     if (args[0] instanceof Object[]) {
                         return getBeans((Object[]) args[0]);
                     } else if (args[0] instanceof List) {
-                        return getBeansIn((List) args[0]);
+
+                        return getBeansIn(List.class.cast(args[0]));
                     }
                 }
                 return getBeans(null);
@@ -179,19 +180,13 @@ public class MapperMethod<T> {
         Field idField = JpaUtil.getIdField(entityClass);
         String sql = JpaUtil.getSelectSQL(entityClass, new Object[]{idField.getName(), ID});
         resultSet = executeQuery(sql);
-        if (resultSet.next()) {
-            return true;
-        }
-        return false;
+        return resultSet.next();
     }
 
     private boolean existsByProperties(Object[] properties) throws Exception {
         String sql = JpaUtil.getSelectSQL(entityClass, properties);
         resultSet = executeQuery(sql + " LIMIT 1");
-        if (resultSet.next()) {
-            return true;
-        }
-        return false;
+        return resultSet.next();
     }
 
     private List<T> getBeans(Object[] properties) throws Exception {
@@ -200,7 +195,7 @@ public class MapperMethod<T> {
     }
 
     private <ID> List<T> getBeansIn(List<ID> ids) throws Exception {
-        List<T> beans = new ArrayList();
+        List<T> beans = new ArrayList<>();
         for (ID id : ids) {
             beans.add(getBean(id));
         }
@@ -229,7 +224,7 @@ public class MapperMethod<T> {
         } else {
             resultSet = executeQuery(sql);
         }
-        List<T> entityList = new ArrayList();
+        List<T> entityList = new ArrayList<>();
         while (resultSet.next()) {
             entityList.add(JpaUtil.convertToEntity(entityClass, resultSet));
         }

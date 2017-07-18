@@ -11,7 +11,7 @@ public class ProxyFactory {
         } else if (clazz.isAnnotationPresent(Service.class)) {
             return new AopProxy().getProxyInstance(clazz);
         } else {
-            return ReflectUtil.createInstance(clazz, new Class[]{}, new Object[]{});
+            return ReflectUtil.createInstance(clazz);
         }
     }
 }
