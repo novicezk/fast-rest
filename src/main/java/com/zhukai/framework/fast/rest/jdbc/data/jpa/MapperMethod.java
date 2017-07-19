@@ -37,7 +37,7 @@ public class MapperMethod<T> {
         this.conn = conn;
     }
 
-    public void release() throws SQLException {
+    public void release() throws SQLException, InterruptedException {
         if (conn != null && !isTransactional) {
             DBConnectionPool.getInstance().freeConnection(conn);
         }

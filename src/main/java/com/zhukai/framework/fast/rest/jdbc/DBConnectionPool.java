@@ -7,13 +7,15 @@ import org.apache.log4j.Logger;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.LinkedList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.LongAdder;
 
 public class DBConnectionPool {
     private static Logger logger = Logger.getLogger(DBConnectionPool.class);
 
-    private int checkOutSize = 0;
-    private LinkedList<Connection> freeConnPool = new LinkedList<>();
+    private LongAdder checkOutSize = new LongAdder();
+    private BlockingQueue<Connection> freeConnPool = new LinkedBlockingQueue<>();
     private DataSource dataSource;
 
     public static DBConnectionPool getInstance() {
@@ -26,7 +28,7 @@ public class DBConnectionPool {
 
     private static DBConnectionPool instance = new DBConnectionPool();
 
-    public synchronized void freeConnection(Connection con) {
+    public void freeConnection(Connection con) throws InterruptedException {
         if (con == null) {
             return;
         }
@@ -35,8 +37,8 @@ public class DBConnectionPool {
         } catch (SQLException e) {
             logger.error(e);
         }
-        freeConnPool.addLast(con);
-        checkOutSize--;
+        freeConnPool.put(con);
+        checkOutSize.add(-1);
         notify();
     }
 
@@ -47,17 +49,17 @@ public class DBConnectionPool {
         return getConnection(true);
     }
 
-    public void init(DataSource source) throws ClassNotFoundException, SQLException {
+    public void init(DataSource source) throws Exception {
         dataSource = source;
         Class.forName(source.getDriverClass());
         for (int i = 0; i < source.getMinConn(); i++) {
             Connection connection = DriverManager.getConnection(source.getUrl(),
                     source.getUsername(), source.getPassword());
-            freeConnPool.add(connection);
+            freeConnPool.put(connection);
         }
     }
 
-    public static void commit(Connection conn) throws SQLException {
+    public static void commit(Connection conn) throws SQLException, InterruptedException {
         try {
             conn.commit();
             logger.info("Transactional over");
@@ -69,14 +71,14 @@ public class DBConnectionPool {
         }
     }
 
-    private synchronized Connection getConnection(boolean isFirst) throws SQLException, InterruptedException, DBConnectTimeoutException {
-        if (freeConnPool.size() > 0) {
-            checkOutSize++;
-            return freeConnPool.poll();
-        } else if (checkOutSize < dataSource.getMaxConn()) {
+    private Connection getConnection(boolean isFirst) throws Exception {
+        if (!freeConnPool.isEmpty()) {
+            checkOutSize.add(1);
+            return freeConnPool.take();
+        } else if (checkOutSize.intValue() < dataSource.getMaxConn()) {
             Connection connection = DriverManager.getConnection(dataSource.getUrl(),
                     dataSource.getUsername(), dataSource.getPassword());
-            checkOutSize++;
+            checkOutSize.add(1);
             return connection;
         } else if (isFirst) {
             wait(dataSource.getTimeout());

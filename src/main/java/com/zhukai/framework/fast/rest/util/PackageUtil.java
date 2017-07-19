@@ -15,7 +15,6 @@ public class PackageUtil {
     /**
      * @param runClass 目标类
      * @return runClass同包或子级包的所有类
-     * @throws Exception
      */
     public static List<Class> getAllClassesByMainClass(Class runClass) throws Exception {
         List<Class> classes = new ArrayList<>();
@@ -40,33 +39,30 @@ public class PackageUtil {
         if (!dir.exists() || !dir.isDirectory()) {
             return;
         }
-        File[] dirFiles = dir.listFiles(file -> {
-            boolean acceptDir = file.isDirectory();
-            boolean acceptClass = file.getName().endsWith("class");
-            return acceptDir || acceptClass;
-        });
-        for (File file : dirFiles) {
-            if (file.isDirectory()) {
-                findClassInPackageByFile(packageName + "." + file.getName(), file.getAbsolutePath(), classes);
-            } else {
-                String className = file.getName().substring(0, file.getName().length() - 6);
-                classes.add(Thread.currentThread().getContextClassLoader().loadClass(packageName + "." + className));
+        File[] dirFiles = dir.listFiles(file ->
+                file.isDirectory() || file.getName().endsWith("class")
+        );
+        if (dirFiles != null) {
+            for (File file : dirFiles) {
+                if (file.isDirectory()) {
+                    findClassInPackageByFile(packageName + "." + file.getName(), file.getAbsolutePath(), classes);
+                } else {
+                    String className = file.getName().substring(0, file.getName().length() - 6);
+                    classes.add(Thread.currentThread().getContextClassLoader().loadClass(packageName + "." + className));
+                }
             }
         }
     }
 
     private static void findClassInPackageByJar(String packageDirName, URL url, List<Class> classes) throws IOException, ClassNotFoundException {
-        JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
+        JarFile jar = JarURLConnection.class.cast(url.openConnection()).getJarFile();
         Enumeration<JarEntry> entries = jar.entries();
         while (entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement();
-            String name = entry.getName();
-            if (name.charAt(0) == '/') {
-                name = name.substring(1);
-            }
-            if (name.startsWith(packageDirName)) {
+            String name = entry.getName().charAt(0) == '/' ? entry.getName().substring(1) : entry.getName();
+            if (name.startsWith(packageDirName) && name.endsWith(".class") && !entry.isDirectory()) {
                 int idx = name.lastIndexOf('/');
-                if (idx != -1 && name.endsWith(".class") && !entry.isDirectory()) {
+                if (idx != -1) {
                     String packageName = name.substring(0, idx).replace('/', '.');
                     String className = name.substring(packageName.length() + 1, name.length() - 6);
                     classes.add(Class.forName(packageName + '.' + className));
