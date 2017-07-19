@@ -44,14 +44,15 @@ public class Setup {
     private static List<Method> exceptionHandlerMethods = new ArrayList<>();
     private static final Logger logger = Logger.getLogger(Setup.class);
     private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
+    private static DataSource dataSource;
 
     static void init() throws IntegrationInitException {
         try {
             initProperties();
             initConfig();
-            DataSource dataSource = ConfigureBeanFactory.getInstance().getBean(DataSource.class);
+            dataSource = ConfigureBeanFactory.getInstance().getBean(DataSource.class);
             if (dataSource != null) {
-                DBConnectionPool.getInstance().init(dataSource);
+                DBConnectionPool.init(dataSource);
             }
             scanComponent();
         } catch (Exception e) {
@@ -82,7 +83,7 @@ public class Setup {
     }
 
     private static void scanComponent() throws Exception {
-        Connection conn = DBConnectionPool.getInstance().getConnection();
+        Connection conn = dataSource != null ? DBConnectionPool.getConnection() : null;
         List<Class> classes = PackageUtil.getAllClassesByMainClass(FastRestApplication.getRunClass());
         for (Class componentClass : classes) {
             if (componentClass.isAnnotation()) {
@@ -109,7 +110,9 @@ public class Setup {
                 registerConfigureBean(componentClass);
             }
         }
-        DBConnectionPool.getInstance().freeConnection(conn);
+        if (conn != null) {
+            DBConnectionPool.freeConnection(conn);
+        }
     }
 
     private static void addMethodToList(Class componentClass, List<Method> list, Class<? extends Annotation> methodAnnotation) {

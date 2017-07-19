@@ -9,29 +9,17 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
 public class DBConnectionPool {
     private static Logger logger = Logger.getLogger(DBConnectionPool.class);
 
-    private LongAdder checkOutSize = new LongAdder();
-    private BlockingQueue<Connection> freeConnPool = new LinkedBlockingQueue<>();
-    private DataSource dataSource;
+    private static LongAdder checkOutSize = new LongAdder();
+    private static BlockingQueue<Connection> freeConnPool = new LinkedBlockingQueue<>();
+    private static DataSource dataSource;
 
-    public static DBConnectionPool getInstance() {
-        return instance;
-    }
-
-    private DBConnectionPool() {
-
-    }
-
-    private static DBConnectionPool instance = new DBConnectionPool();
-
-    public void freeConnection(Connection con) throws InterruptedException {
-        if (con == null) {
-            return;
-        }
+    public static void freeConnection(Connection con) throws InterruptedException {
         try {
             con.setAutoCommit(true);
         } catch (SQLException e) {
@@ -39,17 +27,9 @@ public class DBConnectionPool {
         }
         freeConnPool.put(con);
         checkOutSize.add(-1);
-        notify();
     }
 
-    public Connection getConnection() throws Exception {
-        if (dataSource == null) {
-            return null;
-        }
-        return getConnection(true);
-    }
-
-    public void init(DataSource source) throws Exception {
+    public static void init(DataSource source) throws Exception {
         dataSource = source;
         Class.forName(source.getDriverClass());
         for (int i = 0; i < source.getMinConn(); i++) {
@@ -67,11 +47,11 @@ public class DBConnectionPool {
             conn.rollback();
             logger.error("Transactional rollback：", ex);
         } finally {
-            instance.freeConnection(conn);
+            freeConnection(conn);
         }
     }
 
-    private Connection getConnection(boolean isFirst) throws Exception {
+    public static Connection getConnection() throws Exception {
         if (!freeConnPool.isEmpty()) {
             checkOutSize.add(1);
             return freeConnPool.take();
@@ -80,11 +60,12 @@ public class DBConnectionPool {
                     dataSource.getUsername(), dataSource.getPassword());
             checkOutSize.add(1);
             return connection;
-        } else if (isFirst) {
-            wait(dataSource.getTimeout());
-            return getConnection(false);
         } else {
-            throw new DBConnectTimeoutException();
+            Connection connection = freeConnPool.poll(dataSource.getTimeout(), TimeUnit.MILLISECONDS);
+            if (connection == null) {
+                throw new DBConnectTimeoutException();
+            }
+            return connection;
         }
     }
 }

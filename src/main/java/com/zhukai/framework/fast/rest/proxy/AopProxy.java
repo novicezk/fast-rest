@@ -26,7 +26,7 @@ public class AopProxy implements MethodInterceptor {
         Connection connection = null;
         if (method.isAnnotationPresent(Transactional.class)) {
             logger.info("Transactional begin");
-            connection = DBConnectionPool.getInstance().getConnection();
+            connection = DBConnectionPool.getConnection();
             connection.setAutoCommit(false);
             HttpServletContext.getInstance().setTransaction(connection);
         }

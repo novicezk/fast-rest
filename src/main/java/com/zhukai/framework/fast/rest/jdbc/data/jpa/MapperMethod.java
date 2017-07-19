@@ -1,11 +1,11 @@
 package com.zhukai.framework.fast.rest.jdbc.data.jpa;
 
-import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import com.zhukai.framework.fast.rest.annotation.jpa.ExecuteUpdate;
 import com.zhukai.framework.fast.rest.annotation.jpa.QueryCondition;
 import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
+import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -39,7 +39,7 @@ public class MapperMethod<T> {
 
     public void release() throws SQLException, InterruptedException {
         if (conn != null && !isTransactional) {
-            DBConnectionPool.getInstance().freeConnection(conn);
+            DBConnectionPool.freeConnection(conn);
         }
         if (resultSet != null) {
             resultSet.close();
@@ -119,7 +119,7 @@ public class MapperMethod<T> {
     private void checkTransactional() throws Exception {
         if (conn == null) {
             isTransactional = false;
-            conn = DBConnectionPool.getInstance().getConnection();
+            conn = DBConnectionPool.getConnection();
         }
     }
 
