@@ -29,7 +29,7 @@ public class PackageUtil {
                 String filePath = URLDecoder.decode(url.getFile(), "utf-8");
                 findClassInPackageByFile(packageName, filePath, classes);
             } else if ("jar".equals(protocol)) {
-                findClassInPackageByJar(packageDirName, packageName, url, classes);
+                findClassInPackageByJar(packageDirName, url, classes);
             }
         }
         return classes;
@@ -55,7 +55,7 @@ public class PackageUtil {
         }
     }
 
-    private static void findClassInPackageByJar(String packageDirName, String packageName, URL url, List<Class> classes) throws IOException, ClassNotFoundException {
+    private static void findClassInPackageByJar(String packageDirName, URL url, List<Class> classes) throws IOException, ClassNotFoundException {
         JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
         Enumeration<JarEntry> entries = jar.entries();
         while (entries.hasMoreElements()) {
@@ -66,9 +66,8 @@ public class PackageUtil {
             }
             if (name.startsWith(packageDirName)) {
                 int idx = name.lastIndexOf('/');
-                if (idx != -1) {
-                    packageName = name.substring(0, idx).replace('/', '.');
-                } else if (name.endsWith(".class") && !entry.isDirectory()) {
+                if (idx != -1 && name.endsWith(".class") && !entry.isDirectory()) {
+                    String packageName = name.substring(0, idx).replace('/', '.');
                     String className = name.substring(packageName.length() + 1, name.length() - 6);
                     classes.add(Class.forName(packageName + '.' + className));
                 }
