@@ -56,7 +56,15 @@ public abstract class AbstractActionHandle implements Runnable {
         checkSession();
         Object returnData;
         try {
-            if (request.getServletPath().startsWith("/public/")) {
+            if (request.getServletPath().equals("/favicon.ico")) {
+                InputStream inputStream = Resources.getResourceAsStream(request.getServletPath());
+                if (inputStream == null) {
+                    inputStream = AbstractActionHandle.class.getResourceAsStream(request.getServletPath());
+                }
+                String contentType = HttpParser.getContentType("ico");
+                response.setContentType(contentType);
+                returnData = inputStream;
+            } else if (request.getServletPath().startsWith("/public/")) {
                 InputStream inputStream = Resources.getResourceAsStream(request.getServletPath());
                 String[] arr = request.getServletPath().split("\\.");
                 if (arr.length > 0) {

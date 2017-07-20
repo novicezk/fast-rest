@@ -31,9 +31,6 @@ public class HttpRequestBuilder implements RequestBuilder {
         }
         String[] pathArr = firstLineArr[1].split("\\?");
         String path = pathArr[0];
-        if (path.equals("/favicon.ico")) {
-            return null;
-        }
         request = new HttpRequest();
         request.setMethod(firstLineArr[0]);
         request.setProtocol(firstLineArr[2]);

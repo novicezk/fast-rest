@@ -179,7 +179,11 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getRequestedSessionId() {
-        return cookies.get(IntegrationConstants.JSESSIONID).getValue();
+        Cookie cookie = cookies.get(IntegrationConstants.JSESSIONID);
+        if (cookie != null) {
+            return cookie.getValue();
+        }
+        return null;
     }
 
     @Override
