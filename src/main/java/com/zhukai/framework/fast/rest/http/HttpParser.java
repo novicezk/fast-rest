@@ -43,6 +43,12 @@ public class HttpParser {
         }
     }
 
+    private static HttpRequest directorRequest(AbstractHttpReader readerFactory) throws HttpReadException, FileUploadException {
+        RequestBuilder requestBuilder = new HttpRequestBuilder(readerFactory);
+        HttpRequestDirector director = new HttpRequestDirector(requestBuilder);
+        return director.createRequest();
+    }
+
     public static String parseHttpString(HttpResponse response) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append(response.getProtocol()).append(" ")
@@ -61,13 +67,6 @@ public class HttpParser {
         sb.append("\r\n");
         return sb.toString();
     }
-
-    private static HttpRequest directorRequest(AbstractHttpReader readerFactory) throws HttpReadException, FileUploadException {
-        RequestBuilder requestBuilder = new HttpRequestBuilder(readerFactory);
-        HttpRequestDirector director = new HttpRequestDirector(requestBuilder);
-        return director.createRequest();
-    }
-
 
     public static String getContentType(String extensionName) {
         String type = mimeTypes.getProperty(extensionName);

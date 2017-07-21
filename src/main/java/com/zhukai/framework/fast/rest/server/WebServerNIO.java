@@ -55,10 +55,6 @@ public class WebServerNIO {
         }
     }
 
-    public static Selector getSelector() {
-        return selector;
-    }
-
     private static void acceptKey(SelectionKey key) throws IOException {
         ServerSocketChannel server = (ServerSocketChannel) key.channel();
         SocketChannel channel = server.accept();
@@ -70,7 +66,7 @@ public class WebServerNIO {
         SocketChannel channel = (SocketChannel) key.channel();
         HttpRequest request = HttpParser.createRequest(channel);
         if (request != null) {
-            service.execute(new ActionHandleNIO(channel, request));
+            service.execute(new ActionHandleNIO(request, key));
             key.interestOps(key.interestOps() & ~SelectionKey.OP_READ);
         } else {
             channel.shutdownInput();

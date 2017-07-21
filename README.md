@@ -40,7 +40,7 @@ src
 --------HelloController.java
 ```
 Application.java(项目启动入口，必须放在一个包下，其他类需要放在它的同级或子级包下)
-```$xslt
+```java
 package com;
 
 import com.zhukai.framework.fast.rest.FastRestApplication;
@@ -52,7 +52,7 @@ public class Application {
 }
 ```
 HelloController.java
-```$xslt
+```java
 package com;
 
 import com.zhukai.framework.fast.rest.annotation.web.RequestMapping;

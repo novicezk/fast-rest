@@ -18,7 +18,7 @@ public abstract class AbstractHttpReader {
             throw new HttpReadException(e);
         }
     }
-    
+
     public String readLimitSize(int size) throws HttpReadException {
         try {
             byte[] bytes = readByteArrayLimitSize(size);

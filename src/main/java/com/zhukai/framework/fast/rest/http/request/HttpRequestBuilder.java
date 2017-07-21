@@ -24,16 +24,16 @@ public class HttpRequestBuilder implements RequestBuilder {
 
     @Override
     public HttpRequest buildUrl() throws HttpReadException {
-        String line = httpReader.readLine();
-        String[] firstLineArr = line.split(" ");
-        if (firstLineArr.length < 3) {
+        String startLine = httpReader.readLine();
+        String[] startLineArr = startLine.split(" ");
+        if (startLineArr.length < 3) {
             return null;
         }
-        String[] pathArr = firstLineArr[1].split("\\?");
+        String[] pathArr = startLineArr[1].split("\\?");
         String path = pathArr[0];
         request = new HttpRequest();
-        request.setMethod(firstLineArr[0]);
-        request.setProtocol(firstLineArr[2]);
+        request.setMethod(startLineArr[0]);
+        request.setProtocol(startLineArr[2]);
         request.setServletPath(path);
         if (pathArr.length > 1) {
             String[] pathParameter = pathArr[1].split("&");
@@ -47,36 +47,38 @@ public class HttpRequestBuilder implements RequestBuilder {
 
     @Override
     public HttpRequest buildHead() throws HttpReadException {
-        String contextLine = httpReader.readLine();
-        while (!contextLine.trim().equals("")) {
-            if (contextLine.startsWith("Cookie")) {
-                String cookieString = contextLine.substring(contextLine.indexOf(':') + 2);
+        String headLine = httpReader.readLine();
+        while (!headLine.trim().equals("")) {
+            if (headLine.startsWith("Cookie")) {
+                String cookieString = headLine.substring(headLine.indexOf(':') + 2);
                 String[] cookieArr = cookieString.split(";");
                 for (String cookie : cookieArr) {
                     String[] keyValue = cookie.split("=");
                     request.addCookie(new Cookie(keyValue[0].trim(), keyValue[1].trim()));
                 }
             } else {
-                String headerKey = contextLine.substring(0, contextLine.indexOf(':'));
-                String headerValue = contextLine.substring(contextLine.indexOf(':') + 2);
+                String headerKey = headLine.substring(0, headLine.indexOf(':'));
+                String headerValue = headLine.substring(headLine.indexOf(':') + 2);
                 request.putHeader(headerKey, headerValue);
             }
-            contextLine = httpReader.readLine();
+            headLine = httpReader.readLine();
         }
         return request;
     }
 
     @Override
     public HttpRequest buildBody() throws HttpReadException, FileUploadException {
-        if (request.getMethod().equals(RequestType.POST)) {
+        if (request.getMethod().equals(RequestType.POST)
+                || request.getMethod().equals(RequestType.DELETE)
+                || request.getMethod().equals(RequestType.PUT)) {
             String contentType = request.getHeader(HttpHeaderType.CONTENT_TYPE);
             int contentLength = Integer.parseInt(request.getHeader(HttpHeaderType.CONTENT_LENGTH).trim());
-            setRequestPostParameter(contentType, contentLength);
+            handleRequestBody(contentType, contentLength);
         }
         return request;
     }
 
-    private void setRequestPostParameter(String contentType, int contentLength) throws HttpReadException, FileUploadException {
+    private void handleRequestBody(String contentType, int contentLength) throws HttpReadException, FileUploadException {
         if (contentType.startsWith("multipart/form-data")) {
             InputStream inputStream = httpReader.readFileInputStream(contentLength);
             request.setRequestData(inputStream);
@@ -85,15 +87,15 @@ public class HttpRequestBuilder implements RequestBuilder {
             fileItems.forEach(item -> request.addMultipartFile(new MultipartFile(item)));
             return;
         }
-        String postString = httpReader.readLimitSize(contentLength);
+        String bodyContext = httpReader.readLimitSize(contentLength);
         if (contentType.startsWith("application/x-www-form-urlencoded")) {
-            String[] paramStringArr = postString.split("&");
+            String[] paramStringArr = bodyContext.split("&");
             for (String paramString : paramStringArr) {
                 String[] param = paramString.split("=");
                 request.setAttribute(param[0], param[1]);
             }
         } else if (contentType.startsWith("text/plain") || contentType.startsWith("application/json")) {
-            request.setRequestContext(postString);
+            request.setRequestContext(bodyContext);
         }
     }
 
