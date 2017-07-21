@@ -1,5 +1,5 @@
 # 简介
-Fast Rest是个参考Spring Boot的轻量级Java框架，不依赖任何现有框架，本身实现的spring和jpa等功能，可极快创建一个json数据传输的rest服务。
+Fast Rest是个参考Spring Boot的轻量级Java框架，不依赖任何现有框架，本身实现的Spring和JPA等功能，可极快创建一个json数据传输的REST HTTP或HTTPS服务。
 
 # 特点
 1. 使用注解代替xml文件
