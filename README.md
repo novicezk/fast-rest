@@ -11,7 +11,7 @@ Fast Rest是个参考Spring Boot的轻量级Java框架，不依赖任何现有�
 1. 下载该项目，git clone或下载zip
 2. 进入fast-rest项目，执行mvn install
 3. 新建maven项目，添加该框架jar包依赖，示例pom文件：
-```
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
