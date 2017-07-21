@@ -10,8 +10,11 @@ public class ServerConfig {
     private Integer port = 8080;
     private Boolean showSQL = false;
     private String fileTmp = "/tmp/";
-    private Boolean useNio = true;
     private String charset = "utf-8";
+    private Boolean useSSL = false;
+    private Boolean needClientAuth = false;
+    private String keyStoreFile;
+    private String keyStorePassword;
 
     public ServerConfig() {
     }
@@ -56,20 +59,44 @@ public class ServerConfig {
         this.fileTmp = fileTmp;
     }
 
-    public Boolean isUseNio() {
-        return useNio;
-    }
-
-    public void setUseNio(Boolean useNio) {
-        this.useNio = useNio;
-    }
-
     public String getCharset() {
         return charset;
     }
 
     public void setCharset(String charset) {
         this.charset = charset;
+    }
+
+    public Boolean isUseSSL() {
+        return useSSL;
+    }
+
+    public void setUseSSL(Boolean useSSL) {
+        this.useSSL = useSSL;
+    }
+
+    public Boolean isNeedClientAuth() {
+        return needClientAuth;
+    }
+
+    public void setNeedClientAuth(Boolean needClientAuth) {
+        this.needClientAuth = needClientAuth;
+    }
+
+    public String getKeyStoreFile() {
+        return keyStoreFile;
+    }
+
+    public void setKeyStoreFile(String keyStoreFile) {
+        this.keyStoreFile = keyStoreFile;
+    }
+
+    public String getKeyStorePassword() {
+        return keyStorePassword;
+    }
+
+    public void setKeyStorePassword(String keyStorePassword) {
+        this.keyStorePassword = keyStorePassword;
     }
 
     @Override
@@ -80,8 +107,11 @@ public class ServerConfig {
                 ", port=" + port +
                 ", showSQL=" + showSQL +
                 ", fileTmp='" + fileTmp + '\'' +
-                ", useNio=" + useNio +
                 ", charset='" + charset + '\'' +
+                ", useSSL=" + useSSL +
+                ", needClientAuth=" + needClientAuth +
+                ", keyStoreFile='" + keyStoreFile + '\'' +
+                ", keyStorePassword='" + keyStorePassword + '\'' +
                 '}';
     }
 }

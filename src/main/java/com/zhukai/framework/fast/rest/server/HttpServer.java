@@ -22,19 +22,19 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class WebServerNIO {
-    private static final Logger logger = Logger.getLogger(WebServerNIO.class);
+public class HttpServer {
+    private static final Logger logger = Logger.getLogger(HttpServer.class);
     private static final ExecutorService service = Executors.newCachedThreadPool();
     private static Selector selector;
 
-    public static void start(ServerConfig serverConfig) {
+    public static void start(ServerConfig config) {
         try {
             selector = Selector.open();
             ServerSocketChannel serverChannel = ServerSocketChannel.open();
+            serverChannel.socket().bind(new InetSocketAddress(config.getPort()));
             serverChannel.configureBlocking(false);
-            serverChannel.socket().bind(new InetSocketAddress(serverConfig.getPort()));
             serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-            logger.info("Server start on port: " + serverConfig.getPort() + " with nio");
+            logger.info("Http server start on port: " + config.getPort() + " with nio");
             while (true) {
                 if (selector.selectNow() == 0) continue;
                 Iterator<SelectionKey> ite = selector.selectedKeys().iterator();

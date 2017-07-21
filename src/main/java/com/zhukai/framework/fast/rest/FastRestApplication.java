@@ -3,8 +3,8 @@ package com.zhukai.framework.fast.rest;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
-import com.zhukai.framework.fast.rest.server.WebServer;
-import com.zhukai.framework.fast.rest.server.WebServerNIO;
+import com.zhukai.framework.fast.rest.server.SSLServer;
+import com.zhukai.framework.fast.rest.server.HttpServer;
 import com.zhukai.framework.fast.rest.annotation.batch.Scheduled;
 import com.zhukai.framework.fast.rest.exception.IntegrationInitException;
 import com.zhukai.framework.fast.rest.http.Session;
@@ -31,10 +31,10 @@ public class FastRestApplication {
         serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
         runSessionTimeoutCheck();
         runBatchSchedule();
-        if (serverConfig.isUseNio()) {
-            WebServerNIO.start(serverConfig);
+        if (serverConfig.isUseSSL()) {
+            SSLServer.start(serverConfig);
         } else {
-            WebServer.start(serverConfig);
+            HttpServer.start(serverConfig);
         }
     }
 
