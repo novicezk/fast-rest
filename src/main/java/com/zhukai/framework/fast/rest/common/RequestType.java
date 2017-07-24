@@ -1,4 +1,4 @@
-package com.zhukai.framework.fast.rest.constant;
+package com.zhukai.framework.fast.rest.common;
 
 public interface RequestType {
     String GET = "GET",

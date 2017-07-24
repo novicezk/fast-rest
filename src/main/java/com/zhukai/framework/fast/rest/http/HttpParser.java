@@ -1,14 +1,14 @@
 package com.zhukai.framework.fast.rest.http;
 
-import com.zhukai.framework.fast.rest.constant.HttpHeaderType;
-import com.zhukai.framework.fast.rest.constant.IntegrationConstants;
+import com.zhukai.framework.fast.rest.Constants;
+import com.zhukai.framework.fast.rest.common.HttpHeaderType;
+import com.zhukai.framework.fast.rest.exception.HttpReadException;
 import com.zhukai.framework.fast.rest.http.reader.AbstractHttpReader;
 import com.zhukai.framework.fast.rest.http.reader.HttpReader;
 import com.zhukai.framework.fast.rest.http.reader.HttpReaderNIO;
 import com.zhukai.framework.fast.rest.http.request.HttpRequest;
 import com.zhukai.framework.fast.rest.http.request.HttpRequestBuilder;
 import com.zhukai.framework.fast.rest.http.request.HttpRequestDirector;
-import com.zhukai.framework.fast.rest.exception.HttpReadException;
 import com.zhukai.framework.fast.rest.http.request.RequestBuilder;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang3.StringUtils;
@@ -53,18 +53,18 @@ public class HttpParser {
         StringBuilder sb = new StringBuilder();
         sb.append(response.getProtocol()).append(" ")
                 .append(response.getStatusCode()).append(" ")
-                .append(response.getStatusCodeStr()).append("\r\n")
+                .append(response.getStatusCodeStr()).append(Constants.LINE_SEPARATOR)
                 .append(HttpHeaderType.CONTENT_TYPE).append(": ")
-                .append(response.getContentType()).append("\r\n");
+                .append(response.getContentType()).append(Constants.LINE_SEPARATOR);
         if (response.getResult() instanceof InputStream && response.getHeaderValue(HttpHeaderType.CONTENT_LENGTH) == null) {
             int contentLength = ((InputStream) response.getResult()).available();
             response.setHeader(HttpHeaderType.CONTENT_LENGTH, String.valueOf(contentLength));
         }
         response.getHeaders().keySet().forEach(key -> sb.append(key).append(": ")
-                .append(response.getHeaders().get(key)).append("\r\n"));
+                .append(response.getHeaders().get(key)).append(Constants.LINE_SEPARATOR));
         response.getCookies().keySet().forEach(key -> sb.append(HttpHeaderType.SET_COOKIE).append(": ").append(key)
-                .append("=").append(response.getCookies().get(key)).append(";Path=/").append("\r\n"));
-        sb.append("\r\n");
+                .append("=").append(response.getCookies().get(key)).append(";Path=/").append(Constants.LINE_SEPARATOR));
+        sb.append(Constants.LINE_SEPARATOR);
         return sb.toString();
     }
 
@@ -75,7 +75,7 @@ public class HttpParser {
 
     static {
         try {
-            mimeTypes.load(HttpParser.class.getResourceAsStream("/" + IntegrationConstants.MIMETYPE_PROPERTIES));
+            mimeTypes.load(HttpParser.class.getResourceAsStream("/" + Constants.MIMETYPE_PROPERTIES));
         } catch (IOException e) {
             logger.error(e);
         }

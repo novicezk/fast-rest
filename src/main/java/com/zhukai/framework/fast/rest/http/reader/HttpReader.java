@@ -17,7 +17,7 @@ public class HttpReader extends AbstractHttpReader {
         try {
             if (size == 0) {
                 int i;
-                while ((i = inputStream.read()) != 10 && i != -1) {
+                while ((i = inputStream.read()) != LINE_SEPARATOR_LAST_CHAR && i != -1) {
                     out.write(i);
                 }
             } else {

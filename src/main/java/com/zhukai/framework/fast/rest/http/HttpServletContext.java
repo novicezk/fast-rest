@@ -1,8 +1,7 @@
-package com.zhukai.framework.fast.rest;
+package com.zhukai.framework.fast.rest.http;
 
-import com.zhukai.framework.fast.rest.http.HttpParser;
+import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.util.Resources;
-import com.zhukai.framework.fast.rest.http.Session;
 import org.apache.log4j.Logger;
 
 import javax.servlet.RequestDispatcher;

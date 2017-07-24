@@ -1,7 +1,7 @@
 package com.zhukai.framework.fast.rest.server;
 
 import com.zhukai.framework.fast.rest.config.ServerConfig;
-import com.zhukai.framework.fast.rest.constant.IntegrationConstants;
+import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.handle.ActionHandleNIO;
 import com.zhukai.framework.fast.rest.http.HttpParser;
 import com.zhukai.framework.fast.rest.http.HttpResponse;
@@ -80,7 +80,7 @@ public class HttpServer {
             socketChannel = (SocketChannel) key.channel();
             HttpResponse response = (HttpResponse) key.attachment();
             String httpHeader = HttpParser.parseHttpString(response);
-            ByteBuffer buffer = ByteBuffer.allocate(IntegrationConstants.BUFFER_SIZE);
+            ByteBuffer buffer = ByteBuffer.allocate(Constants.BUFFER_SIZE);
             sendMessage(socketChannel, httpHeader, buffer);
             if (response.getResult() instanceof InputStream) {
                 sendInputStream(socketChannel, (InputStream) response.getResult());
@@ -103,7 +103,7 @@ public class HttpServer {
         while (endIndex < message.length()) {
             buffer.clear();
             int startIndex = endIndex;
-            endIndex = Math.min(endIndex + IntegrationConstants.BUFFER_SIZE / 3, message.length());
+            endIndex = Math.min(endIndex + Constants.BUFFER_SIZE / 3, message.length());
             buffer.put(message.substring(startIndex, endIndex).getBytes());
             buffer.flip();
             socketChannel.write(buffer);
@@ -112,14 +112,14 @@ public class HttpServer {
 
     private static void sendInputStream(SocketChannel socketChannel, InputStream in) throws Exception {
         int inputSize = in.available();
-        if (inputSize < IntegrationConstants.BUFFER_SIZE) {
+        if (inputSize < Constants.BUFFER_SIZE) {
             byte[] bytes = new byte[inputSize];
             in.read(bytes);
             ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
             socketChannel.write(byteBuffer);
         } else {
             int length;
-            byte tempByte[] = new byte[IntegrationConstants.BUFFER_SIZE * 1024];
+            byte tempByte[] = new byte[Constants.BUFFER_SIZE * 1024];
             while ((length = in.read(tempByte)) != -1) {
                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
                 bout.write(tempByte, 0, length);

@@ -1,9 +1,9 @@
 package com.zhukai.framework.fast.rest.http.request;
 
 import com.zhukai.framework.fast.rest.FastRestApplication;
-import com.zhukai.framework.fast.rest.HttpServletContext;
+import com.zhukai.framework.fast.rest.http.HttpServletContext;
 import com.zhukai.framework.fast.rest.common.MultipartFile;
-import com.zhukai.framework.fast.rest.constant.IntegrationConstants;
+import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.http.Session;
 import org.apache.commons.lang3.StringUtils;
 
@@ -179,7 +179,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getRequestedSessionId() {
-        Cookie cookie = cookies.get(IntegrationConstants.JSESSIONID);
+        Cookie cookie = cookies.get(Constants.JSESSIONID);
         if (cookie != null) {
             return cookie.getValue();
         }

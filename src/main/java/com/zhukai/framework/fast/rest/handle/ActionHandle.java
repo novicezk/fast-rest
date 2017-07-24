@@ -1,7 +1,7 @@
 package com.zhukai.framework.fast.rest.handle;
 
 
-import com.zhukai.framework.fast.rest.constant.IntegrationConstants;
+import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.http.HttpParser;
 import com.zhukai.framework.fast.rest.util.JsonUtil;
 
@@ -32,7 +32,7 @@ public class ActionHandle extends AbstractActionHandle {
             if (response.getResult() instanceof InputStream) {
                 InputStream inputStream = (InputStream) response.getResult();
                 int byteCount;
-                byte[] bytes = new byte[IntegrationConstants.BUFFER_SIZE * 1024];
+                byte[] bytes = new byte[Constants.BUFFER_SIZE * 1024];
                 while ((byteCount = inputStream.read(bytes)) != -1) {
                     out.write(bytes, 0, byteCount);
                 }

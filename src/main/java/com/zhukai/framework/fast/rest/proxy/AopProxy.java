@@ -1,6 +1,6 @@
 package com.zhukai.framework.fast.rest.proxy;
 
-import com.zhukai.framework.fast.rest.HttpServletContext;
+import com.zhukai.framework.fast.rest.http.HttpServletContext;
 import com.zhukai.framework.fast.rest.annotation.core.Transactional;
 import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
 import net.sf.cglib.proxy.Enhancer;

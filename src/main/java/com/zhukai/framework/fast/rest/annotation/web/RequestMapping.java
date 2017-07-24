@@ -1,6 +1,6 @@
 package com.zhukai.framework.fast.rest.annotation.web;
 
-import com.zhukai.framework.fast.rest.constant.RequestType;
+import com.zhukai.framework.fast.rest.common.RequestType;
 
 import java.lang.annotation.*;
 

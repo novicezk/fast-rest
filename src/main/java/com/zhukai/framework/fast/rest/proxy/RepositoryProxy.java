@@ -1,7 +1,7 @@
 package com.zhukai.framework.fast.rest.proxy;
 
 import com.zhukai.framework.fast.rest.jdbc.data.jpa.MapperMethod;
-import com.zhukai.framework.fast.rest.HttpServletContext;
+import com.zhukai.framework.fast.rest.http.HttpServletContext;
 
 import java.lang.reflect.*;
 import java.sql.Connection;

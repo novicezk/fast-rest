@@ -18,7 +18,6 @@ import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.fast.rest.bean.properties.PropertiesBeanFactory;
 import com.zhukai.framework.fast.rest.config.DataSource;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
-import com.zhukai.framework.fast.rest.constant.IntegrationConstants;
 import com.zhukai.framework.fast.rest.exception.IntegrationInitException;
 import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
 import com.zhukai.framework.fast.rest.jdbc.data.jpa.JpaUtil;
@@ -60,6 +59,17 @@ public class Setup {
         }
     }
 
+    private static String getSystemLineBreak() {
+        String systemName = System.getProperty("os.name");
+        logger.info("System name is " + systemName);
+        if (systemName.startsWith("Windows")) {
+            return "\r\n";
+        } else if (systemName.startsWith("Mac")) {
+            return "\r";
+        }
+        return "\n";
+    }
+
     private static void initProperties() {
         List<String> propertiesList = new ArrayList<>();
         if (FastRestApplication.getRunClass().isAnnotationPresent(EnableConfigure.class)) {
@@ -67,8 +77,8 @@ public class Setup {
             String[] propertiesArr = configurable.value();
             propertiesList.addAll(Arrays.asList(propertiesArr));
         }
-        if (!propertiesList.contains(IntegrationConstants.DEFAULT_PROPERTIES)) {
-            propertiesList.add(IntegrationConstants.DEFAULT_PROPERTIES);
+        if (!propertiesList.contains(Constants.DEFAULT_PROPERTIES)) {
+            propertiesList.add(Constants.DEFAULT_PROPERTIES);
         }
         for (String propertiesName : propertiesList) {
             BaseBean baseBean = new BaseBean();
@@ -162,7 +172,7 @@ public class Setup {
                 } else if (ReflectUtil.existAnnotation(field.getType(), Configure.class)) {
                     childBean.setBeanFactory(ConfigureBeanFactory.getInstance());
                 } else if (Properties.class.isAssignableFrom(field.getType())) {
-                    beanName = childBeanName.equals("") ? IntegrationConstants.DEFAULT_PROPERTIES : childBeanName;
+                    beanName = childBeanName.equals("") ? Constants.DEFAULT_PROPERTIES : childBeanName;
                     childBean.setBeanFactory(PropertiesBeanFactory.getInstance());
                 }
                 childBean.setRegisterName(beanName);
@@ -264,4 +274,5 @@ public class Setup {
     public static Map<String, Method> getWebMethods() {
         return webMethods;
     }
+
 }

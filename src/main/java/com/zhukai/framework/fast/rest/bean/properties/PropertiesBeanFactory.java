@@ -2,7 +2,7 @@ package com.zhukai.framework.fast.rest.bean.properties;
 
 import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.bean.BaseBean;
-import com.zhukai.framework.fast.rest.constant.IntegrationConstants;
+import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import com.zhukai.framework.fast.rest.bean.BeanFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +48,7 @@ public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
     @Override
     public <T> T getBean(Class<T> requiredType) {
         String beanName = ReflectUtil.getComponentValue(requiredType);
-        beanName = StringUtils.isBlank(beanName) ? IntegrationConstants.DEFAULT_PROPERTIES : beanName;
+        beanName = StringUtils.isBlank(beanName) ? Constants.DEFAULT_PROPERTIES : beanName;
         return requiredType.cast(propertiesMap.get(beanName));
     }
 

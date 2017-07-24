@@ -1,5 +1,6 @@
 package com.zhukai.framework.fast.rest.http.reader;
 
+import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.exception.HttpReadException;
 
 import java.io.ByteArrayInputStream;
@@ -8,11 +9,12 @@ import java.io.InputStream;
 
 public abstract class AbstractHttpReader {
     private static final String DEFAULT_PARSE_CHARSET = "utf-8";
+    protected final int LINE_SEPARATOR_LAST_CHAR = Constants.LINE_SEPARATOR.equals("\r") ? 13 : 10;
 
     public String readLine() throws HttpReadException {
         try {
             byte[] bytes = readByteArrayLimitSize(0);
-            int length = bytes.length > 0 && bytes[bytes.length - 1] == 13 ? bytes.length - 1 : bytes.length;
+            int length = bytes.length > 0 && bytes[bytes.length - 1] == '\r' ? bytes.length - 1 : bytes.length;
             return new String(bytes, 0, length, DEFAULT_PARSE_CHARSET);
         } catch (IOException e) {
             throw new HttpReadException(e);

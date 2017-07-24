@@ -1,13 +1,13 @@
 package com.zhukai.framework.fast.rest.handle;
 
-import com.zhukai.framework.fast.rest.HttpServletContext;
+import com.zhukai.framework.fast.rest.http.HttpServletContext;
 import com.zhukai.framework.fast.rest.Setup;
 import com.zhukai.framework.fast.rest.annotation.web.*;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.common.FileEntity;
 import com.zhukai.framework.fast.rest.common.MultipartFile;
-import com.zhukai.framework.fast.rest.constant.HttpHeaderType;
-import com.zhukai.framework.fast.rest.constant.IntegrationConstants;
+import com.zhukai.framework.fast.rest.common.HttpHeaderType;
+import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.exception.RequestNotSupportException;
 import com.zhukai.framework.fast.rest.exception.RequestPathNotFoundException;
 import com.zhukai.framework.fast.rest.http.HttpParser;
@@ -110,8 +110,8 @@ public abstract class AbstractActionHandle implements Runnable {
     private void checkSession() {
         if (request.getRequestedSessionId() == null) {
             String sessionId = UUID.randomUUID().toString();
-            request.addCookie(new Cookie(IntegrationConstants.JSESSIONID, sessionId));
-            response.setCookie(IntegrationConstants.JSESSIONID, sessionId);
+            request.addCookie(new Cookie(Constants.JSESSIONID, sessionId));
+            response.setCookie(Constants.JSESSIONID, sessionId);
             logger.info(sessionId + " has connected");
         }
         HttpServletContext.getInstance().refreshSession(request.getRequestedSessionId());

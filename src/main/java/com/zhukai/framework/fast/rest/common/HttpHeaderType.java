@@ -1,4 +1,4 @@
-package com.zhukai.framework.fast.rest.constant;
+package com.zhukai.framework.fast.rest.common;
 
 public interface HttpHeaderType {
     String CONTENT_TYPE = "Content-Type",

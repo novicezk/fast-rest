@@ -1,6 +1,6 @@
 package com.zhukai.framework.fast.rest.http.reader;
 
-import com.zhukai.framework.fast.rest.constant.IntegrationConstants;
+import com.zhukai.framework.fast.rest.Constants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,7 +14,7 @@ public class HttpReaderNIO extends AbstractHttpReader {
 
     public HttpReaderNIO(SocketChannel channel) {
         this.channel = channel;
-        buf = ByteBuffer.allocate(IntegrationConstants.BUFFER_SIZE);
+        buf = ByteBuffer.allocate(Constants.BUFFER_SIZE);
     }
 
     @Override
@@ -23,9 +23,9 @@ public class HttpReaderNIO extends AbstractHttpReader {
         try {
             if (size == 0) {
                 int i = 0;
-                while (channel.read(buf) != -1 && i != 10) {
+                while (channel.read(buf) != -1 && i != LINE_SEPARATOR_LAST_CHAR) {
                     buf.flip();
-                    while (buf.hasRemaining() && (i = buf.get()) != 10) {
+                    while (buf.hasRemaining() && (i = buf.get()) != LINE_SEPARATOR_LAST_CHAR) {
                         out.write(i);
                     }
                     buf.compact();

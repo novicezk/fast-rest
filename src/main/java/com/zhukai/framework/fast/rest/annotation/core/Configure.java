@@ -1,6 +1,6 @@
 package com.zhukai.framework.fast.rest.annotation.core;
 
-import com.zhukai.framework.fast.rest.constant.IntegrationConstants;
+import com.zhukai.framework.fast.rest.Constants;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -15,5 +15,5 @@ public @interface Configure {
 
     String prefix() default "";
 
-    String properties() default IntegrationConstants.DEFAULT_PROPERTIES;
+    String properties() default Constants.DEFAULT_PROPERTIES;
 }

@@ -3,6 +3,7 @@ package com.zhukai.framework.fast.rest;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
+import com.zhukai.framework.fast.rest.http.HttpServletContext;
 import com.zhukai.framework.fast.rest.server.SSLServer;
 import com.zhukai.framework.fast.rest.server.HttpServer;
 import com.zhukai.framework.fast.rest.annotation.batch.Scheduled;
