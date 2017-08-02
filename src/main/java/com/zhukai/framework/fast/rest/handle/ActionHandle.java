@@ -26,9 +26,12 @@ public class ActionHandle extends AbstractActionHandle {
             if (response == null) {
                 return;
             }
-            out = new PrintStream(socket.getOutputStream());
+            out = new PrintStream(socket.getOutputStream(), true);
             String httpHeader = HttpParser.parseHttpString(response);
             out.print(httpHeader);
+            if (response.getResult() == null) {
+                return;
+            }
             if (response.getResult() instanceof InputStream) {
                 InputStream inputStream = (InputStream) response.getResult();
                 int byteCount;
@@ -40,7 +43,6 @@ public class ActionHandle extends AbstractActionHandle {
             } else {
                 out.print(JsonUtil.toJson(response.getResult()));
             }
-            out.flush();
         } catch (Exception e) {
             logger.error("Respond error", e);
         } finally {

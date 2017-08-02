@@ -1,17 +1,19 @@
 package com.zhukai.framework.fast.rest.handle;
 
-import com.zhukai.framework.fast.rest.http.HttpServletContext;
+import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.Setup;
 import com.zhukai.framework.fast.rest.annotation.web.*;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.common.FileEntity;
-import com.zhukai.framework.fast.rest.common.MultipartFile;
 import com.zhukai.framework.fast.rest.common.HttpHeaderType;
-import com.zhukai.framework.fast.rest.Constants;
+import com.zhukai.framework.fast.rest.common.HttpStatus;
+import com.zhukai.framework.fast.rest.common.MultipartFile;
 import com.zhukai.framework.fast.rest.exception.RequestNotSupportException;
 import com.zhukai.framework.fast.rest.exception.RequestPathNotFoundException;
+import com.zhukai.framework.fast.rest.exception.ResourceNotFoundException;
 import com.zhukai.framework.fast.rest.http.HttpParser;
 import com.zhukai.framework.fast.rest.http.HttpResponse;
+import com.zhukai.framework.fast.rest.http.HttpServletContext;
 import com.zhukai.framework.fast.rest.http.request.HttpRequest;
 import com.zhukai.framework.fast.rest.util.JsonUtil;
 import com.zhukai.framework.fast.rest.util.Resources;
@@ -57,43 +59,63 @@ public abstract class AbstractActionHandle implements Runnable {
         Object returnData;
         try {
             if (request.getServletPath().equals("/favicon.ico")) {
-                InputStream inputStream = Resources.getResourceAsStream(request.getServletPath());
-                if (inputStream == null) {
-                    inputStream = AbstractActionHandle.class.getResourceAsStream(request.getServletPath());
-                }
-                String contentType = HttpParser.getContentType("ico");
-                response.setContentType(contentType);
-                returnData = inputStream;
+                returnData = getFavicon();
             } else if (request.getServletPath().startsWith("/public/")) {
-                InputStream inputStream = Resources.getResourceAsStream(request.getServletPath());
-                String[] arr = request.getServletPath().split("\\.");
-                if (arr.length > 0) {
-                    String extensionName = arr[arr.length - 1];
-                    String contentType = HttpParser.getContentType(extensionName);
-                    response.setContentType(contentType);
-                }
-                returnData = inputStream;
+                returnData = getStaticResource();
             } else {
-                Method method = getMethodByRequestPath(request.getServletPath());
-                isRestUrl = method.getAnnotation(RequestMapping.class).value().contains("{");
-                Object result = invokeRequestMethod(method);
-                if (result instanceof FileEntity) {
-                    FileEntity fileBean = (FileEntity) result;
-                    String fileName = fileBean.getFileName();
-                    response.setHeader(HttpHeaderType.CONTENT_DISPOSITION, "filename=" + fileName);
-                    response.setContentType("application/octet-stream");
-                    returnData = fileBean.getInputStream();
-                } else {
-                    returnData = result;
-                }
+                returnData = getInvokeResult();
             }
             response.setResult(returnData);
+        } catch (ResourceNotFoundException e) {
+            response.setStatus(HttpStatus.NotFound);
+        } catch (RequestPathNotFoundException e) {
+            response.setStatus(HttpStatus.BadRequest);
+        } catch (RequestNotSupportException e) {
+            response.setStatus(HttpStatus.MethodNotAllowed);
         } catch (Exception e) {
             logger.error("Request action error", e);
-            response.setResult(e.getMessage());
+            response.setStatus(HttpStatus.InternalServerError);
         } finally {
             respond();
         }
+    }
+
+    private Object getFavicon() {
+        InputStream inputStream = Resources.getResourceAsStream(request.getServletPath());
+        if (inputStream == null) {
+            inputStream = AbstractActionHandle.class.getResourceAsStream(request.getServletPath());
+        }
+        String contentType = HttpParser.getContentType("ico");
+        response.setContentType(contentType);
+        return inputStream;
+    }
+
+    private Object getStaticResource() throws ResourceNotFoundException {
+        InputStream inputStream = Resources.getResourceAsStream(request.getServletPath());
+        if (inputStream == null) {
+            throw new ResourceNotFoundException(request.getServletPath());
+        }
+        String[] arr = request.getServletPath().split("\\.");
+        if (arr.length > 0) {
+            String extensionName = arr[arr.length - 1];
+            String contentType = HttpParser.getContentType(extensionName);
+            response.setContentType(contentType);
+        }
+        return inputStream;
+    }
+
+    private Object getInvokeResult() throws Exception {
+        Method method = getMethodByRequestPath(request.getServletPath());
+        isRestUrl = method.getAnnotation(RequestMapping.class).value().contains("{");
+        Object result = invokeRequestMethod(method);
+        if (result instanceof FileEntity) {
+            FileEntity fileBean = (FileEntity) result;
+            String fileName = fileBean.getFileName();
+            response.setHeader(HttpHeaderType.CONTENT_DISPOSITION, "filename=" + fileName);
+            response.setContentType("application/octet-stream");
+            return fileBean.getInputStream();
+        }
+        return result;
     }
 
     private Method getMethodByRequestPath(String requestPath) throws RequestPathNotFoundException {

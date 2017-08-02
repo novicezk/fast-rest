@@ -1,7 +1,7 @@
 package com.zhukai.framework.fast.rest.server;
 
-import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.Constants;
+import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.handle.ActionHandleNIO;
 import com.zhukai.framework.fast.rest.http.HttpParser;
 import com.zhukai.framework.fast.rest.http.HttpResponse;
@@ -27,31 +27,27 @@ public class HttpServer {
     private static final ExecutorService service = Executors.newCachedThreadPool();
     private static Selector selector;
 
-    public static void start(ServerConfig config) {
-        try {
-            selector = Selector.open();
-            ServerSocketChannel serverChannel = ServerSocketChannel.open();
-            serverChannel.socket().bind(new InetSocketAddress(config.getPort()));
-            serverChannel.configureBlocking(false);
-            serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-            logger.info("Http server start on port: " + config.getPort() + " with nio");
-            while (true) {
-                if (selector.selectNow() == 0) continue;
-                Iterator<SelectionKey> ite = selector.selectedKeys().iterator();
-                while (ite.hasNext()) {
-                    SelectionKey key = ite.next();
-                    ite.remove();
-                    if (key.isAcceptable()) {
-                        acceptKey(key);
-                    } else if (key.isReadable()) {
-                        readKey(key);
-                    } else if (key.isWritable()) {
-                        writeKey(key);
-                    }
+    public static void start(ServerConfig config) throws Exception {
+        selector = Selector.open();
+        ServerSocketChannel serverChannel = ServerSocketChannel.open();
+        serverChannel.socket().bind(new InetSocketAddress(config.getPort()));
+        serverChannel.configureBlocking(false);
+        serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+        logger.info("Http server start on port: " + config.getPort() + " with nio");
+        while (true) {
+            if (selector.selectNow() == 0) continue;
+            Iterator<SelectionKey> ite = selector.selectedKeys().iterator();
+            while (ite.hasNext()) {
+                SelectionKey key = ite.next();
+                ite.remove();
+                if (key.isAcceptable()) {
+                    acceptKey(key);
+                } else if (key.isReadable()) {
+                    readKey(key);
+                } else if (key.isWritable()) {
+                    writeKey(key);
                 }
             }
-        } catch (Exception e) {
-            logger.error(e);
         }
     }
 
@@ -82,6 +78,9 @@ public class HttpServer {
             String httpHeader = HttpParser.parseHttpString(response);
             ByteBuffer buffer = ByteBuffer.allocate(Constants.BUFFER_SIZE);
             sendMessage(socketChannel, httpHeader, buffer);
+            if (response.getResult() == null) {
+                return;
+            }
             if (response.getResult() instanceof InputStream) {
                 sendInputStream(socketChannel, (InputStream) response.getResult());
             } else {

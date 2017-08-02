@@ -1,6 +1,7 @@
 package com.zhukai.framework.fast.rest.http;
 
 import com.zhukai.framework.fast.rest.FastRestApplication;
+import com.zhukai.framework.fast.rest.common.HttpStatus;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,16 +44,13 @@ public class HttpResponse {
         return statusCode;
     }
 
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
-    }
-
     public String getStatusCodeStr() {
         return statusCodeStr;
     }
 
-    public void setStatusCodeStr(String statusCodeStr) {
-        this.statusCodeStr = statusCodeStr;
+    public void setStatus(HttpStatus status) {
+        statusCode = status.getCode();
+        statusCodeStr = status.getCodeStr();
     }
 
     public String getProtocol() {

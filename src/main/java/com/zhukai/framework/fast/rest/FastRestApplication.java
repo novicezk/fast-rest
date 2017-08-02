@@ -7,7 +7,7 @@ import com.zhukai.framework.fast.rest.http.HttpServletContext;
 import com.zhukai.framework.fast.rest.server.SSLServer;
 import com.zhukai.framework.fast.rest.server.HttpServer;
 import com.zhukai.framework.fast.rest.annotation.batch.Scheduled;
-import com.zhukai.framework.fast.rest.exception.IntegrationInitException;
+import com.zhukai.framework.fast.rest.exception.SetupInitException;
 import com.zhukai.framework.fast.rest.http.Session;
 import org.apache.log4j.Logger;
 
@@ -25,17 +25,22 @@ public class FastRestApplication {
         FastRestApplication.runClass = runClass;
         try {
             Setup.init();
-        } catch (IntegrationInitException e) {
+        } catch (SetupInitException e) {
             logger.error("init error", e);
             return;
         }
         serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
         runSessionTimeoutCheck();
         runBatchSchedule();
-        if (serverConfig.isUseSSL()) {
-            SSLServer.start(serverConfig);
-        } else {
-            HttpServer.start(serverConfig);
+        try {
+            if (serverConfig.isUseSSL()) {
+                SSLServer.start(serverConfig);
+            } else {
+                HttpServer.start(serverConfig);
+            }
+        } catch (Exception e) {
+            logger.error("start server error", e);
+            scheduledExecutor.shutdownNow();
         }
     }
 

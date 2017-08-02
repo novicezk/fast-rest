@@ -53,18 +53,18 @@ public class HttpParser {
         StringBuilder sb = new StringBuilder();
         sb.append(response.getProtocol()).append(" ")
                 .append(response.getStatusCode()).append(" ")
-                .append(response.getStatusCodeStr()).append(Constants.LINE_SEPARATOR)
+                .append(response.getStatusCodeStr()).append(Constants.HTTP_LINE_SEPARATOR)
                 .append(HttpHeaderType.CONTENT_TYPE).append(": ")
-                .append(response.getContentType()).append(Constants.LINE_SEPARATOR);
-        if (response.getResult() instanceof InputStream && response.getHeaderValue(HttpHeaderType.CONTENT_LENGTH) == null) {
+                .append(response.getContentType()).append(Constants.HTTP_LINE_SEPARATOR);
+        if (response.getResult() != null && response.getResult() instanceof InputStream && response.getHeaderValue(HttpHeaderType.CONTENT_LENGTH) == null) {
             int contentLength = ((InputStream) response.getResult()).available();
             response.setHeader(HttpHeaderType.CONTENT_LENGTH, String.valueOf(contentLength));
         }
         response.getHeaders().keySet().forEach(key -> sb.append(key).append(": ")
-                .append(response.getHeaders().get(key)).append(Constants.LINE_SEPARATOR));
+                .append(response.getHeaders().get(key)).append(Constants.HTTP_LINE_SEPARATOR));
         response.getCookies().keySet().forEach(key -> sb.append(HttpHeaderType.SET_COOKIE).append(": ").append(key)
-                .append("=").append(response.getCookies().get(key)).append(";Path=/").append(Constants.LINE_SEPARATOR));
-        sb.append(Constants.LINE_SEPARATOR);
+                .append("=").append(response.getCookies().get(key)).append(";Path=/").append(Constants.HTTP_LINE_SEPARATOR));
+        sb.append(Constants.HTTP_LINE_SEPARATOR);
         return sb.toString();
     }
 

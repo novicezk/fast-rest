@@ -1,7 +1,7 @@
 package com.zhukai.framework.fast.rest.http.request;
 
-import com.zhukai.framework.fast.rest.common.MultipartFile;
 import com.zhukai.framework.fast.rest.common.HttpHeaderType;
+import com.zhukai.framework.fast.rest.common.MultipartFile;
 import com.zhukai.framework.fast.rest.common.RequestType;
 import com.zhukai.framework.fast.rest.exception.HttpReadException;
 import com.zhukai.framework.fast.rest.http.reader.AbstractHttpReader;

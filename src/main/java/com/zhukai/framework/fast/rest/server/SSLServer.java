@@ -17,19 +17,15 @@ public class SSLServer {
     private static final Logger logger = Logger.getLogger(SSLServer.class);
     private static final ExecutorService service = Executors.newCachedThreadPool();
 
-    public static void start(ServerConfig config) {
-        try {
-            SSLContext sslContext = SSLFactory.getSSLContext(Resources.getResourceAsStream("/" + config.getKeyStoreFile()), config.getKeyStorePassword());
-            ServerSocketFactory factory = sslContext.getServerSocketFactory();
-            ServerSocket serverSocket = factory.createServerSocket(config.getPort());
-            logger.info("Https server start on port: " + config.getPort());
-            SSLServerSocket.class.cast(serverSocket).setNeedClientAuth(config.isNeedClientAuth());
-            while (true) {
-                Socket socket = serverSocket.accept();
-                service.execute(new ActionHandle(socket));
-            }
-        } catch (Exception e) {
-            logger.error(e);
+    public static void start(ServerConfig config) throws Exception {
+        SSLContext sslContext = SSLFactory.getSSLContext(Resources.getResourceAsStream("/" + config.getKeyStoreFile()), config.getKeyStorePassword());
+        ServerSocketFactory factory = sslContext.getServerSocketFactory();
+        ServerSocket serverSocket = factory.createServerSocket(config.getPort());
+        logger.info("Https server start on port: " + config.getPort());
+        SSLServerSocket.class.cast(serverSocket).setNeedClientAuth(config.isNeedClientAuth());
+        while (true) {
+            Socket socket = serverSocket.accept();
+            service.execute(new ActionHandle(socket));
         }
     }
 }

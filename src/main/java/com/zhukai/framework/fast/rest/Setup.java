@@ -18,7 +18,7 @@ import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.fast.rest.bean.properties.PropertiesBeanFactory;
 import com.zhukai.framework.fast.rest.config.DataSource;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
-import com.zhukai.framework.fast.rest.exception.IntegrationInitException;
+import com.zhukai.framework.fast.rest.exception.SetupInitException;
 import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
 import com.zhukai.framework.fast.rest.jdbc.data.jpa.JpaUtil;
 import com.zhukai.framework.fast.rest.util.PackageUtil;
@@ -45,7 +45,7 @@ public class Setup {
     private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
     private static DataSource dataSource;
 
-    static void init() throws IntegrationInitException {
+    static void init() throws SetupInitException {
         try {
             initProperties();
             initConfig();
@@ -55,7 +55,7 @@ public class Setup {
             }
             scanComponent();
         } catch (Exception e) {
-            throw new IntegrationInitException(e);
+            throw new SetupInitException(e);
         }
     }
 
