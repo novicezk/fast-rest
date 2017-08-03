@@ -8,7 +8,6 @@ public class ServerConfig {
     private Long fixedRate = 300000L;
     private Long sessionTimeout = 1800000L;
     private Integer port = 8080;
-    private Boolean showSQL = false;
     private String fileTmp = "/tmp/";
     private String charset = "utf-8";
     private Boolean useSSL = false;
@@ -41,14 +40,6 @@ public class ServerConfig {
 
     public void setPort(Integer port) {
         this.port = port;
-    }
-
-    public Boolean isShowSQL() {
-        return showSQL;
-    }
-
-    public void setShowSQL(Boolean showSQL) {
-        this.showSQL = showSQL;
     }
 
     public String getFileTmp() {
@@ -105,7 +96,6 @@ public class ServerConfig {
                 "fixedRate=" + fixedRate +
                 ", sessionTimeout=" + sessionTimeout +
                 ", port=" + port +
-                ", showSQL=" + showSQL +
                 ", fileTmp='" + fileTmp + '\'' +
                 ", charset='" + charset + '\'' +
                 ", useSSL=" + useSSL +

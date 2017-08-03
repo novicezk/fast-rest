@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -41,9 +42,6 @@ public abstract class AbstractActionHandle implements Runnable {
     protected HttpRequest request;
     protected HttpResponse response;
 
-    /**
-     * url contains '{...}'
-     */
     private boolean isRestUrl = false;
 
     protected abstract void respond();
@@ -61,12 +59,14 @@ public abstract class AbstractActionHandle implements Runnable {
             if (request.getServletPath().equals("/favicon.ico")) {
                 returnData = getFavicon();
             } else if (request.getServletPath().startsWith("/public/")) {
-                returnData = getStaticResource();
+                returnData = getStaticResource(request.getServletPath());
+            } else if (request.getServletPath().startsWith("/static/")) {
+                returnData = getTmpStaticResource();
             } else {
                 returnData = getInvokeResult();
             }
             response.setResult(returnData);
-        } catch (ResourceNotFoundException e) {
+        } catch (ResourceNotFoundException | FileNotFoundException e) {
             response.setStatus(HttpStatus.NotFound);
         } catch (RequestPathNotFoundException e) {
             response.setStatus(HttpStatus.BadRequest);
@@ -90,12 +90,18 @@ public abstract class AbstractActionHandle implements Runnable {
         return inputStream;
     }
 
-    private Object getStaticResource() throws ResourceNotFoundException {
-        InputStream inputStream = Resources.getResourceAsStream(request.getServletPath());
+    private Object getTmpStaticResource() throws ResourceNotFoundException, FileNotFoundException {
+        String path = request.getServletPath().substring(7);
+        return getStaticResource(path);
+    }
+
+    private Object getStaticResource(String path) throws ResourceNotFoundException, FileNotFoundException {
+        InputStream inputStream = path.equals(request.getServletPath()) ? Resources.getResourceAsStream(path)
+                : Resources.getResourceAsStreamByTmp(path);
         if (inputStream == null) {
-            throw new ResourceNotFoundException(request.getServletPath());
+            throw new ResourceNotFoundException(path);
         }
-        String[] arr = request.getServletPath().split("\\.");
+        String[] arr = path.split("\\.");
         if (arr.length > 0) {
             String extensionName = arr[arr.length - 1];
             String contentType = HttpParser.getContentType(extensionName);

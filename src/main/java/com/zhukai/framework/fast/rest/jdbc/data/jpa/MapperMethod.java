@@ -2,8 +2,6 @@ package com.zhukai.framework.fast.rest.jdbc.data.jpa;
 
 import com.zhukai.framework.fast.rest.annotation.jpa.ExecuteUpdate;
 import com.zhukai.framework.fast.rest.annotation.jpa.QueryCondition;
-import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
-import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -16,12 +14,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MapperMethod<T> {
     private static final Logger logger = Logger.getLogger(MapperMethod.class);
-    private static ServerConfig serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
 
     private Connection conn;
     private Method method;
@@ -232,9 +228,6 @@ public class MapperMethod<T> {
     }
 
     private ResultSet executeQuery(String sql) throws SQLException {
-        if (serverConfig.isShowSQL()) {
-            logger.info(sql);
-        }
         return conn.prepareStatement(sql).executeQuery();
     }
 
@@ -243,9 +236,6 @@ public class MapperMethod<T> {
     }
 
     private boolean executeUpdate(String sql) throws SQLException {
-        if (serverConfig.isShowSQL()) {
-            logger.info(sql);
-        }
         return conn.prepareStatement(sql).executeUpdate() >= 1;
     }
 
@@ -254,10 +244,6 @@ public class MapperMethod<T> {
     }
 
     private PreparedStatement fillStatement(String sql, Object[] properties) throws SQLException {
-        if (serverConfig.isShowSQL()) {
-            logger.info(sql);
-            logger.info("parameters：" + Arrays.toString(properties));
-        }
         PreparedStatement statement = conn.prepareStatement(sql);
         for (int i = 0; i < properties.length; i++) {
             statement.setObject(i + 1, properties[i]);

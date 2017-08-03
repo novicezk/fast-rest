@@ -16,10 +16,7 @@ public class Resources {
 
     public static InputStream getResourceAsStreamByTmp(String filePath) throws FileNotFoundException {
         File file = getResourceByTmp(filePath);
-        if (file != null) {
-            return new FileInputStream(file);
-        }
-        return null;
+        return new FileInputStream(file);
     }
 
     public static File getResourceByTmp(String filePath) throws FileNotFoundException {
