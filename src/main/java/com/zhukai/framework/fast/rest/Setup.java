@@ -59,17 +59,6 @@ public class Setup {
         }
     }
 
-    private static String getSystemLineBreak() {
-        String systemName = System.getProperty("os.name");
-        logger.info("System name is " + systemName);
-        if (systemName.startsWith("Windows")) {
-            return "\r\n";
-        } else if (systemName.startsWith("Mac")) {
-            return "\r";
-        }
-        return "\n";
-    }
-
     private static void initProperties() {
         List<String> propertiesList = new ArrayList<>();
         if (FastRestApplication.getRunClass().isAnnotationPresent(EnableConfigure.class)) {

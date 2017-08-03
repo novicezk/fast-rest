@@ -22,18 +22,26 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class HttpServer {
+public class HttpServer extends Server {
     private static final Logger logger = Logger.getLogger(HttpServer.class);
-    private static final ExecutorService service = Executors.newCachedThreadPool();
-    private static Selector selector;
+    private final ExecutorService service = Executors.newCachedThreadPool();
+    private Selector selector;
 
-    public static void start(ServerConfig config) throws Exception {
+    public HttpServer(ServerConfig config) {
+        super(config);
+    }
+
+    @Override
+    protected void init(ServerConfig config) throws Exception {
         selector = Selector.open();
         ServerSocketChannel serverChannel = ServerSocketChannel.open();
         serverChannel.socket().bind(new InetSocketAddress(config.getPort()));
         serverChannel.configureBlocking(false);
         serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-        logger.info("Http server start on port: " + config.getPort() + " with nio");
+    }
+
+    @Override
+    public void start() throws Exception {
         while (true) {
             if (selector.selectNow() == 0) continue;
             Iterator<SelectionKey> ite = selector.selectedKeys().iterator();
@@ -51,14 +59,19 @@ public class HttpServer {
         }
     }
 
-    private static void acceptKey(SelectionKey key) throws IOException {
+    @Override
+    protected String getName() {
+        return "Http";
+    }
+
+    private void acceptKey(SelectionKey key) throws IOException {
         ServerSocketChannel server = (ServerSocketChannel) key.channel();
         SocketChannel channel = server.accept();
         channel.configureBlocking(false);
         channel.register(selector, SelectionKey.OP_READ);
     }
 
-    private static void readKey(SelectionKey key) throws IOException {
+    private void readKey(SelectionKey key) throws IOException {
         SocketChannel channel = (SocketChannel) key.channel();
         HttpRequest request = HttpParser.createRequest(channel);
         if (request != null) {
@@ -70,7 +83,7 @@ public class HttpServer {
         }
     }
 
-    private static void writeKey(SelectionKey key) throws Exception {
+    private void writeKey(SelectionKey key) throws Exception {
         SocketChannel socketChannel = null;
         try {
             socketChannel = (SocketChannel) key.channel();
@@ -88,7 +101,7 @@ public class HttpServer {
                 sendMessage(socketChannel, json, buffer);
             }
         } catch (Exception e) {
-            logger.error(e);
+            logger.error("Write response error",e);
         } finally {
             if (socketChannel != null) {
                 socketChannel.shutdownInput();
@@ -97,7 +110,7 @@ public class HttpServer {
         }
     }
 
-    private static void sendMessage(SocketChannel socketChannel, String message, ByteBuffer buffer) throws Exception {
+    private void sendMessage(SocketChannel socketChannel, String message, ByteBuffer buffer) throws Exception {
         int endIndex = 0;
         while (endIndex < message.length()) {
             buffer.clear();
@@ -109,7 +122,7 @@ public class HttpServer {
         }
     }
 
-    private static void sendInputStream(SocketChannel socketChannel, InputStream in) throws Exception {
+    private void sendInputStream(SocketChannel socketChannel, InputStream in) throws Exception {
         int inputSize = in.available();
         if (inputSize < Constants.BUFFER_SIZE) {
             byte[] bytes = new byte[inputSize];

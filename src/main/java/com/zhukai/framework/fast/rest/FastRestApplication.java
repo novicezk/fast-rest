@@ -1,14 +1,13 @@
 package com.zhukai.framework.fast.rest;
 
+import com.zhukai.framework.fast.rest.annotation.batch.Scheduled;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
-import com.zhukai.framework.fast.rest.http.HttpServletContext;
-import com.zhukai.framework.fast.rest.server.SSLServer;
-import com.zhukai.framework.fast.rest.server.HttpServer;
-import com.zhukai.framework.fast.rest.annotation.batch.Scheduled;
 import com.zhukai.framework.fast.rest.exception.SetupInitException;
+import com.zhukai.framework.fast.rest.http.HttpServletContext;
 import com.zhukai.framework.fast.rest.http.Session;
+import com.zhukai.framework.fast.rest.server.ServerFactory;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Method;
@@ -25,21 +24,14 @@ public class FastRestApplication {
         FastRestApplication.runClass = runClass;
         try {
             Setup.init();
+            serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
+            runSessionTimeoutCheck();
+            runBatchSchedule();
+            ServerFactory.buildServer(serverConfig).start();
         } catch (SetupInitException e) {
-            logger.error("init error", e);
-            return;
-        }
-        serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
-        runSessionTimeoutCheck();
-        runBatchSchedule();
-        try {
-            if (serverConfig.isUseSSL()) {
-                SSLServer.start(serverConfig);
-            } else {
-                HttpServer.start(serverConfig);
-            }
+            logger.error("Init error", e);
         } catch (Exception e) {
-            logger.error("start server error", e);
+            logger.error("Start server error", e);
             scheduledExecutor.shutdownNow();
         }
     }
@@ -49,15 +41,9 @@ public class FastRestApplication {
     private static void runSessionTimeoutCheck() {
         Map<String, Session> sessionMap = HttpServletContext.getInstance().getSessions();
         scheduledExecutor.scheduleAtFixedRate(() ->
-                sessionMap.keySet().removeIf(sessionID -> {
-                    Session session = sessionMap.get(sessionID);
-                    long lastAccessedTime = session.getLastAccessedTime();
-                    if (lastAccessedTime + serverConfig.getSessionTimeout() < System.currentTimeMillis()) {
-                        logger.warn("sessionID: " + sessionID + " is timeout");
-                        return true;
-                    }
-                    return false;
-                }), serverConfig.getFixedRate(), serverConfig.getFixedRate(), TimeUnit.MILLISECONDS);
+                sessionMap.keySet().removeIf(sessionID ->
+                        sessionMap.get(sessionID).getLastAccessedTime() + serverConfig.getSessionTimeout() < System.currentTimeMillis()
+                ), serverConfig.getFixedRate(), serverConfig.getFixedRate(), TimeUnit.MILLISECONDS);
     }
 
     private static void runBatchSchedule() {
@@ -66,12 +52,12 @@ public class FastRestApplication {
             long fixedRate = scheduled.fixedRate();
             long fixedDelay = scheduled.fixedDelay();
             fixedDelay = fixedDelay == 0 ? fixedRate : fixedDelay;
-            logger.info("Batcher method: " + method.getName());
+            logger.info("Batch method: " + method.getName());
             scheduledExecutor.scheduleAtFixedRate(() -> {
                 try {
                     method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()));
                 } catch (Exception e) {
-                    logger.error("Batcher method execute error", e);
+                    logger.error("Batch method execute error", e);
                 }
             }, fixedDelay, fixedRate, scheduled.timeUnit());
         }

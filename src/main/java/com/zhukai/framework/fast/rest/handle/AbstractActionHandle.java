@@ -8,7 +8,7 @@ import com.zhukai.framework.fast.rest.common.FileEntity;
 import com.zhukai.framework.fast.rest.common.HttpHeaderType;
 import com.zhukai.framework.fast.rest.common.HttpStatus;
 import com.zhukai.framework.fast.rest.common.MultipartFile;
-import com.zhukai.framework.fast.rest.exception.RequestNotSupportException;
+import com.zhukai.framework.fast.rest.exception.RequestNotAllowException;
 import com.zhukai.framework.fast.rest.exception.RequestPathNotFoundException;
 import com.zhukai.framework.fast.rest.exception.ResourceNotFoundException;
 import com.zhukai.framework.fast.rest.http.HttpParser;
@@ -70,7 +70,7 @@ public abstract class AbstractActionHandle implements Runnable {
             response.setStatus(HttpStatus.NotFound);
         } catch (RequestPathNotFoundException e) {
             response.setStatus(HttpStatus.BadRequest);
-        } catch (RequestNotSupportException e) {
+        } catch (RequestNotAllowException e) {
             response.setStatus(HttpStatus.MethodNotAllowed);
         } catch (Exception e) {
             logger.error("Request action error", e);
@@ -134,14 +134,14 @@ public abstract class AbstractActionHandle implements Runnable {
             String sessionId = UUID.randomUUID().toString();
             request.addCookie(new Cookie(Constants.JSESSIONID, sessionId));
             response.setCookie(Constants.JSESSIONID, sessionId);
-            logger.info(sessionId + " has connected");
+            logger.info("New client connected, sessionId: " + sessionId);
         }
         HttpServletContext.getInstance().refreshSession(request.getRequestedSessionId());
     }
 
     private Object invokeRequestMethod(Method method) throws Exception {
         if (!ArrayUtils.contains(method.getAnnotation(RequestMapping.class).method(), request.getMethod())) {
-            throw new RequestNotSupportException(request.getServletPath() + " " + request.getMethod() + " is not support");
+            throw new RequestNotAllowException("Request: " + request.getServletPath() + " - " + request.getMethod() + " is not allow");
         }
         try {
             return invokeMethod(method);
