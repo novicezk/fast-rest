@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
 import java.util.Properties;
@@ -37,13 +38,13 @@ public class HttpParser {
     public static HttpRequest createRequest(SocketChannel channel) {
         try {
             return directorRequest(new HttpReaderNIO(channel));
-        } catch (HttpReadException | FileUploadException e) {
+        } catch (HttpReadException | FileUploadException | UnsupportedEncodingException e) {
             logger.error("Create request error", e);
             return null;
         }
     }
 
-    private static HttpRequest directorRequest(AbstractHttpReader readerFactory) throws HttpReadException, FileUploadException {
+    private static HttpRequest directorRequest(AbstractHttpReader readerFactory) throws HttpReadException, FileUploadException, UnsupportedEncodingException {
         RequestBuilder requestBuilder = new HttpRequestBuilder(readerFactory);
         HttpRequestDirector director = new HttpRequestDirector(requestBuilder);
         return director.createRequest();
