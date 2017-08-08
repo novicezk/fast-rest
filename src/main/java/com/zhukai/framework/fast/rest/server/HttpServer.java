@@ -6,9 +6,9 @@ import com.zhukai.framework.fast.rest.handle.ActionHandleNIO;
 import com.zhukai.framework.fast.rest.http.HttpParser;
 import com.zhukai.framework.fast.rest.http.HttpResponse;
 import com.zhukai.framework.fast.rest.http.request.HttpRequest;
+import com.zhukai.framework.fast.rest.log.Log;
+import com.zhukai.framework.fast.rest.log.LogFactory;
 import com.zhukai.framework.fast.rest.util.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 
 public class HttpServer extends Server {
 
-    private static final Logger logger = LoggerFactory.getLogger(HttpServer.class);
+    private static final Log logger = LogFactory.getLog(HttpServer.class);
     private final ExecutorService service = Executors.newCachedThreadPool();
     private Selector selector;
 

@@ -4,10 +4,10 @@ import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.bean.BaseBean;
 import com.zhukai.framework.fast.rest.bean.BeanFactory;
+import com.zhukai.framework.fast.rest.log.Log;
+import com.zhukai.framework.fast.rest.log.LogFactory;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
-    private static final Logger logger = LoggerFactory.getLogger(PropertiesBeanFactory.class);
+    private static final Log logger = LogFactory.getLog(PropertiesBeanFactory.class);
 
     private static Map<String, Properties> propertiesMap = Collections.synchronizedMap(new HashMap<>());
     private static PropertiesBeanFactory instance = new PropertiesBeanFactory();

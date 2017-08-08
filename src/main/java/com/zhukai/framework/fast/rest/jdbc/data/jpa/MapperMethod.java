@@ -3,10 +3,10 @@ package com.zhukai.framework.fast.rest.jdbc.data.jpa;
 import com.zhukai.framework.fast.rest.annotation.jpa.ExecuteUpdate;
 import com.zhukai.framework.fast.rest.annotation.jpa.QueryCondition;
 import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
+import com.zhukai.framework.fast.rest.log.Log;
+import com.zhukai.framework.fast.rest.log.LogFactory;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MapperMethod<T> {
-    private static final Logger logger = LoggerFactory.getLogger(MapperMethod.class);
+    private static final Log logger = LogFactory.getLog(MapperMethod.class);
 
     private Connection conn;
     private Method method;

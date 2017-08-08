@@ -1,9 +1,9 @@
 package com.zhukai.framework.fast.rest.util;
 
 import com.zhukai.framework.fast.rest.annotation.core.Component;
+import com.zhukai.framework.fast.rest.log.Log;
+import com.zhukai.framework.fast.rest.log.LogFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReflectUtil {
-    private static final Logger logger = LoggerFactory.getLogger(ReflectUtil.class);
+    private static final Log logger = LogFactory.getLog(ReflectUtil.class);
 
     public static Object getFieldValue(Object object, String fieldName) {
         Field field = getDeclaredField(object.getClass(), fieldName);

@@ -15,12 +15,12 @@ import com.zhukai.framework.fast.rest.http.HttpParser;
 import com.zhukai.framework.fast.rest.http.HttpResponse;
 import com.zhukai.framework.fast.rest.http.HttpServletContext;
 import com.zhukai.framework.fast.rest.http.request.HttpRequest;
+import com.zhukai.framework.fast.rest.log.Log;
+import com.zhukai.framework.fast.rest.log.LogFactory;
 import com.zhukai.framework.fast.rest.util.JsonUtil;
 import com.zhukai.framework.fast.rest.util.Resources;
 import com.zhukai.framework.fast.rest.util.TypeUtil;
 import org.apache.commons.lang3.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +38,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class AbstractActionHandle implements Runnable {
-    private static Logger logger = LoggerFactory.getLogger(AbstractActionHandle.class);
+    private static final Log logger = LogFactory.getLog(AbstractActionHandle.class);
 
     protected HttpRequest request;
     protected HttpResponse response;

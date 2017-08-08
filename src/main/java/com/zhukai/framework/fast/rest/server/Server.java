@@ -1,14 +1,14 @@
 package com.zhukai.framework.fast.rest.server;
 
 import com.zhukai.framework.fast.rest.config.ServerConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.zhukai.framework.fast.rest.log.Log;
+import com.zhukai.framework.fast.rest.log.LogFactory;
 
 /**
  * Created by homolo on 17-8-3.
  */
 public abstract class Server {
-    private static final Logger logger = LoggerFactory.getLogger(Server.class);
+    private static final Log logger = LogFactory.getLog(Server.class);
 
     public Server(ServerConfig config) {
         try {

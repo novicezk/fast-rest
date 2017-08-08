@@ -21,11 +21,11 @@ import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.exception.SetupInitException;
 import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
 import com.zhukai.framework.fast.rest.jdbc.data.jpa.JpaUtil;
+import com.zhukai.framework.fast.rest.log.Log;
+import com.zhukai.framework.fast.rest.log.LogFactory;
 import com.zhukai.framework.fast.rest.util.PackageUtil;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -38,12 +38,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Setup {
+    private static final Log logger = LogFactory.getLog(Setup.class);
+
+    private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
 
     private static List<Method> batchMethods = new ArrayList<>();
     private static Map<String, Method> webMethods = new HashMap<>();
     private static List<Method> exceptionHandlerMethods = new ArrayList<>();
-    private static final Logger logger = LoggerFactory.getLogger(Setup.class);
-    private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
     private static DataSource dataSource;
 
     static void init() throws SetupInitException {

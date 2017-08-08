@@ -2,10 +2,10 @@ package com.zhukai.framework.fast.rest.bean.component;
 
 import com.zhukai.framework.fast.rest.bean.BeanFactory;
 import com.zhukai.framework.fast.rest.bean.ChildBean;
+import com.zhukai.framework.fast.rest.log.Log;
+import com.zhukai.framework.fast.rest.log.LogFactory;
 import com.zhukai.framework.fast.rest.proxy.ProxyFactory;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class ComponentBeanFactory implements BeanFactory<ComponentBean> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ComponentBeanFactory.class);
+    private static final Log logger = LogFactory.getLog(ComponentBeanFactory.class);
 
     private static ComponentBeanFactory instance = new ComponentBeanFactory();
     private final Map<String, ComponentBean> componentBeanMap = Collections.synchronizedMap(new HashMap<>());

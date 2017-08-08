@@ -2,10 +2,10 @@ package com.zhukai.framework.fast.rest.bean.configure;
 
 import com.zhukai.framework.fast.rest.bean.BeanFactory;
 import com.zhukai.framework.fast.rest.config.DataSource;
+import com.zhukai.framework.fast.rest.log.Log;
+import com.zhukai.framework.fast.rest.log.LogFactory;
 import com.zhukai.framework.fast.rest.util.JsonUtil;
 import com.zhukai.framework.fast.rest.util.TypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -15,7 +15,8 @@ import java.util.Properties;
 
 public class ConfigureBeanFactory implements BeanFactory<ConfigureBean> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigureBeanFactory.class);
+    private static final Log logger = LogFactory.getLog(ConfigureBeanFactory.class);
+
     private static ConfigureBeanFactory instance = new ConfigureBeanFactory();
     private final Map<String, Object> configureMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -65,7 +66,7 @@ public class ConfigureBeanFactory implements BeanFactory<ConfigureBean> {
             if (configureBean.getBeanClass().equals(DataSource.class) && object != null && ((DataSource) object).getUrl() == null) {
                 return;
             }
-            logger.info("{} = {}", configureBean.getBeanClass().getSimpleName(),JsonUtil.toJson(object));
+            logger.info("{} = {}", configureBean.getBeanClass().getSimpleName(), JsonUtil.toJson(object));
             configureMap.put(configureBean.getRegisterName(), object);
             logger.info("Register in configureBeanFactory: {} = {}.class", configureBean.getRegisterName(), configureBean.getBeanClass().getSimpleName());
         }
