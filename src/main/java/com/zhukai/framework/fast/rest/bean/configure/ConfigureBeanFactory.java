@@ -1,9 +1,11 @@
 package com.zhukai.framework.fast.rest.bean.configure;
 
-import com.zhukai.framework.fast.rest.config.DataSource;
 import com.zhukai.framework.fast.rest.bean.BeanFactory;
+import com.zhukai.framework.fast.rest.config.DataSource;
+import com.zhukai.framework.fast.rest.util.JsonUtil;
 import com.zhukai.framework.fast.rest.util.TypeUtil;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -13,7 +15,7 @@ import java.util.Properties;
 
 public class ConfigureBeanFactory implements BeanFactory<ConfigureBean> {
 
-    private static final Logger logger = Logger.getLogger(ConfigureBeanFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConfigureBeanFactory.class);
     private static ConfigureBeanFactory instance = new ConfigureBeanFactory();
     private final Map<String, Object> configureMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -42,7 +44,7 @@ public class ConfigureBeanFactory implements BeanFactory<ConfigureBean> {
             try {
                 object = configureBean.getBeanClass().newInstance();
             } catch (Exception e) {
-                logger.error("reflect error", e);
+                logger.error("Reflect error", e);
             }
             if (properties != null) {
                 String prefix = configureBean.getPrefix().equals("") ? "" : configureBean.getPrefix() + ".";
@@ -56,16 +58,16 @@ public class ConfigureBeanFactory implements BeanFactory<ConfigureBean> {
                     try {
                         field.set(object, TypeUtil.convert(configValue, field.getType()));
                     } catch (Exception e) {
-                        logger.error("reflect error", e);
+                        logger.error("Reflect error", e);
                     }
                 }
             }
             if (configureBean.getBeanClass().equals(DataSource.class) && object != null && ((DataSource) object).getUrl() == null) {
                 return;
             }
-            logger.info(object);
+            logger.info("{} = {}", configureBean.getBeanClass().getSimpleName(),JsonUtil.toJson(object));
             configureMap.put(configureBean.getRegisterName(), object);
-            logger.info("Register in configureBeanFactory: " + configureBean.getRegisterName() + " = " + configureBean.getBeanClass().getSimpleName() + ".class");
+            logger.info("Register in configureBeanFactory: {} = {}.class", configureBean.getRegisterName(), configureBean.getBeanClass().getSimpleName());
         }
     }
 

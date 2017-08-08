@@ -6,13 +6,13 @@ import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
 
 public class AopProxy implements MethodInterceptor {
-    private static Logger logger = Logger.getLogger(AopProxy.class);
 
     public <T> T getProxyInstance(Class<T> clazz) {
         Enhancer enhancer = new Enhancer();
@@ -25,7 +25,6 @@ public class AopProxy implements MethodInterceptor {
     public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
         Connection connection = null;
         if (method.isAnnotationPresent(Transactional.class)) {
-            logger.info("Transactional begin");
             connection = DBConnectionPool.getConnection();
             connection.setAutoCommit(false);
             HttpServletContext.getInstance().setTransaction(connection);

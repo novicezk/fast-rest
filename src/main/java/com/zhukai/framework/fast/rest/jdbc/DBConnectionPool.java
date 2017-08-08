@@ -2,7 +2,8 @@ package com.zhukai.framework.fast.rest.jdbc;
 
 import com.zhukai.framework.fast.rest.config.DataSource;
 import com.zhukai.framework.fast.rest.exception.DBConnectTimeoutException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
 public class DBConnectionPool {
-    private static Logger logger = Logger.getLogger(DBConnectionPool.class);
+    private static Logger logger = LoggerFactory.getLogger(DBConnectionPool.class);
 
     private static LongAdder checkOutSize = new LongAdder();
     private static BlockingQueue<Connection> freeConnPool = new LinkedBlockingQueue<>();
@@ -23,7 +24,7 @@ public class DBConnectionPool {
         try {
             con.setAutoCommit(true);
         } catch (SQLException e) {
-            logger.error(e);
+            logger.error("Set autoCommit error", e);
         }
         freeConnPool.put(con);
         checkOutSize.add(-1);
@@ -42,10 +43,9 @@ public class DBConnectionPool {
     public static void commit(Connection conn) throws SQLException, InterruptedException {
         try {
             conn.commit();
-            logger.info("Transactional over");
         } catch (SQLException ex) {
             conn.rollback();
-            logger.error("Transactional rollback：", ex);
+            logger.error("Transactional rollback error", ex);
         } finally {
             freeConnection(conn);
         }

@@ -4,6 +4,8 @@ package com.zhukai.framework.fast.rest.handle;
 import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.http.HttpParser;
 import com.zhukai.framework.fast.rest.util.JsonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +13,8 @@ import java.io.PrintStream;
 import java.net.Socket;
 
 public class ActionHandle extends AbstractActionHandle {
-
+    
+    private static Logger logger = LoggerFactory.getLogger(ActionHandle.class);
     private Socket socket;
 
     public ActionHandle(Socket socket) {

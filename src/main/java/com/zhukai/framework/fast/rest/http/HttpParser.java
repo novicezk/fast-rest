@@ -12,7 +12,8 @@ import com.zhukai.framework.fast.rest.http.request.HttpRequestDirector;
 import com.zhukai.framework.fast.rest.http.request.RequestBuilder;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +23,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Properties;
 
 public class HttpParser {
-    private static final Logger logger = Logger.getLogger(HttpParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpParser.class);
     private static final Properties mimeTypes = new Properties();
 
     public static HttpRequest createRequest(Socket socket) {
@@ -78,7 +79,7 @@ public class HttpParser {
         try {
             mimeTypes.load(HttpParser.class.getResourceAsStream("/" + Constants.MIMETYPE_PROPERTIES));
         } catch (IOException e) {
-            logger.error(e);
+            logger.error("Load {} fail: {}", Constants.MIMETYPE_PROPERTIES, e);
         }
     }
 

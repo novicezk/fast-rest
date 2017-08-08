@@ -24,7 +24,8 @@ import com.zhukai.framework.fast.rest.jdbc.data.jpa.JpaUtil;
 import com.zhukai.framework.fast.rest.util.PackageUtil;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -41,7 +42,7 @@ public class Setup {
     private static List<Method> batchMethods = new ArrayList<>();
     private static Map<String, Method> webMethods = new HashMap<>();
     private static List<Method> exceptionHandlerMethods = new ArrayList<>();
-    private static final Logger logger = Logger.getLogger(Setup.class);
+    private static final Logger logger = LoggerFactory.getLogger(Setup.class);
     private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
     private static DataSource dataSource;
 
@@ -132,7 +133,7 @@ public class Setup {
         for (Method method : methods) {
             if (method.isAnnotationPresent(RequestMapping.class)) {
                 String methodPath = method.getAnnotation(RequestMapping.class).value();
-                logger.info("Useful web method: " + webPath + methodPath);
+                logger.info("Useful web method: {}{}", webPath, methodPath);
                 Matcher matcher = webMethodPattern.matcher(methodPath);
                 if (matcher.find()) {
                     methodPath = methodPath.replaceAll("\\{[^}]*}", "([^/]+)");
@@ -194,7 +195,7 @@ public class Setup {
         String tableName = JpaUtil.getTableName(entityClass);
         ResultSet rs = conn.getMetaData().getTables(null, null, tableName, null);
         if (rs.next()) {
-            logger.info("Table '" + tableName + "' is exists");
+            logger.info("Table '{}' is exists", tableName);
             rs.close();
             return;
         }
@@ -212,7 +213,7 @@ public class Setup {
         }
         sql.deleteCharAt(sql.length() - 1);
         sql.append(")");
-        logger.info(sql);
+        logger.info("Sql: {}", sql);
         conn.createStatement().executeUpdate(sql.toString());
         addDBIndex(entityClass, tableName, conn);
     }
@@ -247,7 +248,7 @@ public class Setup {
                 }
             }
             indexSql.append(")");
-            logger.info(indexSql);
+            logger.info("Sql: {}", indexSql);
             conn.createStatement().executeUpdate(indexSql.toString());
         }
     }

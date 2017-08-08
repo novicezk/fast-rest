@@ -2,7 +2,8 @@ package com.zhukai.framework.fast.rest.http;
 
 import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.util.Resources;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
@@ -15,7 +16,7 @@ import java.sql.Connection;
 import java.util.*;
 
 public class HttpServletContext implements ServletContext {
-    private static final Logger logger = Logger.getLogger(HttpServletContext.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpServletContext.class);
     private static HttpServletContext instance = new HttpServletContext();
 
     private Map<String, Object> attributes = Collections.synchronizedMap(new HashMap<>());

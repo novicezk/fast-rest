@@ -8,7 +8,8 @@ import com.zhukai.framework.fast.rest.exception.SetupInitException;
 import com.zhukai.framework.fast.rest.http.HttpServletContext;
 import com.zhukai.framework.fast.rest.http.Session;
 import com.zhukai.framework.fast.rest.server.ServerFactory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -16,7 +17,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class FastRestApplication {
-    private static final Logger logger = Logger.getLogger(FastRestApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(FastRestApplication.class);
     private static Class runClass;
     private static ServerConfig serverConfig;
 
@@ -52,7 +53,7 @@ public class FastRestApplication {
             long fixedRate = scheduled.fixedRate();
             long fixedDelay = scheduled.fixedDelay();
             fixedDelay = fixedDelay == 0 ? fixedRate : fixedDelay;
-            logger.info("Batch method: " + method.getName());
+            logger.info("Batch method: {}", method.getName());
             scheduledExecutor.scheduleAtFixedRate(() -> {
                 try {
                     method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()));

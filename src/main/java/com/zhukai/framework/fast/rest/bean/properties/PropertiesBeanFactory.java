@@ -1,12 +1,13 @@
 package com.zhukai.framework.fast.rest.bean.properties;
 
+import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.bean.BaseBean;
-import com.zhukai.framework.fast.rest.Constants;
-import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import com.zhukai.framework.fast.rest.bean.BeanFactory;
+import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
-    private static final Logger logger = Logger.getLogger(PropertiesBeanFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(PropertiesBeanFactory.class);
 
     private static Map<String, Properties> propertiesMap = Collections.synchronizedMap(new HashMap<>());
     private static PropertiesBeanFactory instance = new PropertiesBeanFactory();
@@ -64,16 +65,16 @@ public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
         }
         InputStream propertiesInputStream = FastRestApplication.getRunClass().getResourceAsStream("/" + baseBean.getRegisterName());
         if (propertiesInputStream == null) {
-            logger.warn("Have no " + baseBean.getRegisterName());
+            logger.warn("Properties not exits: {}", baseBean.getRegisterName());
             return;
         }
         Properties properties = new Properties();
         try {
             properties.load(propertiesInputStream);
             propertiesMap.put(baseBean.getRegisterName(), properties);
-            logger.info("Register in propertiesBeanFactory: " + baseBean.getRegisterName());
+            logger.info("Register in propertiesBeanFactory: {}", baseBean.getRegisterName());
         } catch (IOException e) {
-            logger.warn(baseBean.getRegisterName() + " load fail", e);
+            logger.warn("Load {} fail: {}", baseBean.getRegisterName(), e);
         }
     }
 }

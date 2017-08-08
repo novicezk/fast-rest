@@ -5,7 +5,8 @@ import com.zhukai.framework.fast.rest.annotation.jpa.QueryCondition;
 import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MapperMethod<T> {
-    private static final Logger logger = Logger.getLogger(MapperMethod.class);
+    private static final Logger logger = LoggerFactory.getLogger(MapperMethod.class);
 
     private Connection conn;
     private Method method;
@@ -125,7 +126,7 @@ public class MapperMethod<T> {
         if (resultSet.next()) {
             return resultSet.getInt(1);
         }
-        logger.warn(tableName + " is not exists");
+        logger.warn("Table {} is not exists", tableName);
         return -1;
     }
 

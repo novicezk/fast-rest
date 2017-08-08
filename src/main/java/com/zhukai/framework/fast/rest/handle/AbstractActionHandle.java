@@ -19,7 +19,8 @@ import com.zhukai.framework.fast.rest.util.JsonUtil;
 import com.zhukai.framework.fast.rest.util.Resources;
 import com.zhukai.framework.fast.rest.util.TypeUtil;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +38,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class AbstractActionHandle implements Runnable {
-    protected static Logger logger = Logger.getLogger(AbstractActionHandle.class);
+    private static Logger logger = LoggerFactory.getLogger(AbstractActionHandle.class);
 
     protected HttpRequest request;
     protected HttpResponse response;
@@ -140,7 +141,7 @@ public abstract class AbstractActionHandle implements Runnable {
             String sessionId = UUID.randomUUID().toString();
             request.addCookie(new Cookie(Constants.JSESSIONID, sessionId));
             response.setCookie(Constants.JSESSIONID, sessionId);
-            logger.info("New client connected, sessionId: " + sessionId);
+            logger.info("New client connected, sessionId: {}", sessionId);
         }
         HttpServletContext.getInstance().refreshSession(request.getRequestedSessionId());
     }

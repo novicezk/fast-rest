@@ -1,10 +1,11 @@
 package com.zhukai.framework.fast.rest.bean.component;
 
-import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import com.zhukai.framework.fast.rest.bean.BeanFactory;
 import com.zhukai.framework.fast.rest.bean.ChildBean;
 import com.zhukai.framework.fast.rest.proxy.ProxyFactory;
-import org.apache.log4j.Logger;
+import com.zhukai.framework.fast.rest.util.ReflectUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,7 +13,7 @@ import java.util.Map;
 
 public class ComponentBeanFactory implements BeanFactory<ComponentBean> {
 
-    private static final Logger logger = Logger.getLogger(ComponentBeanFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(ComponentBeanFactory.class);
 
     private static ComponentBeanFactory instance = new ComponentBeanFactory();
     private final Map<String, ComponentBean> componentBeanMap = Collections.synchronizedMap(new HashMap<>());
@@ -28,7 +29,7 @@ public class ComponentBeanFactory implements BeanFactory<ComponentBean> {
     @Override
     public Object getBean(String beanName) {
         if (!componentBeanMap.containsKey(beanName)) {
-            logger.warn("ComponentBeanFactory not exits " + beanName);
+            logger.warn("ComponentBeanFactory not exits {}", beanName);
             return null;
         }
         ComponentBean componentBean = componentBeanMap.get(beanName);
@@ -62,7 +63,7 @@ public class ComponentBeanFactory implements BeanFactory<ComponentBean> {
             if (componentBean.isSingleton()) {
                 singletonBeanMap.put(componentBean.getRegisterName(), getBean(componentBean.getRegisterName()));
             }
-            logger.info("Register in componentBeanFactory: " + componentBean.getRegisterName() + " = " + componentBean.getBeanClass().getSimpleName() + ".class");
+            logger.info("Register in componentBeanFactory: {} = {}.class", componentBean.getRegisterName(), componentBean.getBeanClass().getSimpleName());
         }
     }
 

@@ -1,18 +1,19 @@
 package com.zhukai.framework.fast.rest.server;
 
 import com.zhukai.framework.fast.rest.config.ServerConfig;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by homolo on 17-8-3.
  */
 public abstract class Server {
-    private static final Logger logger = Logger.getLogger(Server.class);
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     public Server(ServerConfig config) {
         try {
             init(config);
-            logger.info("Create " + getName() + " server success, port: " + config.getPort());
+            logger.info("Create {} server success, port: {}", getName(), config.getPort());
         } catch (Exception e) {
             logger.error("Create server error", e);
         }

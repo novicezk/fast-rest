@@ -2,7 +2,8 @@ package com.zhukai.framework.fast.rest.util;
 
 import com.zhukai.framework.fast.rest.annotation.core.Component;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -15,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReflectUtil {
-    private static final Logger logger = Logger.getLogger(ReflectUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReflectUtil.class);
 
     public static Object getFieldValue(Object object, String fieldName) {
         Field field = getDeclaredField(object.getClass(), fieldName);
@@ -23,7 +24,7 @@ public class ReflectUtil {
         try {
             return field.get(object);
         } catch (IllegalAccessException e) {
-            logger.error(e);
+            logger.error("Reflect error", e);
             return null;
         }
     }
@@ -34,7 +35,7 @@ public class ReflectUtil {
         try {
             field.set(obj, value);
         } catch (IllegalAccessException e) {
-            logger.error(e);
+            logger.error("Reflect error", e);
         }
     }
 
@@ -67,7 +68,7 @@ public class ReflectUtil {
             Method method = obj.getClass().getMethod(methodName, paramsClass);
             returnValue = method.invoke(obj, params);
         } catch (Exception e) {
-            logger.error(e);
+            logger.error("Reflect error", e);
         }
         return returnValue;
     }
@@ -82,7 +83,7 @@ public class ReflectUtil {
             Constructor constructor = objClass.getConstructor(paramsClass);
             obj = constructor.newInstance(params);
         } catch (Exception e) {
-            logger.error(e);
+            logger.error("Reflect error", e);
         }
         return objClass.cast(obj);
     }
@@ -91,7 +92,7 @@ public class ReflectUtil {
         try {
             return objClass.newInstance();
         } catch (ReflectiveOperationException e) {
-            logger.error(e);
+            logger.error("Reflect error", e);
             return null;
         }
     }
