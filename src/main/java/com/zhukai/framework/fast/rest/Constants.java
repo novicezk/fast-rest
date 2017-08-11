@@ -6,6 +6,6 @@ public interface Constants {
             FAST_REST_SESSION = "FAST_REST_SESSION",
             HTTP_LINE_SEPARATOR = "\r\n";
     int BUFFER_SIZE = 1024;
-    long SESSION_CHECK_FIXED_RATE = 300000L;//session检测间隔（毫秒）
+    long SESSION_CHECK_FIXED_RATE = 3600000L;//session检测间隔（毫秒）
 
 }
