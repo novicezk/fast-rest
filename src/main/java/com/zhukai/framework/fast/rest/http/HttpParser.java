@@ -83,7 +83,6 @@ public class HttpParser {
             sb.append(Constants.HTTP_LINE_SEPARATOR);
         });
         sb.append(Constants.HTTP_LINE_SEPARATOR);
-        System.out.println(sb);
         return sb.toString();
     }
 
