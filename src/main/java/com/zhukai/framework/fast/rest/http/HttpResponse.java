@@ -3,7 +3,10 @@ package com.zhukai.framework.fast.rest.http;
 import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.common.HttpStatus;
 
+import javax.servlet.http.Cookie;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HttpResponse {
@@ -12,7 +15,7 @@ public class HttpResponse {
     private int statusCode = 200;
     private String statusCodeStr = "OK";
     private String protocol;
-    private Map<String, String> cookies = new HashMap<>();
+    private List<Cookie> cookies = new ArrayList<>();
     private Map<String, String> headers = new HashMap<>();
     private Object result;
 
@@ -61,12 +64,12 @@ public class HttpResponse {
         this.protocol = protocol;
     }
 
-    public Map<String, String> getCookies() {
+    public List<Cookie> getCookies() {
         return cookies;
     }
 
-    public void setCookie(String key, String value) {
-        this.cookies.put(key, value);
+    public void addCookie(Cookie cookie) {
+        this.cookies.add(cookie);
     }
 
     public Map<String, String> getHeaders() {

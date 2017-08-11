@@ -44,7 +44,7 @@ public class FastRestApplication {
         scheduledExecutor.scheduleAtFixedRate(() ->
                 sessionMap.keySet().removeIf(sessionID ->
                         sessionMap.get(sessionID).getLastAccessedTime() + serverConfig.getSessionTimeout() < System.currentTimeMillis()
-                ), serverConfig.getFixedRate(), serverConfig.getFixedRate(), TimeUnit.MILLISECONDS);
+                ), Constants.SESSION_CHECK_FIXED_RATE, Constants.SESSION_CHECK_FIXED_RATE, TimeUnit.MILLISECONDS);
     }
 
     private static void runBatchSchedule() {
@@ -52,7 +52,6 @@ public class FastRestApplication {
             Scheduled scheduled = method.getAnnotation(Scheduled.class);
             long fixedRate = scheduled.fixedRate();
             long fixedDelay = scheduled.fixedDelay();
-            fixedDelay = fixedDelay == 0 ? fixedRate : fixedDelay;
             logger.info("Batch method: {}", method.getName());
             scheduledExecutor.scheduleAtFixedRate(() -> {
                 try {

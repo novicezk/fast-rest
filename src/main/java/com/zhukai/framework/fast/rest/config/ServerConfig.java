@@ -5,7 +5,6 @@ import com.zhukai.framework.fast.rest.annotation.core.Configure;
 @Configure(prefix = "server")
 public class ServerConfig {
 
-    private Long fixedRate = 300000L;
     private Long sessionTimeout = 1800000L;
     private Integer port = 8080;
     private String fileTmp = "/tmp/";
@@ -16,14 +15,6 @@ public class ServerConfig {
     private String keyStorePassword;
 
     public ServerConfig() {
-    }
-
-    public Long getFixedRate() {
-        return fixedRate;
-    }
-
-    public void setFixedRate(Long fixedRate) {
-        this.fixedRate = fixedRate;
     }
 
     public Long getSessionTimeout() {
@@ -93,8 +84,7 @@ public class ServerConfig {
     @Override
     public String toString() {
         return "ServerConfig{" +
-                "fixedRate=" + fixedRate +
-                ", sessionTimeout=" + sessionTimeout +
+                "sessionTimeout=" + sessionTimeout +
                 ", port=" + port +
                 ", fileTmp='" + fileTmp + '\'' +
                 ", charset='" + charset + '\'' +

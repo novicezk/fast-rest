@@ -1,10 +1,9 @@
 package com.zhukai.framework.fast.rest.http.request;
 
-import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
+import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.common.HttpHeaderType;
 import com.zhukai.framework.fast.rest.common.MultipartFile;
 import com.zhukai.framework.fast.rest.common.RequestType;
-import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.exception.HttpReadException;
 import com.zhukai.framework.fast.rest.http.reader.AbstractHttpReader;
 import org.apache.commons.fileupload.FileItem;
@@ -33,7 +32,7 @@ public class HttpRequestBuilder implements RequestBuilder {
         if (startLineArr.length < 3) {
             return null;
         }
-        String url = URLDecoder.decode(startLineArr[1], ConfigureBeanFactory.getInstance().getBean(ServerConfig.class).getCharset());
+        String url = URLDecoder.decode(startLineArr[1], FastRestApplication.getServerConfig().getCharset());
         String[] pathArr = url.split("\\?");
         String path = pathArr[0];
         request = new HttpRequest();

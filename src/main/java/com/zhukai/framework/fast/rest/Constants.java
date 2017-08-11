@@ -1,9 +1,11 @@
 package com.zhukai.framework.fast.rest;
 
 public interface Constants {
-    String DEFAULT_PROPERTIES = "application.properties";
-    String MIMETYPE_PROPERTIES = "mimetype.properties";
-    String JSESSIONID = "JSESSIONID";
+    String DEFAULT_PROPERTIES = "application.properties",//默认配置文件名
+            MIMETYPE_PROPERTIES = "mimetype.properties",
+            FAST_REST_SESSION = "FAST_REST_SESSION",
+            HTTP_LINE_SEPARATOR = "\r\n";
     int BUFFER_SIZE = 1024;
-    String HTTP_LINE_SEPARATOR = "\r\n";
+    long SESSION_CHECK_FIXED_RATE = 300000L;//session检测间隔（毫秒）
+
 }

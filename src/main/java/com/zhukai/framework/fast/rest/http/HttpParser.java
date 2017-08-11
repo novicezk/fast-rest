@@ -20,7 +20,11 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.TimeZone;
 
 public class HttpParser {
     private static final Log logger = LogFactory.getLog(HttpParser.class);
@@ -64,9 +68,22 @@ public class HttpParser {
         }
         response.getHeaders().keySet().forEach(key -> sb.append(key).append(": ")
                 .append(response.getHeaders().get(key)).append(Constants.HTTP_LINE_SEPARATOR));
-        response.getCookies().keySet().forEach(key -> sb.append(HttpHeaderType.SET_COOKIE).append(": ").append(key)
-                .append("=").append(response.getCookies().get(key)).append(";Path=/").append(Constants.HTTP_LINE_SEPARATOR));
+        response.getCookies().forEach(cookie -> {
+            sb.append(HttpHeaderType.SET_COOKIE).append(": ")
+                    .append(cookie.getName()).append("=")
+                    .append(cookie.getValue()).append(";Path=").append(cookie.getPath());
+            if (cookie.getMaxAge() != -1) {
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+                sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+                Date timeoutDate = new Date(System.currentTimeMillis() + cookie.getMaxAge() * 1000);
+                sb.append(";expires=").append(sdf.format(timeoutDate));
+            }
+            if (cookie.getDomain() != null) sb.append(";Domain=").append(cookie.getDomain());
+            if (cookie.getSecure()) sb.append(";secure");
+            sb.append(Constants.HTTP_LINE_SEPARATOR);
+        });
         sb.append(Constants.HTTP_LINE_SEPARATOR);
+        System.out.println(sb);
         return sb.toString();
     }
 

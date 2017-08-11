@@ -1,6 +1,7 @@
 package com.zhukai.framework.fast.rest.handle;
 
 import com.zhukai.framework.fast.rest.Constants;
+import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.Setup;
 import com.zhukai.framework.fast.rest.annotation.web.*;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
@@ -139,8 +140,12 @@ public abstract class AbstractActionHandle implements Runnable {
     private void checkSession() {
         if (request.getRequestedSessionId() == null) {
             String sessionId = UUID.randomUUID().toString();
-            request.addCookie(new Cookie(Constants.JSESSIONID, sessionId));
-            response.setCookie(Constants.JSESSIONID, sessionId);
+            Cookie sessionCookie = new Cookie(Constants.FAST_REST_SESSION, sessionId);
+            sessionCookie.setMaxAge(Long.valueOf(FastRestApplication.getServerConfig().getSessionTimeout() / 1000).intValue());
+            sessionCookie.setSecure(FastRestApplication.getServerConfig().isUseSSL());
+            sessionCookie.setPath("/");
+            request.addCookie(sessionCookie);
+            response.addCookie(sessionCookie);
             logger.info("New client connected, sessionId: {}", sessionId);
         }
         HttpServletContext.getInstance().refreshSession(request.getRequestedSessionId());
