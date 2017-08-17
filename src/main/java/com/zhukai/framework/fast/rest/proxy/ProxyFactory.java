@@ -6,14 +6,14 @@ import com.zhukai.framework.fast.rest.util.ReflectUtil;
 
 public class ProxyFactory {
 
-    @SuppressWarnings("unchecked")
-    public static Object createInstance(Class clazz) {
-        if (clazz.isAnnotationPresent(Repository.class)) {
-            return new RepositoryProxy().getProxyInstance(clazz);
-        } else if (clazz.isAnnotationPresent(Service.class)) {
-            return new AopProxy().getProxyInstance(clazz);
-        } else {
-            return ReflectUtil.createInstance(clazz);
-        }
-    }
+	@SuppressWarnings("unchecked")
+	public static Object createInstance(Class clazz) {
+		if (clazz.isAnnotationPresent(Repository.class)) {
+			return new RepositoryProxy().getProxyInstance(clazz);
+		} else if (clazz.isAnnotationPresent(Service.class)) {
+			return new AopProxy().getProxyInstance(clazz);
+		} else {
+			return ReflectUtil.createInstance(clazz);
+		}
+	}
 }

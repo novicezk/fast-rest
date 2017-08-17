@@ -9,14 +9,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * TODO corn
  */
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Scheduled {
 
-    long fixedRate();
+	long fixedRate();
 
-    long fixedDelay() default 0;
+	long fixedDelay() default 0;
 
-    TimeUnit timeUnit() default TimeUnit.MILLISECONDS;
+	TimeUnit timeUnit() default TimeUnit.MILLISECONDS;
 
 }

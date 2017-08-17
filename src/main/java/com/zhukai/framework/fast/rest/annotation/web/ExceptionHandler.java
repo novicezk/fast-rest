@@ -5,11 +5,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExceptionHandler {
 
-    Class<? extends Throwable>[] value();
+	Class<? extends Throwable>[] value();
 
-    int catchSeq() default 0;
+	int catchSeq() default 0;
 }

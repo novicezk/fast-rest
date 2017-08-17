@@ -12,65 +12,64 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class PackageUtil {
-    /**
-     * @param runClass 目标类
-     * @return runClass同包或子级包的所有类
-     */
-    public static List<Class> getAllClassesByMainClass(Class runClass) throws Exception {
-        List<Class> classes = new ArrayList<>();
-        String packageName = runClass.getPackage().getName();
-        String packageDirName = packageName.replace('.', '/');
-        Enumeration<URL> dirs = runClass.getClassLoader().getResources(packageDirName);
-        while (dirs.hasMoreElements()) {
-            URL url = dirs.nextElement();
-            String protocol = url.getProtocol();
-            if ("file".equals(protocol)) {
-                String filePath = URLDecoder.decode(url.getFile(), "utf-8");
-                findClassInPackageByFile(packageName, filePath, classes);
-            } else if ("jar".equals(protocol)) {
-                findClassInPackageByJar(packageDirName, url, classes);
-            }
-        }
-        return classes;
-    }
+	/**
+	 * @param runClass
+	 *            目标类
+	 * @return runClass同包或子级包的所有类
+	 */
+	public static List<Class> getAllClassesByMainClass(Class runClass) throws Exception {
+		List<Class> classes = new ArrayList<>();
+		String packageName = runClass.getPackage().getName();
+		String packageDirName = packageName.replace('.', '/');
+		Enumeration<URL> dirs = runClass.getClassLoader().getResources(packageDirName);
+		while (dirs.hasMoreElements()) {
+			URL url = dirs.nextElement();
+			String protocol = url.getProtocol();
+			if ("file".equals(protocol)) {
+				String filePath = URLDecoder.decode(url.getFile(), "utf-8");
+				findClassInPackageByFile(packageName, filePath, classes);
+			} else if ("jar".equals(protocol)) {
+				findClassInPackageByJar(packageDirName, url, classes);
+			}
+		}
+		return classes;
+	}
 
-    private static void findClassInPackageByFile(String packageName, String filePath, List<Class> classes) throws Exception {
-        File dir = new File(filePath);
-        if (!dir.exists() || !dir.isDirectory()) {
-            return;
-        }
-        File[] dirFiles = dir.listFiles(file ->
-                file.isDirectory() || file.getName().endsWith("class")
-        );
-        if (dirFiles != null) {
-            for (File file : dirFiles) {
-                if (file.isDirectory()) {
-                    findClassInPackageByFile(packageName + "." + file.getName(), file.getAbsolutePath(), classes);
-                } else {
-                    String className = file.getName().substring(0, file.getName().length() - 6);
-                    classes.add(Thread.currentThread().getContextClassLoader().loadClass(packageName + "." + className));
-                }
-            }
-        }
-    }
+	private static void findClassInPackageByFile(String packageName, String filePath, List<Class> classes) throws Exception {
+		File dir = new File(filePath);
+		if (!dir.exists() || !dir.isDirectory()) {
+			return;
+		}
+		File[] dirFiles = dir.listFiles(file -> file.isDirectory() || file.getName().endsWith("class"));
+		if (dirFiles != null) {
+			for (File file : dirFiles) {
+				if (file.isDirectory()) {
+					findClassInPackageByFile(packageName + "." + file.getName(), file.getAbsolutePath(), classes);
+				} else {
+					String className = file.getName().substring(0, file.getName().length() - 6);
+					classes.add(Thread.currentThread().getContextClassLoader().loadClass(packageName + "." + className));
+				}
+			}
+		}
+	}
 
-    private static void findClassInPackageByJar(String packageDirName, URL url, List<Class> classes) throws IOException, ClassNotFoundException {
-        JarFile jar = JarURLConnection.class.cast(url.openConnection()).getJarFile();
-        Enumeration<JarEntry> entries = jar.entries();
-        while (entries.hasMoreElements()) {
-            JarEntry entry = entries.nextElement();
-            String name = entry.getName().charAt(0) == '/' ? entry.getName().substring(1) : entry.getName();
-            if (name.startsWith(packageDirName) && name.endsWith(".class") && !entry.isDirectory()) {
-                int idx = name.lastIndexOf('/');
-                if (idx != -1) {
-                    String packageName = name.substring(0, idx).replace('/', '.');
-                    String className = name.substring(packageName.length() + 1, name.length() - 6);
-                    classes.add(Class.forName(packageName + '.' + className));
-                }
-            }
-        }
-    }
+	private static void findClassInPackageByJar(String packageDirName, URL url, List<Class> classes) throws IOException, ClassNotFoundException {
+		JarFile jar = JarURLConnection.class.cast(url.openConnection()).getJarFile();
+		Enumeration<JarEntry> entries = jar.entries();
+		while (entries.hasMoreElements()) {
+			JarEntry entry = entries.nextElement();
+			String name = entry.getName().charAt(0) == '/' ? entry.getName().substring(1) : entry.getName();
+			if (name.startsWith(packageDirName) && name.endsWith(".class") && !entry.isDirectory()) {
+				int idx = name.lastIndexOf('/');
+				if (idx != -1) {
+					String packageName = name.substring(0, idx).replace('/', '.');
+					String className = name.substring(packageName.length() + 1, name.length() - 6);
+					classes.add(Class.forName(packageName + '.' + className));
+				}
+			}
+		}
+	}
 
-    private PackageUtil() {
-    }
+	private PackageUtil() {
+	}
 }

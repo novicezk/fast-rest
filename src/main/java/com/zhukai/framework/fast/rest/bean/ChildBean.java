@@ -1,25 +1,25 @@
 package com.zhukai.framework.fast.rest.bean;
 
 public class ChildBean extends BaseBean {
-    
-    private BeanFactory beanFactory;
 
-    private String fieldName;
+	private BeanFactory beanFactory;
 
-    public String getFieldName() {
-        return fieldName;
-    }
+	private String fieldName;
 
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-    }
+	public String getFieldName() {
+		return fieldName;
+	}
 
-    public BeanFactory getBeanFactory() {
-        return beanFactory;
-    }
+	public void setFieldName(String fieldName) {
+		this.fieldName = fieldName;
+	}
 
-    public void setBeanFactory(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
-    }
+	public BeanFactory getBeanFactory() {
+		return beanFactory;
+	}
+
+	public void setBeanFactory(BeanFactory beanFactory) {
+		this.beanFactory = beanFactory;
+	}
 
 }
