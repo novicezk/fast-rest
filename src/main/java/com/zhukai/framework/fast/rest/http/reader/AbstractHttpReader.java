@@ -17,9 +17,9 @@ public abstract class AbstractHttpReader {
 		try {
 			byte[] bytes = readByteArrayLimitSize(0);
 			int length = bytes.length > 0 && bytes[bytes.length - 1] == 13 ? bytes.length - 1 : bytes.length;
-			String s = new String(bytes, 0, length, DEFAULT_PARSE_CHARSET);
-			logger.info(s);
-			return s;
+			String line = new String(bytes, 0, length, DEFAULT_PARSE_CHARSET);
+			logger.debug(line);
+			return line;
 		} catch (IOException e) {
 			throw new HttpReadException(e);
 		}
