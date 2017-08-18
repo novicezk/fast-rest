@@ -2,6 +2,7 @@ package com.zhukai.framework.fast.rest;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -14,8 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zhukai.framework.fast.rest.annotation.batch.Batcher;
-import com.zhukai.framework.fast.rest.annotation.batch.Scheduled;
 import com.zhukai.framework.fast.rest.annotation.core.*;
 import com.zhukai.framework.fast.rest.annotation.jpa.Entity;
 import com.zhukai.framework.fast.rest.annotation.jpa.Index;
@@ -44,6 +43,7 @@ public class Setup {
 	private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
 
 	private static List<Method> batchMethods = new ArrayList<>();
+	private static List<Method> initMethods = new ArrayList<>();
 	private static Map<String, Method> webMethods = new HashMap<>();
 	private static List<Method> exceptionHandlerMethods = new ArrayList<>();
 	private static DataSource dataSource;
@@ -57,6 +57,8 @@ public class Setup {
 				DBConnectionPool.init(dataSource);
 			}
 			scanComponent();
+			sortMethods();
+			projectInitialize();
 		} catch (Exception e) {
 			throw new SetupInitException(e);
 		}
@@ -81,6 +83,10 @@ public class Setup {
 
 	private static void initConfig() {
 		registerConfigureBean(ServerConfig.class);
+		ServerConfig serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
+		if (!serverConfig.getFileTmp().endsWith("/")) {
+			serverConfig.setFileTmp(serverConfig.getFileTmp() + "/");
+		}
 		registerConfigureBean(DataSource.class);
 	}
 
@@ -96,19 +102,12 @@ public class Setup {
 				checkDatabase(componentClass, conn);
 			} else if (componentClass.isAnnotationPresent(ControllerAdvice.class)) {
 				addMethodToList(componentClass, exceptionHandlerMethods, ExceptionHandler.class);
-				exceptionHandlerMethods.sort((method1, method2) -> {
-					int method1Seq = method1.getAnnotation(ExceptionHandler.class).catchSeq();
-					int method2Seq = method2.getAnnotation(ExceptionHandler.class).catchSeq();
-					if (method1Seq == method2Seq)
-						return 0;
-					return method1Seq > method2Seq ? 1 : -1;
-				});
-			} else if (componentClass.isAnnotationPresent(Batcher.class)) {
-				addMethodToList(componentClass, batchMethods, Scheduled.class);
 			}
 			String registerName = ReflectUtil.getComponentValue(componentClass);
 			if (registerName != null) {
 				registerComponentBean(componentClass, registerName);
+				addMethodToList(componentClass, batchMethods, Scheduled.class);
+				addMethodToList(componentClass, initMethods, Initialize.class);
 			} else if (componentClass.isAnnotationPresent(Configure.class)) {
 				registerConfigureBean(componentClass);
 			}
@@ -252,6 +251,29 @@ public class Setup {
 			indexSql.append(")");
 			logger.info("Sql: {}", indexSql);
 			conn.createStatement().executeUpdate(indexSql.toString());
+		}
+	}
+
+	private static void sortMethods() {
+		exceptionHandlerMethods.sort((method1, method2) -> {
+			int method1Seq = method1.getAnnotation(ExceptionHandler.class).catchSeq();
+			int method2Seq = method2.getAnnotation(ExceptionHandler.class).catchSeq();
+			if (method1Seq == method2Seq)
+				return 0;
+			return method1Seq > method2Seq ? 1 : -1;
+		});
+		initMethods.sort((method1, method2) -> {
+			int method1Seq = method1.getAnnotation(Initialize.class).seq();
+			int method2Seq = method2.getAnnotation(Initialize.class).seq();
+			if (method1Seq == method2Seq)
+				return 0;
+			return method1Seq > method2Seq ? 1 : -1;
+		});
+	}
+
+	private static void projectInitialize() throws InvocationTargetException, IllegalAccessException {
+		for (Method method : initMethods) {
+			method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()));
 		}
 	}
 

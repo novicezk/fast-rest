@@ -1,4 +1,4 @@
-package com.zhukai.framework.fast.rest.annotation.batch;
+package com.zhukai.framework.fast.rest.annotation.core;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

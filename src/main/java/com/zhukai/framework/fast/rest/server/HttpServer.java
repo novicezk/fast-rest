@@ -25,13 +25,17 @@ import com.zhukai.framework.fast.rest.http.request.HttpRequest;
 import com.zhukai.framework.fast.rest.util.JsonUtil;
 
 public class HttpServer extends Server {
-
 	private static final Logger logger = LoggerFactory.getLogger(HttpServer.class);
 	private final ExecutorService service = Executors.newCachedThreadPool();
 	private Selector selector;
 
-	public HttpServer(ServerConfig config) {
+	public HttpServer(ServerConfig config) throws Exception {
 		super(config);
+	}
+
+	@Override
+	public String getServerName() {
+		return "Http";
 	}
 
 	@Override
@@ -44,28 +48,28 @@ public class HttpServer extends Server {
 	}
 
 	@Override
-	public void start() throws Exception {
-		while (true) {
-			if (selector.selectNow() == 0)
-				continue;
-			Iterator<SelectionKey> ite = selector.selectedKeys().iterator();
-			while (ite.hasNext()) {
-				SelectionKey key = ite.next();
-				ite.remove();
-				if (key.isAcceptable()) {
-					acceptKey(key);
-				} else if (key.isReadable()) {
-					readKey(key);
-				} else if (key.isWritable()) {
-					writeKey(key);
+	public void run() {
+		try {
+			while (true) {
+				if (selector.selectNow() == 0)
+					continue;
+				Iterator<SelectionKey> ite = selector.selectedKeys().iterator();
+				while (ite.hasNext()) {
+					SelectionKey key = ite.next();
+					ite.remove();
+					if (key.isAcceptable()) {
+						acceptKey(key);
+					} else if (key.isReadable()) {
+						readKey(key);
+					} else if (key.isWritable()) {
+						writeKey(key);
+					}
 				}
 			}
+		} catch (Exception e) {
+			logger.error("Http server run error", e);
+			System.exit(1);
 		}
-	}
-
-	@Override
-	protected String getName() {
-		return "Http";
 	}
 
 	private void acceptKey(SelectionKey key) throws IOException {
@@ -76,18 +80,23 @@ public class HttpServer extends Server {
 	}
 
 	private void readKey(SelectionKey key) throws IOException {
-		SocketChannel channel = (SocketChannel) key.channel();
-		HttpRequest request = HttpParser.createRequest(channel);
-		if (request != null) {
-			service.execute(new ActionHandleNIO(request, key));
-			key.interestOps(key.interestOps() & ~SelectionKey.OP_READ);
-		} else {
-			channel.shutdownInput();
-			channel.close();
+		try {
+			SocketChannel channel = (SocketChannel) key.channel();
+
+			HttpRequest request = HttpParser.createRequest(channel);
+			if (request != null) {
+				service.execute(new ActionHandleNIO(request, key));
+				key.interestOps(key.interestOps() & ~SelectionKey.OP_READ);
+			} else {
+				channel.shutdownInput();
+				channel.close();
+			}
+		} catch (Exception e) {
+			logger.error("Read Request error", e);
 		}
 	}
 
-	private void writeKey(SelectionKey key) throws Exception {
+	private void writeKey(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = null;
 		try {
 			socketChannel = (SocketChannel) key.channel();

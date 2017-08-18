@@ -9,6 +9,7 @@ public class ServerConfig {
 	private Integer port = 8080;
 	private String fileTmp = "/tmp/";
 	private String charset = "utf-8";
+	private String welcomePage = "index.html";
 	private Boolean useSSL = false;
 	private Boolean needClientAuth = false;
 	private String keyStoreFile;
@@ -81,9 +82,17 @@ public class ServerConfig {
 		this.keyStorePassword = keyStorePassword;
 	}
 
+	public String getWelcomePage() {
+		return welcomePage;
+	}
+
+	public void setWelcomePage(String welcomePage) {
+		this.welcomePage = welcomePage;
+	}
+
 	@Override
 	public String toString() {
-		return "ServerConfig{" + "sessionTimeout=" + sessionTimeout + ", port=" + port + ", fileTmp='" + fileTmp + '\'' + ", charset='" + charset + '\'' + ", useSSL=" + useSSL + ", needClientAuth=" + needClientAuth + ", keyStoreFile='"
-				+ keyStoreFile + '\'' + ", keyStorePassword='" + keyStorePassword + '\'' + '}';
+		return "ServerConfig{" + "sessionTimeout=" + sessionTimeout + ", port=" + port + ", fileTmp='" + fileTmp + '\'' + ", charset='" + charset + '\'' + ", welcomePage='" + welcomePage + '\'' + ", useSSL=" + useSSL + ", needClientAuth="
+				+ needClientAuth + ", keyStoreFile='" + keyStoreFile + '\'' + ", keyStorePassword='" + keyStorePassword + '\'' + '}';
 	}
 }

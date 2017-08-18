@@ -6,34 +6,40 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import com.zhukai.framework.fast.rest.FastRestApplication;
-import com.zhukai.framework.fast.rest.common.FileEntity;
 
 public class Resources {
 
-	public static InputStream getResourceAsStream(String filePath) {
+	public static InputStream getResourceAsStreamByProject(String filePath) {
 		return FastRestApplication.getRunClass().getResourceAsStream(filePath);
 	}
 
-	public static InputStream getResourceAsStreamByTmp(String filePath) throws FileNotFoundException {
-		File file = getResourceByTmp(filePath);
-		return new FileInputStream(file);
-	}
-
-	public static File getResourceByTmp(String filePath) throws FileNotFoundException {
-		String tmpPath = FastRestApplication.getServerConfig().getFileTmp();
-		File file = new File(tmpPath + filePath);
+	public static File getResource(String filePath) throws FileNotFoundException {
+		File file = new File(filePath);
 		if (!file.exists()) {
 			throw new FileNotFoundException(filePath);
 		}
 		return file;
 	}
 
-	public static FileEntity getFileEntityByTmp(String filePath) throws FileNotFoundException {
-		File file = getResourceByTmp(filePath);
-		FileEntity fileEntity = new FileEntity();
-		fileEntity.setFileName(file.getName());
-		fileEntity.setInputStream(new FileInputStream(file));
-		return fileEntity;
+	public static InputStream getResourceAsStream(String filePath) throws FileNotFoundException {
+		File file = getResource(filePath);
+		return new FileInputStream(file);
+	}
+
+	public static InputStream getResourceAsStreamByStatic(String filePath) throws FileNotFoundException {
+		return getResourceAsStream(FastRestApplication.getStaticPath() + filePath);
+	}
+
+	public static File getResourceByStatic(String filePath) throws FileNotFoundException {
+		return getResource(FastRestApplication.getStaticPath() + filePath);
+	}
+
+	public static InputStream getResourceAsStreamByTmp(String filePath) throws FileNotFoundException {
+		return getResourceAsStream(FastRestApplication.getServerConfig().getFileTmp() + filePath);
+	}
+
+	public static File getResourceByTmp(String filePath) throws FileNotFoundException {
+		return getResource(FastRestApplication.getServerConfig().getFileTmp() + filePath);
 	}
 
 	private Resources() {

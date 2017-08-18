@@ -129,7 +129,7 @@ public class ReflectUtil {
 			return null;
 		}
 		if (objectClass.isAnnotationPresent(Component.class)) {
-			return invokeMethod(objectClass.getAnnotation(Component.class), "value").toString();
+			return Component.class.cast(objectClass.getAnnotation(Component.class)).value();
 		}
 		Annotation[] annotations = objectClass.getAnnotations();
 		for (Annotation annotation : annotations) {

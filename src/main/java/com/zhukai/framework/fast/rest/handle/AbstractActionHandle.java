@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +31,6 @@ import com.zhukai.framework.fast.rest.common.HttpHeaderType;
 import com.zhukai.framework.fast.rest.common.HttpStatus;
 import com.zhukai.framework.fast.rest.common.MultipartFile;
 import com.zhukai.framework.fast.rest.exception.RequestNotAllowException;
-import com.zhukai.framework.fast.rest.exception.RequestPathNotFoundException;
-import com.zhukai.framework.fast.rest.exception.ResourceNotFoundException;
 import com.zhukai.framework.fast.rest.http.HttpParser;
 import com.zhukai.framework.fast.rest.http.HttpResponse;
 import com.zhukai.framework.fast.rest.http.HttpServletContext;
@@ -46,7 +45,7 @@ public abstract class AbstractActionHandle implements Runnable {
 	protected HttpRequest request;
 	protected HttpResponse response;
 
-	private boolean isRestUrl = false;
+	private boolean pathVariable = false;
 
 	protected abstract void respond();
 
@@ -58,22 +57,26 @@ public abstract class AbstractActionHandle implements Runnable {
 		response = new HttpResponse();
 		response.setProtocol(request.getProtocol());
 		checkSession();
-		Object returnData;
 		try {
-			if (request.getServletPath().equals("/favicon.ico")) {
-				returnData = getFavicon();
-			} else if (request.getServletPath().startsWith("/public/")) {
-				returnData = getStaticResource(request.getServletPath());
-			} else if (request.getServletPath().startsWith("/static/")) {
-				returnData = getTmpStaticResource();
+			Object returnData;
+			if (request.getServletPath().equals("/")) {
+				returnData = getProjectResourceWithHandleContentType("/public/" + FastRestApplication.getServerConfig().getWelcomePage(), true);
+			} else if (request.getServletPath().equals("/favicon.ico")) {
+				returnData = getProjectResourceWithHandleContentType(request.getServletPath(), true);
+			} else if (StringUtils.isBlank(FastRestApplication.getStaticPath()) && request.getServletPath().startsWith("/static/")) {
+				returnData = Resources.getResourceAsStreamByStatic(request.getServletPath().substring(7));
+				handleContentType(request.getServletPath());
 			} else {
-				returnData = getInvokeResult();
+				Method method = getMethodByRequestPath(request.getServletPath());
+				if (method != null) {
+					returnData = getInvokeResult(method);
+				} else {
+					returnData = getProjectResourceWithHandleContentType("/public" + request.getServletPath(), false);
+				}
 			}
 			response.setResult(returnData);
-		} catch (ResourceNotFoundException | FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			response.setStatus(HttpStatus.NotFound);
-		} catch (RequestPathNotFoundException e) {
-			response.setStatus(HttpStatus.BadRequest);
 		} catch (RequestNotAllowException e) {
 			response.setStatus(HttpStatus.MethodNotAllowed);
 		} catch (Exception e) {
@@ -84,38 +87,29 @@ public abstract class AbstractActionHandle implements Runnable {
 		}
 	}
 
-	private Object getFavicon() {
-		InputStream inputStream = Resources.getResourceAsStream(request.getServletPath());
-		if (inputStream == null) {
-			inputStream = AbstractActionHandle.class.getResourceAsStream(request.getServletPath());
+	private Object getProjectResourceWithHandleContentType(String path, boolean findDefault) throws FileNotFoundException {
+		InputStream inputStream = Resources.getResourceAsStreamByProject(path);
+		if (findDefault && inputStream == null) {
+			inputStream = FastRestApplication.class.getResourceAsStream(path);
 		}
-		String contentType = HttpParser.getContentType("ico");
-		response.setContentType(contentType);
+		if (inputStream == null) {
+			throw new FileNotFoundException();
+		}
+		handleContentType(path);
 		return inputStream;
 	}
 
-	private Object getTmpStaticResource() throws ResourceNotFoundException, FileNotFoundException {
-		String path = request.getServletPath().substring(7);
-		return getStaticResource(path);
-	}
-
-	private Object getStaticResource(String path) throws ResourceNotFoundException, FileNotFoundException {
-		InputStream inputStream = path.equals(request.getServletPath()) ? Resources.getResourceAsStream(path) : Resources.getResourceAsStreamByTmp(path);
-		if (inputStream == null) {
-			throw new ResourceNotFoundException(path);
-		}
+	private void handleContentType(String path) {
 		String[] arr = path.split("\\.");
 		if (arr.length > 0) {
 			String extensionName = arr[arr.length - 1];
 			String contentType = HttpParser.getContentType(extensionName);
 			response.setContentType(contentType);
 		}
-		return inputStream;
 	}
 
-	private Object getInvokeResult() throws Exception {
-		Method method = getMethodByRequestPath(request.getServletPath());
-		isRestUrl = method.getAnnotation(RequestMapping.class).value().contains("{");
+	private Object getInvokeResult(Method method) throws Exception {
+		pathVariable = method.getAnnotation(RequestMapping.class).value().contains("{");
 		Object result = invokeRequestMethod(method);
 		if (result instanceof FileEntity) {
 			FileEntity fileBean = (FileEntity) result;
@@ -127,15 +121,13 @@ public abstract class AbstractActionHandle implements Runnable {
 		return result;
 	}
 
-	private Method getMethodByRequestPath(String requestPath) throws RequestPathNotFoundException {
-		Method method;
+	private Method getMethodByRequestPath(String requestPath) {
 		for (String key : Setup.getWebMethods().keySet()) {
 			if (Pattern.matches(key, requestPath)) {
-				method = Setup.getWebMethods().get(key);
-				return method;
+				return Setup.getWebMethods().get(key);
 			}
 		}
-		throw new RequestPathNotFoundException(requestPath + " not found");
+		return null;
 	}
 
 	private void checkSession() {
@@ -185,7 +177,7 @@ public abstract class AbstractActionHandle implements Runnable {
 		Parameter[] parameters = method.getParameters();
 		List<String> pathKeys = null;
 		List<String> pathValues = null;
-		if (isRestUrl && method.isAnnotationPresent(RequestMapping.class)) {
+		if (pathVariable && method.isAnnotationPresent(RequestMapping.class)) {
 			String requestMapperValue = method.getAnnotation(RequestMapping.class).value();
 			pathKeys = getPathKeys(requestMapperValue);
 			pathValues = getPathValues(requestMapperValue);
@@ -233,7 +225,7 @@ public abstract class AbstractActionHandle implements Runnable {
 				parameterValue = attributeValue.toString();
 		} else if (parameterAnnotation instanceof RequestBody) {
 			parameterValue = JsonUtil.convertObj(request.getRequestContext(), parameter.getType());
-		} else if (parameterAnnotation instanceof PathVariable && isRestUrl) {
+		} else if (parameterAnnotation instanceof PathVariable && pathVariable) {
 			String value = ((PathVariable) parameterAnnotation).value();
 			parameterValue = pathValues.get(pathKeys.indexOf(value));
 		} else {

@@ -45,7 +45,7 @@ public class HttpServletContext implements ServletContext {
 
 	@Override
 	public InputStream getResourceAsStream(String s) {
-		return Resources.getResourceAsStream(s);
+		return Resources.getResourceAsStreamByProject(s);
 	}
 
 	@Override

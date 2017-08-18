@@ -19,12 +19,12 @@ Fast Rest是个参考Spring Boot的轻量级Java框架，不依赖任何现有�
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.zhukai.project</groupId>
     <artifactId>fast-rest-demo</artifactId>
-    <version>1.1</version>
+    <version>1.3</version>
     <dependencies>
         <dependency>
             <groupId>com.zhukai.framework</groupId>
             <artifactId>fast-rest</artifactId>
-            <version>1.2</version>
+            <version>1.3</version>
         </dependency>
     </dependencies>
 </project>
