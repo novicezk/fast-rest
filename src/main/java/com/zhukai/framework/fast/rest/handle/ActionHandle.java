@@ -17,7 +17,7 @@ public class ActionHandle extends AbstractActionHandle {
 	private static final Logger logger = LoggerFactory.getLogger(ActionHandle.class);
 	private Socket socket;
 
-	public ActionHandle(Socket socket) {
+	public ActionHandle(Socket socket) throws IOException {
 		this.socket = socket;
 		this.request = HttpParser.createRequest(socket);
 	}

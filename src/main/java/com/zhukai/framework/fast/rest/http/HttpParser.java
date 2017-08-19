@@ -2,7 +2,6 @@ package com.zhukai.framework.fast.rest.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
 import java.text.SimpleDateFormat;
@@ -11,14 +10,14 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
 
-import org.apache.commons.fileupload.FileUploadException;
+import javax.net.ssl.SSLException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.common.HttpHeaderType;
-import com.zhukai.framework.fast.rest.exception.HttpReadException;
 import com.zhukai.framework.fast.rest.http.reader.AbstractHttpReader;
 import com.zhukai.framework.fast.rest.http.reader.HttpReader;
 import com.zhukai.framework.fast.rest.http.reader.HttpReaderNIO;
@@ -31,29 +30,27 @@ public class HttpParser {
 	private static final Logger logger = LoggerFactory.getLogger(HttpParser.class);
 	private static final Properties mimeTypes = new Properties();
 
-	public static HttpRequest createRequest(Socket socket) {
-		try {
-			InputStream inputStream = socket.getInputStream();
-			return directorRequest(new HttpReader(inputStream));
-		} catch (Exception e) {
-			logger.error("Create request error", e);
-			return null;
-		}
+	public static HttpRequest createRequest(Socket socket) throws IOException {
+		InputStream inputStream = socket.getInputStream();
+		return directorRequest(new HttpReader(inputStream));
 	}
 
 	public static HttpRequest createRequest(SocketChannel channel) {
-		try {
-			return directorRequest(new HttpReaderNIO(channel));
-		} catch (HttpReadException | FileUploadException | UnsupportedEncodingException e) {
-			logger.error("Create request error", e);
-			return null;
-		}
+		return directorRequest(new HttpReaderNIO(channel));
 	}
 
-	private static HttpRequest directorRequest(AbstractHttpReader readerFactory) throws HttpReadException, FileUploadException, UnsupportedEncodingException {
+	private static HttpRequest directorRequest(AbstractHttpReader readerFactory) {
 		RequestBuilder requestBuilder = new HttpRequestBuilder(readerFactory);
 		HttpRequestDirector director = new HttpRequestDirector(requestBuilder);
-		return director.createRequest();
+		try {
+			return director.createRequest();
+		} catch (SSLException se) {
+			// TODO
+			logger.debug("Create request error", se);
+		} catch (Exception e) {
+			logger.error("Create request error", e);
+		}
+		return null;
 	}
 
 	public static String parseHttpString(HttpResponse response) throws IOException {

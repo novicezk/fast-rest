@@ -1,7 +1,7 @@
 package com.zhukai.framework.fast.rest.http.request;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.List;
 
@@ -16,7 +16,6 @@ import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.common.HttpHeaderType;
 import com.zhukai.framework.fast.rest.common.MultipartFile;
 import com.zhukai.framework.fast.rest.common.RequestType;
-import com.zhukai.framework.fast.rest.exception.HttpReadException;
 import com.zhukai.framework.fast.rest.http.reader.AbstractHttpReader;
 
 public class HttpRequestBuilder implements RequestBuilder {
@@ -28,7 +27,7 @@ public class HttpRequestBuilder implements RequestBuilder {
 	}
 
 	@Override
-	public HttpRequest buildUrl() throws HttpReadException, UnsupportedEncodingException {
+	public HttpRequest buildUrl() throws IOException {
 		String startLine = httpReader.readLine();
 		String[] startLineArr = startLine.split(" ");
 		if (startLineArr.length < 3) {
@@ -52,7 +51,7 @@ public class HttpRequestBuilder implements RequestBuilder {
 	}
 
 	@Override
-	public HttpRequest buildHead() throws HttpReadException {
+	public HttpRequest buildHead() throws IOException {
 		String headLine = httpReader.readLine();
 		while (!headLine.trim().equals("")) {
 			if (headLine.startsWith("Cookie")) {
@@ -73,7 +72,7 @@ public class HttpRequestBuilder implements RequestBuilder {
 	}
 
 	@Override
-	public HttpRequest buildBody() throws HttpReadException, FileUploadException {
+	public HttpRequest buildBody() throws IOException, FileUploadException {
 		if (request.getMethod().equals(RequestType.POST) || request.getMethod().equals(RequestType.DELETE) || request.getMethod().equals(RequestType.PUT)) {
 			String contentType = request.getHeader(HttpHeaderType.CONTENT_TYPE);
 			int contentLength = Integer.parseInt(request.getHeader(HttpHeaderType.CONTENT_LENGTH).trim());
@@ -82,7 +81,7 @@ public class HttpRequestBuilder implements RequestBuilder {
 		return request;
 	}
 
-	private void handleRequestBody(String contentType, int contentLength) throws HttpReadException, FileUploadException {
+	private void handleRequestBody(String contentType, int contentLength) throws FileUploadException, IOException {
 		if (contentType.startsWith("multipart/form-data")) {
 			InputStream inputStream = httpReader.readFileInputStream(contentLength);
 			request.setRequestData(inputStream);

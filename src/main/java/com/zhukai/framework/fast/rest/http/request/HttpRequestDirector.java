@@ -1,10 +1,6 @@
 package com.zhukai.framework.fast.rest.http.request;
 
-import java.io.UnsupportedEncodingException;
-
-import org.apache.commons.fileupload.FileUploadException;
-
-import com.zhukai.framework.fast.rest.exception.HttpReadException;
+import java.io.IOException;
 
 public class HttpRequestDirector {
 	private RequestBuilder builder;
@@ -13,7 +9,7 @@ public class HttpRequestDirector {
 		this.builder = builder;
 	}
 
-	public HttpRequest createRequest() throws HttpReadException, FileUploadException, UnsupportedEncodingException {
+	public HttpRequest createRequest() throws Exception {
 		HttpRequest request = builder.buildUrl();
 		if (request != null) {
 			builder.buildHead();
