@@ -60,10 +60,10 @@ public abstract class AbstractActionHandle implements Runnable {
 		try {
 			Object returnData;
 			if (request.getServletPath().equals("/")) {
-				returnData = getProjectResourceWithHandleContentType("/public/" + FastRestApplication.getServerConfig().getWelcomePage(), true);
+				returnData = getProjectResourceWithHandleContentType("/public/" + FastRestApplication.getServerConfig().getIndexPage(), true);
 			} else if (request.getServletPath().equals("/favicon.ico")) {
 				returnData = getProjectResourceWithHandleContentType(request.getServletPath(), true);
-			} else if (StringUtils.isBlank(FastRestApplication.getStaticPath()) && request.getServletPath().startsWith("/static/")) {
+			} else if (StringUtils.isNoneBlank(FastRestApplication.getStaticPath()) && request.getServletPath().startsWith("/static/")) {
 				returnData = Resources.getResourceAsStreamByStatic(request.getServletPath().substring(7));
 				handleContentType(request.getServletPath());
 			} else {
