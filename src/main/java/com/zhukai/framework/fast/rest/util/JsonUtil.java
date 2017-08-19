@@ -9,7 +9,7 @@ public class JsonUtil {
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	public static String toJson(Object object) throws IOException {
-		if (object != null && TypeUtil.isBasicType(object)) {
+		if (object != null && (TypeUtil.isBasicType(object) || object.getClass().equals(JSONObject.class))) {
 			return object.toString();
 		}
 		return objectMapper.writeValueAsString(object);
