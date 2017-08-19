@@ -1,26 +1,5 @@
 package com.zhukai.framework.fast.rest.handle;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.Setup;
@@ -38,6 +17,25 @@ import com.zhukai.framework.fast.rest.http.request.HttpRequest;
 import com.zhukai.framework.fast.rest.util.JsonUtil;
 import com.zhukai.framework.fast.rest.util.Resources;
 import com.zhukai.framework.fast.rest.util.TypeUtil;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class AbstractActionHandle implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(AbstractActionHandle.class);
@@ -104,7 +102,7 @@ public abstract class AbstractActionHandle implements Runnable {
 		if (arr.length > 0) {
 			String extensionName = arr[arr.length - 1];
 			String contentType = HttpParser.getContentType(extensionName);
-			response.setContentType(contentType);
+			response.setContentType(contentType + "; charset=" + FastRestApplication.getServerConfig().getCharset());
 		}
 	}
 
