@@ -12,16 +12,14 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class PackageUtil {
+
 	/**
-	 * @param runClass
-	 *            目标类
-	 * @return runClass同包或子级包的所有类
+	 * 获取某个包下的所有类
 	 */
-	public static List<Class> getAllClassesByMainClass(Class runClass) throws Exception {
+	public static List<Class> getAllClasses(ClassLoader classLoader, String packageName) throws Exception {
 		List<Class> classes = new ArrayList<>();
-		String packageName = runClass.getPackage().getName();
 		String packageDirName = packageName.replace('.', '/');
-		Enumeration<URL> dirs = runClass.getClassLoader().getResources(packageDirName);
+		Enumeration<URL> dirs = classLoader.getResources(packageDirName);
 		while (dirs.hasMoreElements()) {
 			URL url = dirs.nextElement();
 			String protocol = url.getProtocol();

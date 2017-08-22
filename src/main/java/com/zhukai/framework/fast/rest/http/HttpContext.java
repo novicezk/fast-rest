@@ -1,35 +1,36 @@
 package com.zhukai.framework.fast.rest.http;
 
+import com.zhukai.framework.fast.rest.FastRestApplication;
+import com.zhukai.framework.fast.rest.util.Resources;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.util.*;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.zhukai.framework.fast.rest.FastRestApplication;
-import com.zhukai.framework.fast.rest.util.Resources;
-
-public class HttpServletContext implements ServletContext {
-	private static final Logger logger = LoggerFactory.getLogger(HttpServletContext.class);
-	private static HttpServletContext instance = new HttpServletContext();
+public class HttpContext implements ServletContext {
+	private static final Logger logger = LoggerFactory.getLogger(HttpContext.class);
+	private static HttpContext instance = new HttpContext();
 
 	private Map<String, Object> attributes = Collections.synchronizedMap(new HashMap<>());
 	private ThreadLocal<Connection> transaction = new ThreadLocal<>();
+	private ThreadLocal<HttpServletRequest> request = new ThreadLocal<>();
+	private ThreadLocal<HttpResponse> response = new ThreadLocal<>();
 	private Map<String, Session> sessions = Collections.synchronizedMap(new HashMap<>());
 
-	public static HttpServletContext getInstance() {
+	public static HttpContext getInstance() {
 		return instance;
 	}
 
-	private HttpServletContext() {
+	private HttpContext() {
 
 	}
 
@@ -79,6 +80,22 @@ public class HttpServletContext implements ServletContext {
 
 	public void setTransaction(Connection connection) {
 		transaction.set(connection);
+	}
+
+	public HttpServletRequest getRequest() {
+		return request.get();
+	}
+
+	public void setRequest(HttpServletRequest request) {
+		this.request.set(request);
+	}
+
+	public HttpResponse getResponse() {
+		return response.get();
+	}
+
+	public void setResponse(HttpResponse response) {
+		this.response.set(response);
 	}
 
 	public Session getSession(String sessionId) {

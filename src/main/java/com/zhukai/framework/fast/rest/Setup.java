@@ -1,24 +1,8 @@
 package com.zhukai.framework.fast.rest;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.zhukai.framework.fast.rest.annotation.core.*;
 import com.zhukai.framework.fast.rest.annotation.jpa.Entity;
 import com.zhukai.framework.fast.rest.annotation.jpa.Index;
-import com.zhukai.framework.fast.rest.annotation.web.ControllerAdvice;
 import com.zhukai.framework.fast.rest.annotation.web.ExceptionHandler;
 import com.zhukai.framework.fast.rest.annotation.web.RequestMapping;
 import com.zhukai.framework.fast.rest.annotation.web.RestController;
@@ -36,17 +20,35 @@ import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
 import com.zhukai.framework.fast.rest.jdbc.data.jpa.JpaUtil;
 import com.zhukai.framework.fast.rest.util.PackageUtil;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Setup {
 	private static final Logger logger = LoggerFactory.getLogger(Setup.class);
 
-	private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
-
 	private static List<Method> batchMethods = new ArrayList<>();
 	private static List<Method> initMethods = new ArrayList<>();
-	private static Map<String, Method> webMethods = new HashMap<>();
 	private static List<Method> exceptionHandlerMethods = new ArrayList<>();
+	private static List<Method> aopMethods = new ArrayList<>();
+
+	private static Map<String, Method> webMethods = new HashMap<>();
+	private static Map<Method, List<Method>> methodInterceptors = new HashMap<>();
+
 	private static DataSource dataSource;
+	private static List<Class> scanClasses;
 
 	static void init() throws SetupInitException {
 		try {
@@ -57,10 +59,13 @@ public class Setup {
 				DBConnectionPool.init(dataSource);
 			}
 			scanComponent();
+			handleAopMethod();
 			sortMethods();
 			projectInitialize();
-		} catch (Exception e) {
-			throw new SetupInitException(e);
+		} catch (InvocationTargetException ite) {
+			throw new SetupInitException(ite.getTargetException());
+		} catch (Throwable throwable) {
+			throw new SetupInitException(throwable);
 		}
 	}
 
@@ -90,26 +95,39 @@ public class Setup {
 		registerConfigureBean(DataSource.class);
 	}
 
-	private static void scanComponent() throws Exception {
+	private static void scanComponent() throws Throwable {
 		Connection conn = dataSource != null ? DBConnectionPool.getConnection() : null;
-		List<Class> classes = PackageUtil.getAllClassesByMainClass(FastRestApplication.getRunClass());
-		for (Class componentClass : classes) {
+		ClassLoader classLoader = FastRestApplication.getRunClass().getClassLoader();
+		String packageName = FastRestApplication.getRunClass().getPackage().getName();
+		scanClasses = PackageUtil.getAllClasses(classLoader, packageName);
+		for (Class componentClass : scanClasses) {
 			if (componentClass.isAnnotation()) {
 				continue;
 			} else if (componentClass.isAnnotationPresent(RestController.class)) {
 				addWebMethod(componentClass);
 			} else if (componentClass.isAnnotationPresent(Entity.class)) {
 				checkDatabase(componentClass, conn);
-			} else if (componentClass.isAnnotationPresent(ControllerAdvice.class)) {
-				addMethodToList(componentClass, exceptionHandlerMethods, ExceptionHandler.class);
+			} else if (componentClass.isAnnotationPresent(Configure.class)) {
+				registerConfigureBean(componentClass);
 			}
 			String registerName = ReflectUtil.getComponentValue(componentClass);
 			if (registerName != null) {
 				registerComponentBean(componentClass, registerName);
-				addMethodToList(componentClass, batchMethods, Scheduled.class);
-				addMethodToList(componentClass, initMethods, Initialize.class);
-			} else if (componentClass.isAnnotationPresent(Configure.class)) {
-				registerConfigureBean(componentClass);
+				Method[] methods = componentClass.getMethods();
+				for (Method method : methods) {
+					if (method.isAnnotationPresent(ExceptionHandler.class)) {
+						exceptionHandlerMethods.add(method);
+					}
+					if (method.isAnnotationPresent(Scheduled.class)) {
+						batchMethods.add(method);
+					}
+					if (method.isAnnotationPresent(Initialize.class)) {
+						initMethods.add(method);
+					}
+					if (method.isAnnotationPresent(Around.class)) {
+						aopMethods.add(method);
+					}
+				}
 			}
 		}
 		if (conn != null) {
@@ -117,14 +135,7 @@ public class Setup {
 		}
 	}
 
-	private static void addMethodToList(Class componentClass, List<Method> list, Class<? extends Annotation> methodAnnotation) {
-		Method[] methods = componentClass.getMethods();
-		for (Method method : methods) {
-			if (method.isAnnotationPresent(methodAnnotation)) {
-				list.add(method);
-			}
-		}
-	}
+	private static final Pattern webMethodPattern = Pattern.compile("\\{.*?}");
 
 	private static void addWebMethod(Class webClass) {
 		String webPath = "";
@@ -254,6 +265,36 @@ public class Setup {
 		}
 	}
 
+	private static void handleAopMethod() throws Exception {
+		final String[] objectMethods = new String[]{"wait", "equals", "toString", "hashCode", "getClass", "notify", "notifyAll"};
+		for (Method aopMethod : aopMethods) {
+			Around around = aopMethod.getAnnotation(Around.class);
+			for (Class clazz : scanClasses) {
+				if (!ReflectUtil.existAnnotation(clazz, Component.class)
+						|| (around.packages().length > 0 && !ArrayUtils.contains(around.packages(), clazz.getPackage().getName()))
+						|| (around.classes().length > 0 && !ArrayUtils.contains(around.classes(), clazz))
+						|| (around.classAnnotations().length > 0 && !ReflectUtil.existAnyoneAnnotations(clazz, around.classAnnotations()))) {
+					continue;
+				}
+				Method[] methods = clazz.getMethods();
+				for (Method method : methods) {
+					if ((ArrayUtils.contains(objectMethods, method.getName()))
+							|| (around.methodNames().length > 0 && !ArrayUtils.contains(around.methodNames(), method.getName()))) {
+						continue;
+					}
+					boolean methodExitAnnotation = false;
+					for (Class<? extends Annotation> methodAnnotation : around.methodAnnotations()) {
+						methodExitAnnotation |= method.isAnnotationPresent(methodAnnotation);
+					}
+					if (around.methodAnnotations().length > 0 && !methodExitAnnotation) {
+						continue;
+					}
+					methodInterceptors.computeIfAbsent(method, key -> new ArrayList<>()).add(aopMethod);
+				}
+			}
+		}
+	}
+
 	private static void sortMethods() {
 		exceptionHandlerMethods.sort((method1, method2) -> {
 			int method1Seq = method1.getAnnotation(ExceptionHandler.class).catchSeq();
@@ -269,6 +310,13 @@ public class Setup {
 				return 0;
 			return method1Seq > method2Seq ? 1 : -1;
 		});
+		methodInterceptors.values().forEach(list -> list.sort((method1, method2) -> {
+			int method1Seq = method1.getAnnotation(Around.class).seq();
+			int method2Seq = method2.getAnnotation(Around.class).seq();
+			if (method1Seq == method2Seq)
+				return 0;
+			return method1Seq > method2Seq ? 1 : -1;
+		}));
 	}
 
 	private static void projectInitialize() throws InvocationTargetException, IllegalAccessException {
@@ -289,4 +337,7 @@ public class Setup {
 		return webMethods;
 	}
 
+	public static Map<Method, List<Method>> getMethodInterceptors() {
+		return methodInterceptors;
+	}
 }

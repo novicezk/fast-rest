@@ -37,8 +37,8 @@ public class Session implements HttpSession {
 	}
 
 	@Override
-	public HttpServletContext getServletContext() {
-		return HttpServletContext.getInstance();
+	public HttpContext getServletContext() {
+		return HttpContext.getInstance();
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class Session implements HttpSession {
 
 	@Override
 	public void invalidate() {
-		HttpServletContext.getInstance().getSessions().remove(sessionId);
+		HttpContext.getInstance().getSessions().remove(sessionId);
 	}
 
 	@Override
