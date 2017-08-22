@@ -1,21 +1,20 @@
 package com.zhukai.framework.fast.rest.bean.properties;
 
+import com.zhukai.framework.fast.rest.Constants;
+import com.zhukai.framework.fast.rest.FastRestApplication;
+import com.zhukai.framework.fast.rest.bean.BaseBean;
+import com.zhukai.framework.fast.rest.bean.BeanFactory;
+import com.zhukai.framework.fast.rest.util.ReflectUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.zhukai.framework.fast.rest.Constants;
-import com.zhukai.framework.fast.rest.FastRestApplication;
-import com.zhukai.framework.fast.rest.bean.BaseBean;
-import com.zhukai.framework.fast.rest.bean.BeanFactory;
-import com.zhukai.framework.fast.rest.util.ReflectUtil;
 
 public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
 	private static final Logger logger = LoggerFactory.getLogger(PropertiesBeanFactory.class);
@@ -49,9 +48,14 @@ public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
 	@Deprecated
 	@Override
 	public <T> T getBean(Class<T> requiredType) {
-		String beanName = ReflectUtil.getComponentValue(requiredType);
-		beanName = StringUtils.isBlank(beanName) ? Constants.DEFAULT_PROPERTIES : beanName;
-		return requiredType.cast(propertiesMap.get(beanName));
+		try {
+			String beanName = ReflectUtil.getComponentValue(requiredType);
+			beanName = StringUtils.isBlank(beanName) ? Constants.DEFAULT_PROPERTIES : beanName;
+			return requiredType.cast(propertiesMap.get(beanName));
+		} catch (Throwable throwable) {
+			logger.warn("Get properties bean error", throwable);
+			return null;
+		}
 	}
 
 	@Override

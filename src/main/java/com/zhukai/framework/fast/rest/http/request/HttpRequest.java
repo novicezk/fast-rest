@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.common.MultipartFile;
-import com.zhukai.framework.fast.rest.http.HttpServletContext;
+import com.zhukai.framework.fast.rest.http.HttpContext;
 import com.zhukai.framework.fast.rest.http.Session;
 
 public class HttpRequest implements HttpServletRequest {
@@ -190,12 +190,12 @@ public class HttpRequest implements HttpServletRequest {
 
 	@Override
 	public Session getSession() {
-		return HttpServletContext.getInstance().getSession(getRequestedSessionId());
+		return HttpContext.getInstance().getSession(getRequestedSessionId());
 	}
 
 	@Override
 	public boolean isRequestedSessionIdValid() {
-		return HttpServletContext.getInstance().getSessions().containsKey(getRequestedSessionId());
+		return HttpContext.getInstance().getSessions().containsKey(getRequestedSessionId());
 	}
 
 	@Override

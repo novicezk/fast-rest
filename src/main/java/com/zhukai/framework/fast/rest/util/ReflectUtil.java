@@ -1,20 +1,20 @@
 package com.zhukai.framework.fast.rest.util;
 
+import com.zhukai.framework.fast.rest.annotation.core.Component;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.zhukai.framework.fast.rest.annotation.core.Component;
 
 public class ReflectUtil {
 	private static final Logger logger = LoggerFactory.getLogger(ReflectUtil.class);
@@ -63,18 +63,18 @@ public class ReflectUtil {
 		return fieldNames;
 	}
 
-	public static Object invokeMethod(Object obj, String methodName, Class<?>[] paramsClass, Object[] params) {
+	public static Object invokeMethod(Object obj, String methodName, Class<?>[] paramsClass, Object[] params) throws Throwable {
 		Object returnValue = null;
 		try {
 			Method method = obj.getClass().getMethod(methodName, paramsClass);
 			returnValue = method.invoke(obj, params);
-		} catch (Exception e) {
-			logger.error("Reflect error", e);
+		} catch (InvocationTargetException e) {
+			throw e.getTargetException();
 		}
 		return returnValue;
 	}
 
-	public static Object invokeMethod(Object obj, String methodName) {
+	public static Object invokeMethod(Object obj, String methodName) throws Throwable {
 		return invokeMethod(obj, methodName, null, null);
 	}
 
@@ -120,11 +120,29 @@ public class ReflectUtil {
 		return false;
 	}
 
+	public static boolean existWholeAnnotations(Class objectClass, Class<? extends Annotation>... annotationClasses) {
+		for (Class<? extends Annotation> annotation : annotationClasses) {
+			if (!existAnnotation(objectClass, annotation)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean existAnyoneAnnotations(Class objectClass, Class<? extends Annotation>... annotationClasses) {
+		for (Class<? extends Annotation> annotation : annotationClasses) {
+			if (existAnnotation(objectClass, annotation)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * @param objectClass
 	 * @return 若objectClass存在Component注解，则返回Component的value，否则返回null
 	 */
-	public static String getComponentValue(Class objectClass) {
+	public static String getComponentValue(Class objectClass) throws Throwable {
 		if (objectClass.isAnnotation()) {
 			return null;
 		}

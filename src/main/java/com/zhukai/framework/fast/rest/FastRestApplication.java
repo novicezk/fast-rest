@@ -1,26 +1,25 @@
 package com.zhukai.framework.fast.rest;
 
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.zhukai.framework.fast.rest.annotation.core.EnableStaticServer;
 import com.zhukai.framework.fast.rest.annotation.core.Scheduled;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.exception.SetupInitException;
-import com.zhukai.framework.fast.rest.http.HttpServletContext;
+import com.zhukai.framework.fast.rest.http.HttpContext;
 import com.zhukai.framework.fast.rest.http.Session;
 import com.zhukai.framework.fast.rest.server.Server;
 import com.zhukai.framework.fast.rest.server.ServerFactory;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class FastRestApplication {
 	private static final Logger logger = LoggerFactory.getLogger(FastRestApplication.class);
@@ -40,7 +39,7 @@ public class FastRestApplication {
 			runSessionTimeoutCheck();
 			runBatchSchedule();
 		} catch (SetupInitException e) {
-			logger.error("Init error", e);
+			logger.error("Init error", e.getCause());
 		} catch (Exception e) {
 			logger.error("Start server error", e);
 			System.exit(1);
@@ -61,7 +60,7 @@ public class FastRestApplication {
 	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(5);
 
 	private static void runSessionTimeoutCheck() {
-		Map<String, Session> sessionMap = HttpServletContext.getInstance().getSessions();
+		Map<String, Session> sessionMap = HttpContext.getInstance().getSessions();
 		scheduledExecutor.scheduleAtFixedRate(() -> sessionMap.keySet().removeIf(sessionID -> sessionMap.get(sessionID).getLastAccessedTime() + serverConfig.getSessionTimeout() < System.currentTimeMillis()),
 				Constants.SESSION_CHECK_FIXED_RATE, Constants.SESSION_CHECK_FIXED_RATE, TimeUnit.MILLISECONDS);
 	}
@@ -76,7 +75,7 @@ public class FastRestApplication {
 				try {
 					method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()));
 				} catch (Exception e) {
-					logger.error("Batch method execute error", e);
+					logger.error("Batch method execute error");
 				}
 			}, fixedDelay, fixedRate, scheduled.timeUnit());
 		}

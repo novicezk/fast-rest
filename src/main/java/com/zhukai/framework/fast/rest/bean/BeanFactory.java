@@ -1,8 +1,7 @@
 package com.zhukai.framework.fast.rest.bean;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
+import org.apache.commons.lang3.StringUtils;
 
 public interface BeanFactory<Bean> {
 
@@ -17,8 +16,12 @@ public interface BeanFactory<Bean> {
 	}
 
 	default <T> T getBean(Class<T> requiredType) {
-		String beanName = ReflectUtil.getComponentValue(requiredType);
-		beanName = StringUtils.isBlank(beanName) ? requiredType.getName() : beanName;
-		return requiredType.cast(getBean(beanName));
+		try {
+			String beanName = ReflectUtil.getComponentValue(requiredType);
+			beanName = StringUtils.isBlank(beanName) ? requiredType.getName() : beanName;
+			return requiredType.cast(getBean(beanName));
+		} catch (Throwable throwable) {
+			return null;
+		}
 	}
 }

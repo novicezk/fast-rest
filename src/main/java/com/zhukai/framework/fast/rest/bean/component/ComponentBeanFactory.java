@@ -1,16 +1,15 @@
 package com.zhukai.framework.fast.rest.bean.component;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.zhukai.framework.fast.rest.bean.BeanFactory;
 import com.zhukai.framework.fast.rest.bean.ChildBean;
 import com.zhukai.framework.fast.rest.proxy.ProxyFactory;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ComponentBeanFactory implements BeanFactory<ComponentBean> {
 
@@ -61,9 +60,6 @@ public class ComponentBeanFactory implements BeanFactory<ComponentBean> {
 	public void registerBean(ComponentBean componentBean) {
 		if (!componentBeanMap.containsKey(componentBean.getRegisterName())) {
 			componentBeanMap.put(componentBean.getRegisterName(), componentBean);
-			if (componentBean.isSingleton()) {
-				singletonBeanMap.put(componentBean.getRegisterName(), getBean(componentBean.getRegisterName()));
-			}
 			logger.info("Register in componentBeanFactory: {} = {}.class", componentBean.getRegisterName(), componentBean.getBeanClass().getSimpleName());
 		}
 	}

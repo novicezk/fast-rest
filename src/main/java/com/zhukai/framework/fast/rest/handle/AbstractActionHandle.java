@@ -10,9 +10,9 @@ import com.zhukai.framework.fast.rest.common.HttpHeaderType;
 import com.zhukai.framework.fast.rest.common.HttpStatus;
 import com.zhukai.framework.fast.rest.common.MultipartFile;
 import com.zhukai.framework.fast.rest.exception.RequestNotAllowException;
+import com.zhukai.framework.fast.rest.http.HttpContext;
 import com.zhukai.framework.fast.rest.http.HttpParser;
 import com.zhukai.framework.fast.rest.http.HttpResponse;
-import com.zhukai.framework.fast.rest.http.HttpServletContext;
 import com.zhukai.framework.fast.rest.http.request.HttpRequest;
 import com.zhukai.framework.fast.rest.util.JsonUtil;
 import com.zhukai.framework.fast.rest.util.Resources;
@@ -67,7 +67,11 @@ public abstract class AbstractActionHandle implements Runnable {
 			} else {
 				Method method = getMethodByRequestPath(request.getServletPath());
 				if (method != null) {
-					returnData = getInvokeResult(method);
+					try {
+						returnData = getInvokeResult(method);
+					} catch (InvocationTargetException ite) {
+						throw ite.getTargetException();
+					}
 				} else {
 					returnData = getProjectResourceWithHandleContentType("/public" + request.getServletPath(), false);
 				}
@@ -77,7 +81,7 @@ public abstract class AbstractActionHandle implements Runnable {
 			response.setStatus(HttpStatus.NotFound);
 		} catch (RequestNotAllowException e) {
 			response.setStatus(HttpStatus.MethodNotAllowed);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.error("Request action error", e);
 			response.setStatus(HttpStatus.InternalServerError);
 		} finally {
@@ -106,7 +110,7 @@ public abstract class AbstractActionHandle implements Runnable {
 		}
 	}
 
-	private Object getInvokeResult(Method method) throws Exception {
+	private Object getInvokeResult(Method method) throws Throwable {
 		pathVariable = method.getAnnotation(RequestMapping.class).value().contains("{");
 		Object result = invokeRequestMethod(method);
 		if (result instanceof FileEntity) {
@@ -138,39 +142,33 @@ public abstract class AbstractActionHandle implements Runnable {
 			request.addCookie(sessionCookie);
 			response.addCookie(sessionCookie);
 		}
-		HttpServletContext.getInstance().refreshSession(request.getRequestedSessionId());
+		HttpContext.getInstance().refreshSession(request.getRequestedSessionId());
 	}
 
-	private Object invokeRequestMethod(Method method) throws Exception {
+	private Object invokeRequestMethod(Method method) throws Throwable {
 		if (!ArrayUtils.contains(method.getAnnotation(RequestMapping.class).method(), request.getMethod())) {
 			throw new RequestNotAllowException("Request: " + request.getServletPath() + " - " + request.getMethod() + " is not allow");
 		}
+		HttpContext.getInstance().setRequest(request);
+		HttpContext.getInstance().setResponse(response);
+		Object object = ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass());
 		try {
-			return invokeMethod(method);
-		} catch (InvocationTargetException e) {
+			return method.invoke(object, getMethodParametersArr(method));
+		} catch (InvocationTargetException ite) {
+			Throwable e = ite.getTargetException();
 			for (Method exceptionMethod : Setup.getExceptionHandlerMethods()) {
-				exceptionMethod.getAnnotation(ExceptionHandler.class).value();
-				Throwable cause = e.getCause();
 				for (Class<? extends Throwable> throwableClass : exceptionMethod.getAnnotation(ExceptionHandler.class).value()) {
-					if (throwableClass.isAssignableFrom(cause.getClass())) {
-						return invokeMethod(exceptionMethod, cause);
+					if (throwableClass.isAssignableFrom(e.getClass())) {
+						return exceptionMethod.invoke(ComponentBeanFactory.getInstance().getBean(exceptionMethod.getDeclaringClass()), e);
 					}
 				}
 			}
 			throw e;
 		}
+
 	}
 
-	private Object invokeMethod(Method method) throws Exception {
-		return invokeMethod(method, null);
-	}
-
-	private Object invokeMethod(Method method, Throwable e) throws Exception {
-		Object object = ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass());
-		return method.invoke(object, getMethodParametersArr(method, e));
-	}
-
-	private Object[] getMethodParametersArr(Method method, Throwable e) throws Exception {
+	private Object[] getMethodParametersArr(Method method) throws Exception {
 		List<Object> paramValues = new ArrayList<>(5);
 		Parameter[] parameters = method.getParameters();
 		List<String> pathKeys = null;
@@ -181,11 +179,7 @@ public abstract class AbstractActionHandle implements Runnable {
 			pathValues = getPathValues(requestMapperValue);
 		}
 		for (Parameter parameter : parameters) {
-			if (Throwable.class.isAssignableFrom(parameter.getType())) {
-				paramValues.add(e);
-			} else {
-				paramValues.add(getParameterInstance(parameter, pathKeys, pathValues));
-			}
+			paramValues.add(getParameterInstance(parameter, pathKeys, pathValues));
 		}
 		return paramValues.toArray();
 	}
