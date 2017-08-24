@@ -106,7 +106,7 @@ public abstract class AbstractActionHandle implements Runnable {
 		if (arr.length > 0) {
 			String extensionName = arr[arr.length - 1];
 			String contentType = HttpParser.getContentType(extensionName);
-			response.setContentType(contentType + "; charset=" + FastRestApplication.getServerConfig().getCharset());
+			response.setContentType(contentType + "; charset=" + response.getCharacterEncoding());
 		}
 	}
 

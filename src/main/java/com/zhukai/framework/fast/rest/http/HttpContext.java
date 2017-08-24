@@ -10,6 +10,7 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,7 +24,7 @@ public class HttpContext implements ServletContext {
 	private Map<String, Object> attributes = Collections.synchronizedMap(new HashMap<>());
 	private ThreadLocal<Connection> transaction = new ThreadLocal<>();
 	private ThreadLocal<HttpServletRequest> request = new ThreadLocal<>();
-	private ThreadLocal<HttpResponse> response = new ThreadLocal<>();
+	private ThreadLocal<HttpServletResponse> response = new ThreadLocal<>();
 	private Map<String, Session> sessions = Collections.synchronizedMap(new HashMap<>());
 
 	public static HttpContext getInstance() {
@@ -90,11 +91,11 @@ public class HttpContext implements ServletContext {
 		this.request.set(request);
 	}
 
-	public HttpResponse getResponse() {
+	public HttpServletResponse getResponse() {
 		return response.get();
 	}
 
-	public void setResponse(HttpResponse response) {
+	public void setResponse(HttpServletResponse response) {
 		this.response.set(response);
 	}
 

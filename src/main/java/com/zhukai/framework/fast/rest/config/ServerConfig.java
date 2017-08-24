@@ -5,7 +5,7 @@ import com.zhukai.framework.fast.rest.annotation.core.Configure;
 @Configure(prefix = "server")
 public class ServerConfig {
 
-	private Long sessionTimeout = 1800000L;
+	private Long sessionTimeout = 7200000L;
 	private Integer port = 8080;
 	private String fileTmp = "/tmp/";
 	private String charset = "utf-8";

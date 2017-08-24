@@ -1,11 +1,12 @@
-package com.zhukai.framework.fast.rest.annotation.core;
+package com.zhukai.framework.fast.rest.annotation.extend;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ ElementType.METHOD })
+@Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Transactional {
+public @interface EnableStaticServer {
+	String value();
 }

@@ -1,7 +1,7 @@
 package com.zhukai.framework.fast.rest;
 
-import com.zhukai.framework.fast.rest.annotation.core.EnableStaticServer;
-import com.zhukai.framework.fast.rest.annotation.core.Scheduled;
+import com.zhukai.framework.fast.rest.annotation.extend.EnableStaticServer;
+import com.zhukai.framework.fast.rest.annotation.extend.Scheduled;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;

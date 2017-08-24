@@ -1,6 +1,9 @@
 package com.zhukai.framework.fast.rest;
 
+import com.zhukai.framework.fast.rest.annotation.aop.Around;
 import com.zhukai.framework.fast.rest.annotation.core.*;
+import com.zhukai.framework.fast.rest.annotation.extend.EventType;
+import com.zhukai.framework.fast.rest.annotation.extend.Scheduled;
 import com.zhukai.framework.fast.rest.annotation.jpa.Entity;
 import com.zhukai.framework.fast.rest.annotation.jpa.Index;
 import com.zhukai.framework.fast.rest.annotation.web.ExceptionHandler;
@@ -15,6 +18,7 @@ import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.fast.rest.bean.properties.PropertiesBeanFactory;
 import com.zhukai.framework.fast.rest.config.DataSource;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
+import com.zhukai.framework.fast.rest.event.ListenerTrigger;
 import com.zhukai.framework.fast.rest.exception.SetupInitException;
 import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
 import com.zhukai.framework.fast.rest.jdbc.data.jpa.JpaUtil;
@@ -117,15 +121,14 @@ public class Setup {
 				for (Method method : methods) {
 					if (method.isAnnotationPresent(ExceptionHandler.class)) {
 						exceptionHandlerMethods.add(method);
-					}
-					if (method.isAnnotationPresent(Scheduled.class)) {
+					} else if (method.isAnnotationPresent(Scheduled.class)) {
 						batchMethods.add(method);
-					}
-					if (method.isAnnotationPresent(Initialize.class)) {
+					} else if (method.isAnnotationPresent(Initialize.class)) {
 						initMethods.add(method);
-					}
-					if (method.isAnnotationPresent(Around.class)) {
+					} else if (method.isAnnotationPresent(Around.class)) {
 						aopMethods.add(method);
+					} else if (method.isAnnotationPresent(EventType.class)) {
+						ListenerTrigger.registerListener(method.getAnnotation(EventType.class).value(), method);
 					}
 				}
 			}

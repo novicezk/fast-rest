@@ -1,4 +1,4 @@
-package com.zhukai.framework.fast.rest.annotation.core;
+package com.zhukai.framework.fast.rest.annotation.aop;
 
 import java.lang.annotation.*;
 

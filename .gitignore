@@ -1,13 +1,10 @@
 /target/
 /bin/
 
-### STS ###
-.apt_generated
+### Eclipse ###
 .classpath
-.factorypath
 .project
 .settings
-.springBeans
 
 ### IntelliJ IDEA ###
 .idea

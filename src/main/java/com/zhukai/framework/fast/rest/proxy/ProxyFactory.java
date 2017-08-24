@@ -1,8 +1,8 @@
 package com.zhukai.framework.fast.rest.proxy;
 
 import com.zhukai.framework.fast.rest.Setup;
-import com.zhukai.framework.fast.rest.annotation.core.Repository;
-import com.zhukai.framework.fast.rest.annotation.core.Transactional;
+import com.zhukai.framework.fast.rest.annotation.jpa.Repository;
+import com.zhukai.framework.fast.rest.annotation.aop.Transactional;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
 
 import java.lang.reflect.Method;

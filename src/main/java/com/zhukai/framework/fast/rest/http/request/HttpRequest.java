@@ -1,5 +1,17 @@
 package com.zhukai.framework.fast.rest.http.request;
 
+import com.zhukai.framework.fast.rest.Constants;
+import com.zhukai.framework.fast.rest.FastRestApplication;
+import com.zhukai.framework.fast.rest.common.MultipartFile;
+import com.zhukai.framework.fast.rest.http.HttpContext;
+import com.zhukai.framework.fast.rest.http.Session;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,20 +19,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.Principal;
 import java.util.*;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.zhukai.framework.fast.rest.Constants;
-import com.zhukai.framework.fast.rest.FastRestApplication;
-import com.zhukai.framework.fast.rest.common.MultipartFile;
-import com.zhukai.framework.fast.rest.http.HttpContext;
-import com.zhukai.framework.fast.rest.http.Session;
 
 public class HttpRequest implements HttpServletRequest {
 	private Map<String, Object> attributes;
@@ -296,6 +294,24 @@ public class HttpRequest implements HttpServletRequest {
 	}
 
 	@Override
+	public long getDateHeader(String s) {
+		String v = headers.get(s);
+		if (StringUtils.isBlank(v)) {
+			return -1;
+		}
+		return Long.parseLong(v);
+	}
+
+	@Override
+	public int getIntHeader(String s) {
+		String v = headers.get(s);
+		if (StringUtils.isBlank(v)) {
+			return -1;
+		}
+		return Integer.parseInt(v);
+	}
+
+	@Override
 	@Deprecated
 	public String getRemoteAddr() {
 		return null;
@@ -381,9 +397,6 @@ public class HttpRequest implements HttpServletRequest {
 
 	@Override
 	@Deprecated
-	/**
-	 * use getParameter
-	 */
 	public String getQueryString() {
 		return null;
 	}
@@ -418,11 +431,6 @@ public class HttpRequest implements HttpServletRequest {
 		return null;
 	}
 
-	@Override
-	@Deprecated
-	public long getDateHeader(String s) {
-		return 0;
-	}
 
 	@Override
 	@Deprecated
@@ -434,12 +442,6 @@ public class HttpRequest implements HttpServletRequest {
 	@Deprecated
 	public StringBuffer getRequestURL() {
 		return null;
-	}
-
-	@Override
-	@Deprecated
-	public int getIntHeader(String s) {
-		return 0;
 	}
 
 }

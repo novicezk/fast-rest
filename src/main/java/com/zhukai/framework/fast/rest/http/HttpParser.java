@@ -1,21 +1,5 @@
 package com.zhukai.framework.fast.rest.http;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Socket;
-import java.nio.channels.SocketChannel;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.TimeZone;
-
-import javax.net.ssl.SSLException;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.common.HttpHeaderType;
 import com.zhukai.framework.fast.rest.http.reader.AbstractHttpReader;
@@ -25,6 +9,21 @@ import com.zhukai.framework.fast.rest.http.request.HttpRequest;
 import com.zhukai.framework.fast.rest.http.request.HttpRequestBuilder;
 import com.zhukai.framework.fast.rest.http.request.HttpRequestDirector;
 import com.zhukai.framework.fast.rest.http.request.RequestBuilder;
+import com.zhukai.framework.fast.rest.util.TypeUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
+import java.nio.channels.SocketChannel;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.TimeZone;
 
 public class HttpParser {
 	private static final Logger logger = LoggerFactory.getLogger(HttpParser.class);
@@ -45,7 +44,6 @@ public class HttpParser {
 		try {
 			return director.createRequest();
 		} catch (SSLException se) {
-			// TODO
 			logger.debug("Create request error", se);
 		} catch (Exception e) {
 			logger.error("Create request error", e);
@@ -55,11 +53,15 @@ public class HttpParser {
 
 	public static String parseHttpString(HttpResponse response) throws IOException {
 		StringBuilder sb = new StringBuilder();
-		sb.append(response.getProtocol()).append(" ").append(response.getStatusCode()).append(" ").append(response.getStatusCodeStr()).append(Constants.HTTP_LINE_SEPARATOR).append(HttpHeaderType.CONTENT_TYPE).append(": ")
-				.append(response.getContentType()).append(Constants.HTTP_LINE_SEPARATOR);
-		if (response.getResult() != null && response.getResult() instanceof InputStream && response.getHeaderValue(HttpHeaderType.CONTENT_LENGTH) == null) {
+		sb.append(response.getProtocol()).append(" ").append(response.getStatusCode()).append(" ").append(response.getStatusCodeStr()).append(Constants.HTTP_LINE_SEPARATOR);
+		if (response.getResult() != null && response.getResult() instanceof InputStream && response.getHeader(HttpHeaderType.CONTENT_LENGTH) == null) {
 			int contentLength = ((InputStream) response.getResult()).available();
-			response.setHeader(HttpHeaderType.CONTENT_LENGTH, String.valueOf(contentLength));
+			response.setContentLength(contentLength);
+		} else if (response.getResult() != null && !(response.getResult() instanceof InputStream) && !TypeUtil.isBasicType(response.getResult())) {
+			response.setContentType("application/json ;charset=" + response.getCharacterEncoding());
+		}
+		if (response.getContentType() == null) {
+			response.setContentType("text/plain ;charset=" + response.getCharacterEncoding());
 		}
 		response.getHeaders().keySet().forEach(key -> sb.append(key).append(": ").append(response.getHeaders().get(key)).append(Constants.HTTP_LINE_SEPARATOR));
 		response.getCookies().forEach(cookie -> {
