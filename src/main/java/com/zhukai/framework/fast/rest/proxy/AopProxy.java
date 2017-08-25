@@ -15,7 +15,7 @@ import java.sql.Connection;
 
 public class AopProxy implements MethodInterceptor {
 
-	public <T> T getProxyInstance(Class<T> clazz) {
+	<T> T getProxyInstance(Class<T> clazz) {
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(clazz);
 		enhancer.setCallback(this);

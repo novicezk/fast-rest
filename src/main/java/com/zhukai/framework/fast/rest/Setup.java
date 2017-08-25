@@ -2,7 +2,7 @@ package com.zhukai.framework.fast.rest;
 
 import com.zhukai.framework.fast.rest.annotation.aop.Around;
 import com.zhukai.framework.fast.rest.annotation.core.*;
-import com.zhukai.framework.fast.rest.annotation.extend.EventType;
+import com.zhukai.framework.fast.rest.annotation.extend.EventHandle;
 import com.zhukai.framework.fast.rest.annotation.extend.Scheduled;
 import com.zhukai.framework.fast.rest.annotation.jpa.Entity;
 import com.zhukai.framework.fast.rest.annotation.jpa.Index;
@@ -49,7 +49,7 @@ public class Setup {
 	private static List<Method> aopMethods = new ArrayList<>();
 
 	private static Map<String, Method> webMethods = new HashMap<>();
-	private static Map<Method, List<Method>> methodInterceptors = new HashMap<>();
+	private static Map<Method, Set<Method>> methodInterceptors = new HashMap<>();
 
 	private static DataSource dataSource;
 	private static List<Class> scanClasses;
@@ -127,8 +127,8 @@ public class Setup {
 						initMethods.add(method);
 					} else if (method.isAnnotationPresent(Around.class)) {
 						aopMethods.add(method);
-					} else if (method.isAnnotationPresent(EventType.class)) {
-						ListenerTrigger.registerListener(method.getAnnotation(EventType.class).value(), method);
+					} else if (method.isAnnotationPresent(EventHandle.class)) {
+						ListenerTrigger.registerListener(method.getAnnotation(EventHandle.class).value(), method);
 					}
 				}
 			}
@@ -292,7 +292,13 @@ public class Setup {
 					if (around.methodAnnotations().length > 0 && !methodExitAnnotation) {
 						continue;
 					}
-					methodInterceptors.computeIfAbsent(method, key -> new ArrayList<>()).add(aopMethod);
+					methodInterceptors.computeIfAbsent(method, key -> new TreeSet<>((method1, method2) -> {
+						int method1Seq = method1.getAnnotation(Around.class).seq();
+						int method2Seq = method2.getAnnotation(Around.class).seq();
+						if (method1Seq == method2Seq)
+							return 0;
+						return method1Seq > method2Seq ? 1 : -1;
+					})).add(aopMethod);
 				}
 			}
 		}
@@ -313,13 +319,6 @@ public class Setup {
 				return 0;
 			return method1Seq > method2Seq ? 1 : -1;
 		});
-		methodInterceptors.values().forEach(list -> list.sort((method1, method2) -> {
-			int method1Seq = method1.getAnnotation(Around.class).seq();
-			int method2Seq = method2.getAnnotation(Around.class).seq();
-			if (method1Seq == method2Seq)
-				return 0;
-			return method1Seq > method2Seq ? 1 : -1;
-		}));
 	}
 
 	private static void projectInitialize() throws InvocationTargetException, IllegalAccessException {
@@ -340,7 +339,7 @@ public class Setup {
 		return webMethods;
 	}
 
-	public static Map<Method, List<Method>> getMethodInterceptors() {
+	public static Map<Method, Set<Method>> getMethodInterceptors() {
 		return methodInterceptors;
 	}
 }
