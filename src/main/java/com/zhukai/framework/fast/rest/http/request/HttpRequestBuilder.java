@@ -1,22 +1,21 @@
 package com.zhukai.framework.fast.rest.http.request;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLDecoder;
-import java.util.List;
-
-import javax.servlet.http.Cookie;
-
+import com.zhukai.framework.fast.rest.FastRestApplication;
+import com.zhukai.framework.fast.rest.common.HttpHeaderType;
+import com.zhukai.framework.fast.rest.common.MultiFileRequest;
+import com.zhukai.framework.fast.rest.common.MultipartFile;
+import com.zhukai.framework.fast.rest.common.RequestType;
+import com.zhukai.framework.fast.rest.http.reader.AbstractHttpReader;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-import com.zhukai.framework.fast.rest.FastRestApplication;
-import com.zhukai.framework.fast.rest.common.HttpHeaderType;
-import com.zhukai.framework.fast.rest.common.MultipartFile;
-import com.zhukai.framework.fast.rest.common.RequestType;
-import com.zhukai.framework.fast.rest.http.reader.AbstractHttpReader;
+import javax.servlet.http.Cookie;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLDecoder;
+import java.util.List;
 
 public class HttpRequestBuilder implements RequestBuilder {
 	private AbstractHttpReader httpReader;
@@ -39,7 +38,7 @@ public class HttpRequestBuilder implements RequestBuilder {
 		request = new HttpRequest();
 		request.setMethod(startLineArr[0]);
 		request.setProtocol(startLineArr[2]);
-		request.setServletPath(path);
+		request.setPath(path);
 		if (pathArr.length > 1) {
 			String[] pathParameter = pathArr[1].split("&");
 			for (String param : pathParameter) {
@@ -84,9 +83,9 @@ public class HttpRequestBuilder implements RequestBuilder {
 	private void handleRequestBody(String contentType, int contentLength) throws FileUploadException, IOException {
 		if (contentType.startsWith("multipart/form-data")) {
 			InputStream inputStream = httpReader.readFileInputStream(contentLength);
-			request.setRequestData(inputStream);
+			MultiFileRequest fileRequest = new MultiFileRequest(inputStream, contentType, contentLength);
 			ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
-			List<FileItem> fileItems = upload.parseRequest(request);
+			List<FileItem> fileItems = upload.parseRequest(fileRequest);
 			fileItems.forEach(item -> request.addMultipartFile(new MultipartFile(item)));
 			return;
 		}

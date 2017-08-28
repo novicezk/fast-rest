@@ -1,16 +1,16 @@
 package com.zhukai.framework.fast.rest.handle;
 
+import com.zhukai.framework.fast.rest.Constants;
+import com.zhukai.framework.fast.rest.http.HttpParser;
+import com.zhukai.framework.fast.rest.util.JsonUtil;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.Socket;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.zhukai.framework.fast.rest.Constants;
-import com.zhukai.framework.fast.rest.http.HttpParser;
-import com.zhukai.framework.fast.rest.util.JsonUtil;
 
 public class ActionHandle extends AbstractActionHandle {
 
@@ -29,7 +29,7 @@ public class ActionHandle extends AbstractActionHandle {
 			if (response == null) {
 				return;
 			}
-			out = new PrintStream(socket.getOutputStream(), true);
+			out = new PrintStream(socket.getOutputStream(), true, response.getCharacterEncoding());
 			String httpHeader = HttpParser.parseHttpString(response);
 			out.print(httpHeader);
 			if (response.getResult() == null) {
@@ -49,13 +49,8 @@ public class ActionHandle extends AbstractActionHandle {
 		} catch (Exception e) {
 			logger.error("Respond error", e);
 		} finally {
-			if (out != null)
-				out.close();
-			try {
-				socket.close();
-			} catch (IOException e) {
-				logger.error("Socket close error", e);
-			}
+			IOUtils.closeQuietly(out);
+			IOUtils.closeQuietly(socket);
 		}
 	}
 

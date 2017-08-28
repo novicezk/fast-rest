@@ -5,6 +5,7 @@ import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.bean.BaseBean;
 import com.zhukai.framework.fast.rest.bean.BeanFactory;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +80,9 @@ public class PropertiesBeanFactory implements BeanFactory<BaseBean> {
 			propertiesMap.put(baseBean.getRegisterName(), properties);
 			logger.info("Register in propertiesBeanFactory: {}", baseBean.getRegisterName());
 		} catch (IOException e) {
-			logger.warn("Load {} fail: {}", baseBean.getRegisterName(), e);
+			logger.warn("Load {} fail", baseBean.getRegisterName(), e);
+		} finally {
+			IOUtils.closeQuietly(propertiesInputStream);
 		}
 	}
 }

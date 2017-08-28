@@ -10,6 +10,7 @@ import com.zhukai.framework.fast.rest.http.request.HttpRequestBuilder;
 import com.zhukai.framework.fast.rest.http.request.HttpRequestDirector;
 import com.zhukai.framework.fast.rest.http.request.RequestBuilder;
 import com.zhukai.framework.fast.rest.util.TypeUtil;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,10 +89,14 @@ public class HttpParser {
 	}
 
 	static {
+		InputStream inputStream = null;
 		try {
-			mimeTypes.load(HttpParser.class.getResourceAsStream("/" + Constants.MIMETYPE_PROPERTIES));
+			inputStream = HttpParser.class.getResourceAsStream("/" + Constants.MIMETYPE_PROPERTIES);
+			mimeTypes.load(inputStream);
 		} catch (IOException e) {
 			logger.error("Load {} fail", Constants.MIMETYPE_PROPERTIES, e);
+		} finally {
+			IOUtils.closeQuietly(inputStream);
 		}
 	}
 

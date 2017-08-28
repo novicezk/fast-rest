@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -57,15 +56,15 @@ public abstract class AbstractActionHandle implements Runnable {
 		checkSession();
 		try {
 			Object returnData;
-			if (request.getServletPath().equals("/")) {
-				returnData = getProjectResourceWithHandleContentType("/public/" + FastRestApplication.getServerConfig().getIndexPage(), true);
-			} else if (request.getServletPath().equals("/favicon.ico")) {
-				returnData = getProjectResourceWithHandleContentType(request.getServletPath(), true);
-			} else if (StringUtils.isNoneBlank(FastRestApplication.getStaticPath()) && request.getServletPath().startsWith("/static/")) {
-				returnData = Resources.getResourceAsStreamByStatic(request.getServletPath().substring(7));
-				handleContentType(request.getServletPath());
+			if (request.getPath().equals("/")) {
+				returnData = getProjectResourceWithHandleContentType("/" + FastRestApplication.getServerConfig().getIndexPage(), true);
+			} else if (request.getPath().equals("/favicon.ico")) {
+				returnData = getProjectResourceWithHandleContentType(request.getPath(), true);
+			} else if (StringUtils.isNoneBlank(FastRestApplication.getStaticPath()) && request.getPath().startsWith("/static/")) {
+				returnData = Resources.getResourceAsStreamByStatic(request.getPath().substring(7));
+				handleContentType(request.getPath());
 			} else {
-				Method method = getMethodByRequestPath(request.getServletPath());
+				Method method = getMethodByRequestPath(request.getPath());
 				if (method != null) {
 					try {
 						returnData = getInvokeResult(method);
@@ -73,7 +72,7 @@ public abstract class AbstractActionHandle implements Runnable {
 						throw ite.getTargetException();
 					}
 				} else {
-					returnData = getProjectResourceWithHandleContentType("/public" + request.getServletPath(), false);
+					returnData = getProjectResourceWithHandleContentType(request.getPath(), false);
 				}
 			}
 			response.setResult(returnData);
@@ -90,9 +89,9 @@ public abstract class AbstractActionHandle implements Runnable {
 	}
 
 	private Object getProjectResourceWithHandleContentType(String path, boolean findDefault) throws FileNotFoundException {
-		InputStream inputStream = Resources.getResourceAsStreamByProject(path);
+		InputStream inputStream = Resources.getResourceAsStreamByProject("/public" + path);
 		if (findDefault && inputStream == null) {
-			inputStream = FastRestApplication.class.getResourceAsStream(path);
+			inputStream = FastRestApplication.class.getResourceAsStream("/default" + path);
 		}
 		if (inputStream == null) {
 			throw new FileNotFoundException();
@@ -116,7 +115,7 @@ public abstract class AbstractActionHandle implements Runnable {
 		if (result instanceof FileEntity) {
 			FileEntity fileBean = (FileEntity) result;
 			String fileName = fileBean.getFileName();
-			response.setHeader(HttpHeaderType.CONTENT_DISPOSITION, "filename=" + fileName);
+			response.addHeader(HttpHeaderType.CONTENT_DISPOSITION, "filename=" + fileName);
 			response.setContentType("application/octet-stream");
 			return fileBean.getInputStream();
 		}
@@ -142,15 +141,15 @@ public abstract class AbstractActionHandle implements Runnable {
 			request.addCookie(sessionCookie);
 			response.addCookie(sessionCookie);
 		}
-		HttpContext.getInstance().refreshSession(request.getRequestedSessionId());
+		HttpContext.refreshSession(request.getRequestedSessionId());
 	}
 
 	private Object invokeRequestMethod(Method method) throws Throwable {
 		if (!ArrayUtils.contains(method.getAnnotation(RequestMapping.class).method(), request.getMethod())) {
-			throw new RequestNotAllowException("Request: " + request.getServletPath() + " - " + request.getMethod() + " is not allow");
+			throw new RequestNotAllowException("Request: " + request.getPath() + " - " + request.getMethod() + " is not allow");
 		}
-		HttpContext.getInstance().setRequest(request);
-		HttpContext.getInstance().setResponse(response);
+		HttpContext.setRequest(request);
+		HttpContext.setResponse(response);
 		Object object = ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass());
 		try {
 			return method.invoke(object, getMethodParametersArr(method));
@@ -185,7 +184,7 @@ public abstract class AbstractActionHandle implements Runnable {
 	}
 
 	private Object getParameterInstance(Parameter parameter, List<String> pathKeys, List<String> pathValues) throws Exception {
-		if (HttpServletRequest.class.isAssignableFrom(parameter.getType())) {
+		if (HttpRequest.class.isAssignableFrom(parameter.getType())) {
 			return request;
 		}
 		if (HttpSession.class.isAssignableFrom(parameter.getType())) {
@@ -239,7 +238,7 @@ public abstract class AbstractActionHandle implements Runnable {
 		List<String> pathValues = new ArrayList<>();
 		String regular = requestMapperValue.replaceAll("\\{[^}]*}", "([^/]+)");
 		Pattern pattern = Pattern.compile(regular);
-		Matcher restMatcher = pattern.matcher(request.getServletPath());
+		Matcher restMatcher = pattern.matcher(request.getPath());
 		if (restMatcher.find()) {
 			for (int i = 1; i <= restMatcher.groupCount(); i++) {
 				pathValues.add(restMatcher.group(i));

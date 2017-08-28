@@ -1,5 +1,13 @@
 package com.zhukai.framework.fast.rest.jdbc.data.jpa;
 
+import com.zhukai.framework.fast.rest.annotation.jpa.ExecuteUpdate;
+import com.zhukai.framework.fast.rest.annotation.jpa.QueryCondition;
+import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
+import com.zhukai.framework.fast.rest.util.ReflectUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -9,15 +17,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.zhukai.framework.fast.rest.annotation.jpa.ExecuteUpdate;
-import com.zhukai.framework.fast.rest.annotation.jpa.QueryCondition;
-import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
-import com.zhukai.framework.fast.rest.util.ReflectUtil;
 
 public class MapperMethod<T> {
 	private static final Logger logger = LoggerFactory.getLogger(MapperMethod.class);
@@ -62,32 +61,32 @@ public class MapperMethod<T> {
 			return getEntity(sql + " LIMIT 1 ", args);
 		}
 		switch (methodName) {
-		case "findOne":
-			return getBean(args[0]);
-		case "exists":
-			if (args[0] instanceof Object[]) {
-				return existsByProperties((Object[]) args[0]);
-			}
-			return exists(args[0]);
-		case "findAll":
-			if (args != null) {
+			case "findOne":
+				return getBean(args[0]);
+			case "exists":
 				if (args[0] instanceof Object[]) {
-					return getBeans((Object[]) args[0]);
-				} else if (args[0] instanceof List) {
-
-					return getBeansIn(List.class.cast(args[0]));
+					return existsByProperties((Object[]) args[0]);
 				}
-			}
-			return getBeans(null);
-		case "delete":
-			return delete(args[0]);
-		case "save":
-			if (args[0] instanceof List) {
-				return saveBeans((List<T>) args[0]);
-			}
-			return saveBean((T) args[0]);
-		case "count":
-			return count();
+				return exists(args[0]);
+			case "findAll":
+				if (args != null) {
+					if (args[0] instanceof Object[]) {
+						return getBeans((Object[]) args[0]);
+					} else if (args[0] instanceof List) {
+
+						return getBeansIn(List.class.cast(args[0]));
+					}
+				}
+				return getBeans(null);
+			case "delete":
+				return delete(args[0]);
+			case "save":
+				if (args[0] instanceof List) {
+					return saveBeans((List<T>) args[0]);
+				}
+				return saveBean((T) args[0]);
+			case "count":
+				return count();
 		}
 		if (methodName.startsWith("findBy")) {
 			StringBuilder propertiesSql = new StringBuilder();
@@ -165,7 +164,7 @@ public class MapperMethod<T> {
 	private <ID> T getBean(ID id) throws Exception {
 		Field idField = JpaUtil.getIdField(entityClass);
 		String idName = JpaUtil.getColumnName(idField);
-		List<T> beans = getBeans(new Object[] { idName, id });
+		List<T> beans = getBeans(new Object[]{idName, id});
 		if (beans != null && !beans.isEmpty()) {
 			return beans.get(0);
 		}
@@ -174,7 +173,7 @@ public class MapperMethod<T> {
 
 	private <ID> boolean exists(ID ID) throws Exception {
 		Field idField = JpaUtil.getIdField(entityClass);
-		String sql = JpaUtil.getSelectSQL(entityClass, new Object[] { idField.getName(), ID });
+		String sql = JpaUtil.getSelectSQL(entityClass, new Object[]{idField.getName(), ID});
 		resultSet = executeQuery(sql);
 		return resultSet.next();
 	}
@@ -229,20 +228,56 @@ public class MapperMethod<T> {
 
 	private ResultSet executeQuery(String sql) throws SQLException {
 		logger.debug("Execute sql: {}", sql);
-		return conn.prepareStatement(sql).executeQuery();
+		PreparedStatement statement = null;
+		try {
+			statement = conn.prepareStatement(sql);
+			return statement.executeQuery();
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			if (statement != null)
+				statement.close();
+		}
 	}
 
 	private ResultSet executeQuery(String sql, Object[] properties) throws SQLException {
-		return fillStatement(sql, properties).executeQuery();
+		PreparedStatement statement = null;
+		try {
+			statement = fillStatement(sql, properties);
+			return statement.executeQuery();
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			if (statement != null)
+				statement.close();
+		}
 	}
 
 	private boolean executeUpdate(String sql) throws SQLException {
 		logger.debug("Execute sql: {}", sql);
-		return conn.prepareStatement(sql).executeUpdate() >= 1;
+		PreparedStatement statement = null;
+		try {
+			statement = conn.prepareStatement(sql);
+			return statement.executeUpdate() >= 1;
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			if (statement != null)
+				statement.close();
+		}
 	}
 
 	private boolean executeUpdate(String sql, Object[] properties) throws SQLException {
-		return fillStatement(sql, properties).executeUpdate() >= 1;
+		PreparedStatement statement = null;
+		try {
+			statement = fillStatement(sql, properties);
+			return statement.executeUpdate() >= 1;
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			if (statement != null)
+				statement.close();
+		}
 	}
 
 	private PreparedStatement fillStatement(String sql, Object[] properties) throws SQLException {

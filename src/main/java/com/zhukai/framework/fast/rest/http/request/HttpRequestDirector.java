@@ -1,7 +1,5 @@
 package com.zhukai.framework.fast.rest.http.request;
 
-import java.io.IOException;
-
 public class HttpRequestDirector {
 	private RequestBuilder builder;
 

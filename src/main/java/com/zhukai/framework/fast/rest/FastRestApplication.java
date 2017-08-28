@@ -11,6 +11,7 @@ import com.zhukai.framework.fast.rest.http.Session;
 import com.zhukai.framework.fast.rest.server.Server;
 import com.zhukai.framework.fast.rest.server.ServerFactory;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
+import com.zhukai.framework.fast.rest.util.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class FastRestApplication {
-	private static final Logger logger = LoggerFactory.getLogger(FastRestApplication.class);
+	private static Logger logger;
 	private static Class runClass;
 	private static ServerConfig serverConfig;
 	private static String staticPath;
@@ -30,6 +31,7 @@ public class FastRestApplication {
 	public static void run(Class runClass) {
 		FastRestApplication.runClass = runClass;
 		try {
+			initLogger();
 			Setup.init();
 			serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
 			Server server = ServerFactory.buildServer(serverConfig);
@@ -46,6 +48,13 @@ public class FastRestApplication {
 		}
 	}
 
+	private static void initLogger() {
+		if (Resources.getResourceAsStreamByProject("/log4j.properties") == null) {
+			System.setProperty("log4j.configuration", "default/log4j.properties");
+		}
+		logger = LoggerFactory.getLogger(FastRestApplication.class);
+	}
+
 	private static void checkStaticServer() throws UnknownHostException {
 		if (ReflectUtil.existAnnotation(runClass, EnableStaticServer.class)) {
 			staticPath = EnableStaticServer.class.cast(runClass.getAnnotation(EnableStaticServer.class)).value();
@@ -60,7 +69,7 @@ public class FastRestApplication {
 	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(5);
 
 	private static void runSessionTimeoutCheck() {
-		Map<String, Session> sessionMap = HttpContext.getInstance().getSessions();
+		Map<String, Session> sessionMap = HttpContext.getSessions();
 		scheduledExecutor.scheduleAtFixedRate(() -> sessionMap.keySet().removeIf(sessionID -> sessionMap.get(sessionID).getLastAccessedTime() + serverConfig.getSessionTimeout() < System.currentTimeMillis()),
 				Constants.SESSION_CHECK_FIXED_RATE, Constants.SESSION_CHECK_FIXED_RATE, TimeUnit.MILLISECONDS);
 	}

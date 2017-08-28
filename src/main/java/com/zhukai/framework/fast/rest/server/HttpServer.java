@@ -1,5 +1,15 @@
 package com.zhukai.framework.fast.rest.server;
 
+import com.zhukai.framework.fast.rest.Constants;
+import com.zhukai.framework.fast.rest.config.ServerConfig;
+import com.zhukai.framework.fast.rest.handle.ActionHandleNIO;
+import com.zhukai.framework.fast.rest.http.HttpParser;
+import com.zhukai.framework.fast.rest.http.HttpResponse;
+import com.zhukai.framework.fast.rest.http.request.HttpRequest;
+import com.zhukai.framework.fast.rest.util.JsonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,17 +22,6 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.zhukai.framework.fast.rest.Constants;
-import com.zhukai.framework.fast.rest.config.ServerConfig;
-import com.zhukai.framework.fast.rest.handle.ActionHandleNIO;
-import com.zhukai.framework.fast.rest.http.HttpParser;
-import com.zhukai.framework.fast.rest.http.HttpResponse;
-import com.zhukai.framework.fast.rest.http.request.HttpRequest;
-import com.zhukai.framework.fast.rest.util.JsonUtil;
 
 public class HttpServer extends Server {
 	private static final Logger logger = LoggerFactory.getLogger(HttpServer.class);
@@ -103,7 +102,7 @@ public class HttpServer extends Server {
 			HttpResponse response = (HttpResponse) key.attachment();
 			String httpHeader = HttpParser.parseHttpString(response);
 			ByteBuffer buffer = ByteBuffer.allocate(Constants.BUFFER_SIZE);
-			sendMessage(socketChannel, httpHeader, buffer);
+			sendMessage(socketChannel, httpHeader, buffer, response.getCharacterEncoding());
 			if (response.getResult() == null) {
 				return;
 			}
@@ -111,7 +110,7 @@ public class HttpServer extends Server {
 				sendInputStream(socketChannel, (InputStream) response.getResult());
 			} else {
 				String json = JsonUtil.toJson(response.getResult());
-				sendMessage(socketChannel, json, buffer);
+				sendMessage(socketChannel, json, buffer, response.getCharacterEncoding());
 			}
 		} catch (Exception e) {
 			logger.error("Write response error", e);
@@ -123,13 +122,13 @@ public class HttpServer extends Server {
 		}
 	}
 
-	private void sendMessage(SocketChannel socketChannel, String message, ByteBuffer buffer) throws Exception {
+	private void sendMessage(SocketChannel socketChannel, String message, ByteBuffer buffer, String charset) throws Exception {
 		int endIndex = 0;
 		while (endIndex < message.length()) {
 			buffer.clear();
 			int startIndex = endIndex;
 			endIndex = Math.min(endIndex + Constants.BUFFER_SIZE / 3, message.length());
-			buffer.put(message.substring(startIndex, endIndex).getBytes());
+			buffer.put(message.substring(startIndex, endIndex).getBytes(charset));
 			buffer.flip();
 			socketChannel.write(buffer);
 		}

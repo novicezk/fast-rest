@@ -29,7 +29,7 @@ public class AopProxy implements MethodInterceptor {
 			if (method.isAnnotationPresent(Transactional.class)) {
 				connection = DBConnectionPool.getConnection();
 				connection.setAutoCommit(false);
-				HttpContext.getInstance().setTransaction(connection);
+				HttpContext.setTransaction(connection);
 			}
 			if (Setup.getMethodInterceptors().containsKey(method)) {
 				InterceptorPoint.MethodSignature signature = new InterceptorPoint.MethodSignature(method, obj, args, proxy);

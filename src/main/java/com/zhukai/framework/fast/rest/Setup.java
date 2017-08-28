@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -228,8 +229,7 @@ public class Setup {
 		}
 		sql.deleteCharAt(sql.length() - 1);
 		sql.append(")");
-		logger.info("Sql: {}", sql);
-		conn.createStatement().executeUpdate(sql.toString());
+		executeSql(sql.toString(), conn);
 		addDBIndex(entityClass, tableName, conn);
 	}
 
@@ -262,8 +262,20 @@ public class Setup {
 				}
 			}
 			indexSql.append(")");
-			logger.info("Sql: {}", indexSql);
-			conn.createStatement().executeUpdate(indexSql.toString());
+			executeSql(indexSql.toString(), conn);
+		}
+	}
+
+	private static void executeSql(String sql, Connection conn) throws SQLException {
+		logger.info("Sql: {}", sql);
+		Statement statement = null;
+		try {
+			statement = conn.createStatement();
+			statement.executeUpdate(sql);
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			if (statement != null) statement.close();
 		}
 	}
 
