@@ -101,9 +101,8 @@ public class Setup {
 
 	private static void scanComponent() throws Throwable {
 		Connection conn = dataSource != null ? DBConnectionPool.getConnection() : null;
-		ClassLoader classLoader = FastRestApplication.getRunClass().getClassLoader();
 		String packageName = FastRestApplication.getRunClass().getPackage().getName();
-		scanClasses = PackageUtil.getAllClasses(classLoader, packageName);
+		scanClasses = PackageUtil.getAllClasses(packageName);
 		for (Class componentClass : scanClasses) {
 			if (componentClass.isAnnotation()) {
 				continue;

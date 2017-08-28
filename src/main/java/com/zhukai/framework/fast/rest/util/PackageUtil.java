@@ -1,5 +1,7 @@
 package com.zhukai.framework.fast.rest.util;
 
+import com.zhukai.framework.fast.rest.exception.PackageRepeatException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
@@ -16,12 +18,15 @@ public class PackageUtil {
 	/**
 	 * 获取某个包下的所有类
 	 */
-	public static List<Class> getAllClasses(ClassLoader classLoader, String packageName) throws Exception {
+	public static List<Class> getAllClasses(String packageName) throws Exception {
 		List<Class> classes = new ArrayList<>();
 		String packageDirName = packageName.replace('.', '/');
-		Enumeration<URL> dirs = classLoader.getResources(packageDirName);
-		while (dirs.hasMoreElements()) {
+		Enumeration<URL> dirs = ClassLoader.getSystemClassLoader().getResources(packageDirName);
+		if (dirs.hasMoreElements()) {
 			URL url = dirs.nextElement();
+			if (dirs.hasMoreElements()) {
+				throw new PackageRepeatException(packageName + " is repeated, please change the package name");
+			}
 			String protocol = url.getProtocol();
 			if ("file".equals(protocol)) {
 				String filePath = URLDecoder.decode(url.getFile(), "utf-8");
@@ -62,7 +67,7 @@ public class PackageUtil {
 				if (idx != -1) {
 					String packageName = name.substring(0, idx).replace('/', '.');
 					String className = name.substring(packageName.length() + 1, name.length() - 6);
-					classes.add(Class.forName(packageName + '.' + className));
+					classes.add(Thread.currentThread().getContextClassLoader().loadClass(packageName + '.' + className));
 				}
 			}
 		}
