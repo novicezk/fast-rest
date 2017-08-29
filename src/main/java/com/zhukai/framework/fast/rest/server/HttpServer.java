@@ -81,7 +81,6 @@ public class HttpServer extends Server {
 	private void readKey(SelectionKey key) throws IOException {
 		try {
 			SocketChannel channel = (SocketChannel) key.channel();
-
 			HttpRequest request = HttpParser.createRequest(channel);
 			if (request != null) {
 				service.execute(new ActionHandleNIO(request, key));
