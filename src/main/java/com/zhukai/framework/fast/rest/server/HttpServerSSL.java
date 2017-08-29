@@ -1,24 +1,21 @@
 package com.zhukai.framework.fast.rest.server;
 
-import java.io.IOException;
+import com.zhukai.framework.fast.rest.config.ServerConfig;
+import com.zhukai.framework.fast.rest.handle.ActionHandle;
+import com.zhukai.framework.fast.rest.util.Resources;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.net.ServerSocketFactory;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocket;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.zhukai.framework.fast.rest.config.ServerConfig;
-import com.zhukai.framework.fast.rest.handle.ActionHandle;
-import com.zhukai.framework.fast.rest.util.Resources;
 
 public class HttpServerSSL extends Server {
 	private static final Logger logger = LoggerFactory.getLogger(HttpServerSSL.class);

@@ -7,10 +7,15 @@ Fast Rest是个参考Spring Boot的轻量级Java框架，不依赖任何现有�
 3. 框架封装较少，可简便定位问题
 4. 源代码可修改，使其更为契合项目开发
 
-# 快速使用
-1. 下载该项目，git clone或下载zip
-2. 进入fast-rest项目，执行mvn install
-3. 新建maven项目，添加该框架jar包依赖，示例pom文件：
+# 普通项目使用
+1. 下载[本项目jar包](https://homolo.top/file/download?fileName=jar/fast-rest-1.3-jar-with-dependencies.jar)
+2. 把此jar包添加到新建项目的classpath
+
+# maven项目使用(推荐)
+1. 导入本地maven仓库
++ 下载该项目，git clone或下载zip；进入fast-rest项目，执行`mvn install`
++ 下载[本项目jar包](https://homolo.top/file/download?fileName=jar/fast-rest-1.3-jar-with-dependencies.jar)，进入下载目录，执行`mvn install:install-file -Dfile=fast-rest-1.3-jar-with-dependencies.jar -DgroupId=com.zhukai.framework -DartifactId=fast-rest -Dversion=1.3 -Dpackaging=jar`
+2. 新建maven项目，添加该框架jar包依赖，示例pom文件：
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -29,7 +34,8 @@ Fast Rest是个参考Spring Boot的轻量级Java框架，不依赖任何现有�
     </dependencies>
 </project>
 ```
-4. 最简单的hello,world。
+
+# hello,world
 文件结构：
 ```$xslt
 src
