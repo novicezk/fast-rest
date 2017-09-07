@@ -2,6 +2,7 @@ package com.zhukai.framework.fast.rest.event;
 
 import com.zhukai.framework.fast.rest.annotation.extend.EventHandle;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
+import com.zhukai.framework.fast.rest.common.FastRestThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +16,7 @@ import java.util.concurrent.Future;
 public class ListenerTrigger {
 	private static final Logger logger = LoggerFactory.getLogger(ApplicationListener.class);
 	private static final Map<String, ApplicationListener> listeners = Collections.synchronizedMap(new HashMap<>());
-	private final static ExecutorService service = Executors.newCachedThreadPool();
+	private final static ExecutorService service = Executors.newCachedThreadPool(new FastRestThreadFactory("event"));
 
 	public static void registerListener(String eventType, Method listenerMethod) {
 		listeners.putIfAbsent(eventType, new ApplicationListener());

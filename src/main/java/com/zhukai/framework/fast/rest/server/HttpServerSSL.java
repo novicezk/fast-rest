@@ -1,5 +1,6 @@
 package com.zhukai.framework.fast.rest.server;
 
+import com.zhukai.framework.fast.rest.common.FastRestThreadFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.handle.ActionHandle;
 import com.zhukai.framework.fast.rest.util.Resources;
@@ -19,7 +20,7 @@ import java.util.concurrent.Executors;
 
 public class HttpServerSSL extends Server {
 	private static final Logger logger = LoggerFactory.getLogger(HttpServerSSL.class);
-	private final ExecutorService service = Executors.newCachedThreadPool();
+	private final ExecutorService service = Executors.newCachedThreadPool(new FastRestThreadFactory("https-handle"));
 	private ServerSocket serverSocket;
 
 	public HttpServerSSL(ServerConfig config) throws Exception {

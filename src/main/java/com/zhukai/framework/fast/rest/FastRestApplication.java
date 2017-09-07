@@ -4,6 +4,7 @@ import com.zhukai.framework.fast.rest.annotation.extend.EnableStaticServer;
 import com.zhukai.framework.fast.rest.annotation.extend.Scheduled;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
+import com.zhukai.framework.fast.rest.common.FastRestThreadFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.exception.SetupInitException;
 import com.zhukai.framework.fast.rest.http.HttpContext;
@@ -66,12 +67,13 @@ public class FastRestApplication {
 		}
 	}
 
-	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(5);
+	private static final ScheduledThreadPoolExecutor scheduledTaskExecutor = new ScheduledThreadPoolExecutor(5, new FastRestThreadFactory("schedule-task"));
 
 	private static void runSessionTimeoutCheck() {
-		Map<String, Session> sessionMap = HttpContext.getSessions();
-		scheduledExecutor.scheduleAtFixedRate(() -> sessionMap.keySet().removeIf(sessionID -> sessionMap.get(sessionID).getLastAccessedTime() + serverConfig.getSessionTimeout() < System.currentTimeMillis()),
-				Constants.SESSION_CHECK_FIXED_RATE, Constants.SESSION_CHECK_FIXED_RATE, TimeUnit.MILLISECONDS);
+		scheduledTaskExecutor.scheduleAtFixedRate(() -> {
+			Map<String, Session> sessionMap = HttpContext.getSessions();
+			HttpContext.getSessions().keySet().removeIf(sessionID -> sessionMap.get(sessionID).getLastAccessedTime() + serverConfig.getSessionTimeout() < System.currentTimeMillis());
+		}, Constants.SESSION_CHECK_FIXED_RATE, Constants.SESSION_CHECK_FIXED_RATE, TimeUnit.MILLISECONDS);
 	}
 
 	private static void runBatchSchedule() {
@@ -80,7 +82,7 @@ public class FastRestApplication {
 			long fixedRate = scheduled.fixedRate();
 			long fixedDelay = scheduled.fixedDelay();
 			logger.info("Batch method: {}", method.getName());
-			scheduledExecutor.scheduleAtFixedRate(() -> {
+			scheduledTaskExecutor.scheduleAtFixedRate(() -> {
 				try {
 					method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()));
 				} catch (Exception e) {

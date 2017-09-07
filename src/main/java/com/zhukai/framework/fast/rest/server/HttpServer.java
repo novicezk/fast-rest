@@ -1,6 +1,7 @@
 package com.zhukai.framework.fast.rest.server;
 
 import com.zhukai.framework.fast.rest.Constants;
+import com.zhukai.framework.fast.rest.common.FastRestThreadFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.handle.ActionHandleNIO;
 import com.zhukai.framework.fast.rest.http.HttpParser;
@@ -25,7 +26,7 @@ import java.util.concurrent.Executors;
 
 public class HttpServer extends Server {
 	private static final Logger logger = LoggerFactory.getLogger(HttpServer.class);
-	private final ExecutorService service = Executors.newCachedThreadPool();
+	private final ExecutorService service = Executors.newCachedThreadPool(new FastRestThreadFactory("http-handle"));
 	private Selector selector;
 
 	public HttpServer(ServerConfig config) throws Exception {
