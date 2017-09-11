@@ -89,9 +89,13 @@ public abstract class AbstractActionHandle implements Runnable {
 	}
 
 	private Object getProjectResourceWithHandleContentType(String path, boolean findDefault) throws FileNotFoundException {
-		InputStream inputStream = Resources.getResourceAsStreamByProject("/public" + path);
-		if (findDefault && inputStream == null) {
-			inputStream = FastRestApplication.class.getResourceAsStream("/default" + path);
+		InputStream inputStream = null;
+		try {
+			inputStream = Resources.getResourceAsStreamByProject("/public" + path);
+		} catch (FileNotFoundException fe) {
+			if (findDefault) {
+				inputStream = FastRestApplication.class.getResourceAsStream("/default" + path);
+			}
 		}
 		if (inputStream == null) {
 			throw new FileNotFoundException();

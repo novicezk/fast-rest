@@ -1,16 +1,17 @@
 package com.zhukai.framework.fast.rest.util;
 
+import com.zhukai.framework.fast.rest.FastRestApplication;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import com.zhukai.framework.fast.rest.FastRestApplication;
-
 public class Resources {
+	private static final boolean RUN_JAR = FastRestApplication.getRunClass().getResource(FastRestApplication.getRunClass().getSimpleName() + ".class").toString().startsWith("jar");
 
-	public static InputStream getResourceAsStreamByProject(String filePath) {
-		return FastRestApplication.getRunClass().getResourceAsStream(filePath);
+	public static InputStream getResourceAsStreamByProject(String filePath) throws FileNotFoundException {
+		return RUN_JAR ? FastRestApplication.getRunClass().getResourceAsStream(filePath) : getResourceAsStream(System.getenv("PWD") + "/src/main/resources" + filePath);
 	}
 
 	public static File getResource(String filePath) throws FileNotFoundException {

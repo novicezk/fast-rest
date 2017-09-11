@@ -16,6 +16,7 @@ import com.zhukai.framework.fast.rest.util.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -50,7 +51,9 @@ public class FastRestApplication {
 	}
 
 	private static void initLogger() {
-		if (Resources.getResourceAsStreamByProject("/log4j.properties") == null) {
+		try {
+			Resources.getResourceAsStreamByProject("/log4j.properties");
+		} catch (FileNotFoundException e) {
 			System.setProperty("log4j.configuration", "default/log4j.properties");
 		}
 		logger = LoggerFactory.getLogger(FastRestApplication.class);

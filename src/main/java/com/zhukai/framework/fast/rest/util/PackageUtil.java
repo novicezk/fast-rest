@@ -1,6 +1,6 @@
 package com.zhukai.framework.fast.rest.util;
 
-import com.zhukai.framework.fast.rest.exception.PackageRepeatException;
+import com.zhukai.framework.fast.rest.FastRestApplication;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,13 +19,15 @@ public class PackageUtil {
 	 * 获取某个包下的所有类
 	 */
 	public static List<Class> getAllClasses(String packageName) throws Exception {
+		String runClassFileName = FastRestApplication.getRunClass().getSimpleName() + ".class";
+		String mainPath = FastRestApplication.getRunClass().getResource(runClassFileName).toString().replace(runClassFileName, "");
 		List<Class> classes = new ArrayList<>();
 		String packageDirName = packageName.replace('.', '/');
 		Enumeration<URL> dirs = ClassLoader.getSystemClassLoader().getResources(packageDirName);
-		if (dirs.hasMoreElements()) {
+		while (dirs.hasMoreElements()) {
 			URL url = dirs.nextElement();
-			if (dirs.hasMoreElements()) {
-				throw new PackageRepeatException(packageName + " is repeated, please change the package name");
+			if (!(url.toString() + "/").equals(mainPath)) {
+				continue;
 			}
 			String protocol = url.getProtocol();
 			if ("file".equals(protocol)) {
