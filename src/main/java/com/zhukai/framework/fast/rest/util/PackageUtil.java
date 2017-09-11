@@ -1,6 +1,6 @@
 package com.zhukai.framework.fast.rest.util;
 
-import com.zhukai.framework.fast.rest.FastRestApplication;
+import com.zhukai.framework.fast.rest.exception.PackageRepeatException;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,22 +19,24 @@ public class PackageUtil {
 	 * 获取某个包下的所有类
 	 */
 	public static List<Class> getAllClasses(String packageName) throws Exception {
-		String runClassFileName = FastRestApplication.getRunClass().getSimpleName() + ".class";
-		String mainPath = FastRestApplication.getRunClass().getResource(runClassFileName).toString().replace(runClassFileName, "");
 		List<Class> classes = new ArrayList<>();
 		String packageDirName = packageName.replace('.', '/');
 		Enumeration<URL> dirs = ClassLoader.getSystemClassLoader().getResources(packageDirName);
-		while (dirs.hasMoreElements()) {
+		if (dirs.hasMoreElements()) {
 			URL url = dirs.nextElement();
-			if (!(url.toString() + "/").equals(mainPath)) {
-				continue;
+			if (dirs.hasMoreElements()) {
+				throw new PackageRepeatException(packageName + " is repeated, please change the package name");
 			}
 			String protocol = url.getProtocol();
 			if ("file".equals(protocol)) {
 				String filePath = URLDecoder.decode(url.getFile(), "utf-8");
 				findClassInPackageByFile(packageName, filePath, classes);
 			} else if ("jar".equals(protocol)) {
-				findClassInPackageByJar(packageDirName, url, classes);
+				try {
+					findClassInPackageByJar(packageDirName, url, classes);
+				} catch (NoClassDefFoundError error) {
+					throw new PackageRepeatException(packageName + " is repeated, please change the package name");
+				}
 			}
 		}
 		return classes;

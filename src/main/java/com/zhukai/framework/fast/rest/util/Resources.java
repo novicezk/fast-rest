@@ -11,7 +11,11 @@ public class Resources {
 	private static final boolean RUN_JAR = FastRestApplication.getRunClass().getResource(FastRestApplication.getRunClass().getSimpleName() + ".class").toString().startsWith("jar");
 
 	public static InputStream getResourceAsStreamByProject(String filePath) throws FileNotFoundException {
-		return RUN_JAR ? FastRestApplication.getRunClass().getResourceAsStream(filePath) : getResourceAsStream(System.getenv("PWD") + "/src/main/resources" + filePath);
+		InputStream inputStream = RUN_JAR ? FastRestApplication.getRunClass().getResourceAsStream(filePath) : getResourceAsStream(System.getenv("PWD") + "/src/main/resources" + filePath);
+		if (inputStream == null) {
+			throw new FileNotFoundException(filePath);
+		}
+		return inputStream;
 	}
 
 	public static File getResource(String filePath) throws FileNotFoundException {

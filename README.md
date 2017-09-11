@@ -37,13 +37,13 @@ Fast Rest是个参考Spring Boot的轻量级Java框架，不依赖任何现有�
 src
 --main
 ----java
-------com
+------com.zhukai.test.demo
 --------Application.java
 --------HelloController.java
 ```
 Application.java(项目启动入口，必须放在一个包下，其他类需要放在它的同级或子级包下)
 ```java
-package com;
+package com.zhukai.test.demo;
 
 import com.zhukai.framework.fast.rest.FastRestApplication;
 
@@ -55,7 +55,7 @@ public class Application {
 ```
 HelloController.java
 ```java
-package com;
+package com.zhukai.test.demo;
 
 import com.zhukai.framework.fast.rest.annotation.web.RequestMapping;
 import com.zhukai.framework.fast.rest.annotation.web.RestController;
@@ -70,7 +70,7 @@ public class HelloController {
 }
 ```
 4. 启动项目，访问[http://localhost:8080/hello](http://localhost:8080/hello)，出现hello,world。两种启动方式：
-+ 开发工具启动`com.Application` 
++ 开发工具启动`com.zhukai.test.demo.Application` 
 + 使用assembly插件打成jar包，`java -jar`执行，见[使用文档](https://github.com/zhukai-git/fast-rest/wiki)
    
 # 更多说明请阅读[使用文档](https://github.com/zhukai-git/fast-rest/wiki)
