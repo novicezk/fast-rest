@@ -71,6 +71,6 @@ public class HelloController {
 ```
 4. 启动项目，访问[http://localhost:8080/hello](http://localhost:8080/hello)，出现hello,world。两种启动方式：
 + 开发工具启动`com.zhukai.test.demo.Application` 
-+ 使用assembly插件打成jar包，`java -jar`执行，见[使用文档](https://github.com/zhukai-git/fast-rest/wiki)
++ 使用assembly插件打成jar包，`java -jar`执行，见[使用文档](https://github.com/zhukai-git/fast-rest/wiki#user-content-1-java--jar命令启动项目)
    
 # 更多说明请阅读[使用文档](https://github.com/zhukai-git/fast-rest/wiki)
