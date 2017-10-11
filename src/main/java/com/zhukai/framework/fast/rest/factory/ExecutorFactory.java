@@ -13,21 +13,21 @@ public class ExecutorFactory {
 
 	public static ScheduledThreadPoolExecutor getScheduledTaskExecutor() {
 		if (scheduledTaskExecutor == null) {
-			scheduledTaskExecutor = new ScheduledThreadPoolExecutor(5, new FastRestThreadFactory("schedule-task"));
+			scheduledTaskExecutor = new ScheduledThreadPoolExecutor(5, new PoolNameThreadFactory("schedule-task"));
 		}
 		return scheduledTaskExecutor;
 	}
 
 	public static ExecutorService getEventExecutor() {
 		if (eventExecutor == null) {
-			eventExecutor = Executors.newCachedThreadPool(new FastRestThreadFactory("event"));
+			eventExecutor = Executors.newCachedThreadPool(new PoolNameThreadFactory("event"));
 		}
 		return eventExecutor;
 	}
 
 	public static ExecutorService getHandleExecutor() {
 		if (handleExecutor == null) {
-			handleExecutor = Executors.newCachedThreadPool(new FastRestThreadFactory(FastRestApplication.getServerConfig().isUseSSL() ? "https" : "http" + "-handle"));
+			handleExecutor = Executors.newCachedThreadPool(new PoolNameThreadFactory(FastRestApplication.getServerConfig().isUseSSL() ? "https" : "http" + "-handle"));
 		}
 		return handleExecutor;
 	}

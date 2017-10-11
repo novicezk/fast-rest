@@ -3,12 +3,12 @@ package com.zhukai.framework.fast.rest.factory;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class FastRestThreadFactory implements ThreadFactory {
+public class PoolNameThreadFactory implements ThreadFactory {
 	private final ThreadGroup group;
 	private final AtomicInteger threadNumber = new AtomicInteger(1);
 	private final String namePrefix;
 
-	public FastRestThreadFactory(String poolName) {
+	public PoolNameThreadFactory(String poolName) {
 		SecurityManager s = System.getSecurityManager();
 		group = s != null ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
 		namePrefix = poolName + "-";
