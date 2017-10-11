@@ -40,7 +40,7 @@ public class MultiFileRequest implements HttpServletRequest {
 		return new HttpServletInputStream(requestData);
 	}
 
-	private class HttpServletInputStream extends ServletInputStream {
+	private static class HttpServletInputStream extends ServletInputStream {
 
 		private final InputStream in;
 

@@ -4,13 +4,13 @@ import com.zhukai.framework.fast.rest.annotation.extend.EnableStaticServer;
 import com.zhukai.framework.fast.rest.annotation.extend.Scheduled;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
-import com.zhukai.framework.fast.rest.common.FastRestThreadFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.exception.SetupInitException;
+import com.zhukai.framework.fast.rest.factory.ExecutorFactory;
+import com.zhukai.framework.fast.rest.factory.ServerFactory;
 import com.zhukai.framework.fast.rest.http.HttpContext;
 import com.zhukai.framework.fast.rest.http.Session;
 import com.zhukai.framework.fast.rest.server.Server;
-import com.zhukai.framework.fast.rest.server.ServerFactory;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import com.zhukai.framework.fast.rest.util.Resources;
 import org.slf4j.Logger;
@@ -18,10 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Map;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class FastRestApplication {
@@ -37,16 +34,18 @@ public class FastRestApplication {
 			Setup.init();
 			serverConfig = ConfigureBeanFactory.getInstance().getBean(ServerConfig.class);
 			Server server = ServerFactory.buildServer(serverConfig);
-			server.start();
-			logger.info("Start {} server success, port: {}", server.getServerName(), serverConfig.getPort());
-			checkStaticServer();
-			runSessionTimeoutCheck();
-			runBatchSchedule();
+			if (server != null) {
+				checkStaticServer();
+				runSessionTimeoutCheck();
+				runBatchSchedule();
+				logger.info("Start {} server success, port: {}", server.getServerName(), serverConfig.getPort());
+				server.start();
+			}
 		} catch (SetupInitException e) {
-			logger.error("Init error", e.getCause());
+			logger.error("Setup init error", e.getCause());
 		} catch (Exception e) {
-			logger.error("Start server error", e);
-			System.exit(1);
+			ExecutorFactory.clearExecutors();
+			logger.error("Run server error", e);
 		}
 	}
 
@@ -59,21 +58,19 @@ public class FastRestApplication {
 		logger = LoggerFactory.getLogger(FastRestApplication.class);
 	}
 
-	private static void checkStaticServer() throws UnknownHostException {
+	private static void checkStaticServer() {
 		if (ReflectUtil.existAnnotation(runClass, EnableStaticServer.class)) {
 			staticPath = EnableStaticServer.class.cast(runClass.getAnnotation(EnableStaticServer.class)).value();
 			if (!staticPath.endsWith("/")) {
 				staticPath += "/";
 			}
-			logger.info("Start static server, you can visit {}://{}:{}/static/{fileName} to view the file in directory {}", serverConfig.isUseSSL() ? "https" : "http", InetAddress.getLocalHost().getHostAddress(), serverConfig.getPort(),
+			logger.info("Static file server started, you can visit {}://localhost:{}/static/{fileName} to view the file in directory {}", serverConfig.isUseSSL() ? "https" : "http", serverConfig.getPort(),
 					staticPath);
 		}
 	}
 
-	private static final ScheduledThreadPoolExecutor scheduledTaskExecutor = new ScheduledThreadPoolExecutor(5, new FastRestThreadFactory("schedule-task"));
-
 	private static void runSessionTimeoutCheck() {
-		scheduledTaskExecutor.scheduleAtFixedRate(() -> {
+		ExecutorFactory.getScheduledTaskExecutor().scheduleAtFixedRate(() -> {
 			Map<String, Session> sessionMap = HttpContext.getSessions();
 			HttpContext.getSessions().keySet().removeIf(sessionID -> sessionMap.get(sessionID).getLastAccessedTime() + serverConfig.getSessionTimeout() < System.currentTimeMillis());
 		}, Constants.SESSION_CHECK_FIXED_RATE, Constants.SESSION_CHECK_FIXED_RATE, TimeUnit.MILLISECONDS);
@@ -84,14 +81,13 @@ public class FastRestApplication {
 			Scheduled scheduled = method.getAnnotation(Scheduled.class);
 			long fixedRate = scheduled.fixedRate();
 			long fixedDelay = scheduled.fixedDelay();
-			logger.info("Batch method: {}", method.getName());
-			scheduledTaskExecutor.scheduleAtFixedRate(() -> {
+			ExecutorFactory.getScheduledTaskExecutor().scheduleAtFixedRate(() -> {
 				try {
 					method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()));
 				} catch (Exception e) {
-					logger.error("Batch method execute error");
+					logger.error("Batch method execute error", e);
 				}
-			}, fixedDelay, fixedRate, scheduled.timeUnit());
+			}, fixedDelay == -1 ? 0 : fixedDelay, fixedRate, scheduled.timeUnit());
 		}
 	}
 
@@ -106,4 +102,5 @@ public class FastRestApplication {
 	public static String getStaticPath() {
 		return staticPath;
 	}
+
 }

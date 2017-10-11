@@ -1,26 +1,21 @@
 package com.zhukai.framework.fast.rest.server;
 
-import com.zhukai.framework.fast.rest.common.FastRestThreadFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
+import com.zhukai.framework.fast.rest.factory.ExecutorFactory;
 import com.zhukai.framework.fast.rest.handle.ActionHandle;
 import com.zhukai.framework.fast.rest.util.Resources;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class HttpServerSSL extends Server {
-	private static final Logger logger = LoggerFactory.getLogger(HttpServerSSL.class);
-	private final ExecutorService service = Executors.newCachedThreadPool(new FastRestThreadFactory("https-handle"));
 	private ServerSocket serverSocket;
 
 	public HttpServerSSL(ServerConfig config) throws Exception {
@@ -41,15 +36,10 @@ public class HttpServerSSL extends Server {
 	}
 
 	@Override
-	public void run() {
-		try {
-			while (true) {
-				Socket socket = serverSocket.accept();
-				service.execute(new ActionHandle(socket));
-			}
-		} catch (Exception e) {
-			logger.error("Https server run error", e);
-			System.exit(1);
+	public void start() throws IOException {
+		while (true) {
+			Socket socket = serverSocket.accept();
+			ExecutorFactory.getHandleExecutor().execute(new ActionHandle(socket));
 		}
 	}
 

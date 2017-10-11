@@ -7,7 +7,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.Socket;
@@ -17,7 +16,7 @@ public class ActionHandle extends AbstractActionHandle {
 	private static final Logger logger = LoggerFactory.getLogger(ActionHandle.class);
 	private Socket socket;
 
-	public ActionHandle(Socket socket) throws IOException {
+	public ActionHandle(Socket socket) {
 		this.socket = socket;
 		this.request = HttpParser.createRequest(socket);
 	}

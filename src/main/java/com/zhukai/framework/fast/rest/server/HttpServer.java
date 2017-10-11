@@ -1,8 +1,8 @@
 package com.zhukai.framework.fast.rest.server;
 
 import com.zhukai.framework.fast.rest.Constants;
-import com.zhukai.framework.fast.rest.common.FastRestThreadFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
+import com.zhukai.framework.fast.rest.factory.ExecutorFactory;
 import com.zhukai.framework.fast.rest.handle.ActionHandleNIO;
 import com.zhukai.framework.fast.rest.http.HttpParser;
 import com.zhukai.framework.fast.rest.http.HttpResponse;
@@ -21,12 +21,9 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class HttpServer extends Server {
 	private static final Logger logger = LoggerFactory.getLogger(HttpServer.class);
-	private final ExecutorService service = Executors.newCachedThreadPool(new FastRestThreadFactory("http-handle"));
 	private Selector selector;
 
 	public HttpServer(ServerConfig config) throws Exception {
@@ -48,11 +45,11 @@ public class HttpServer extends Server {
 	}
 
 	@Override
-	public void run() {
-		try {
-			while (true) {
-				if (selector.selectNow() == 0)
-					continue;
+	public void start() throws IOException {
+		while (true) {
+			if (selector.selectNow() == 0)
+				continue;
+			try {
 				Iterator<SelectionKey> ite = selector.selectedKeys().iterator();
 				while (ite.hasNext()) {
 					SelectionKey key = ite.next();
@@ -65,10 +62,9 @@ public class HttpServer extends Server {
 						writeKey(key);
 					}
 				}
+			} catch (IOException e) {
+				logger.error("Handle request error", e);
 			}
-		} catch (Exception e) {
-			logger.error("Http server run error", e);
-			System.exit(1);
 		}
 	}
 
@@ -84,7 +80,7 @@ public class HttpServer extends Server {
 			SocketChannel channel = (SocketChannel) key.channel();
 			HttpRequest request = HttpParser.createRequest(channel);
 			if (request != null) {
-				service.execute(new ActionHandleNIO(request, key));
+				ExecutorFactory.getHandleExecutor().execute(new ActionHandleNIO(request, key));
 				key.interestOps(key.interestOps() & ~SelectionKey.OP_READ);
 			} else {
 				channel.shutdownInput();

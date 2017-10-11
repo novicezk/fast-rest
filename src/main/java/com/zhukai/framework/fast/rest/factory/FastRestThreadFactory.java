@@ -1,4 +1,4 @@
-package com.zhukai.framework.fast.rest.common;
+package com.zhukai.framework.fast.rest.factory;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;

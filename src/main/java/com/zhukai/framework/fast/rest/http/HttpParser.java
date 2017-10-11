@@ -30,9 +30,14 @@ public class HttpParser {
 	private static final Logger logger = LoggerFactory.getLogger(HttpParser.class);
 	private static final Properties mimeTypes = new Properties();
 
-	public static HttpRequest createRequest(Socket socket) throws IOException {
-		InputStream inputStream = socket.getInputStream();
-		return directorRequest(new HttpReader(inputStream));
+	public static HttpRequest createRequest(Socket socket) {
+		try {
+			InputStream inputStream = socket.getInputStream();
+			return directorRequest(new HttpReader(inputStream));
+		} catch (IOException e) {
+			logger.error("Create request error", e);
+		}
+		return null;
 	}
 
 	public static HttpRequest createRequest(SocketChannel channel) {

@@ -211,7 +211,7 @@ public class Setup {
 		String tableName = JpaUtil.getTableName(entityClass);
 		ResultSet rs = conn.getMetaData().getTables(null, null, tableName, null);
 		if (rs.next()) {
-			logger.info("Table '{}' is exists", tableName);
+			logger.info("DB table '{}' is exists", tableName);
 			rs.close();
 			return;
 		}
