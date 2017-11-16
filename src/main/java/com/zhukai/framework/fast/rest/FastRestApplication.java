@@ -1,8 +1,6 @@
 package com.zhukai.framework.fast.rest;
 
 import com.zhukai.framework.fast.rest.annotation.extend.EnableStaticServer;
-import com.zhukai.framework.fast.rest.annotation.extend.Scheduled;
-import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.bean.configure.ConfigureBeanFactory;
 import com.zhukai.framework.fast.rest.config.ServerConfig;
 import com.zhukai.framework.fast.rest.exception.SetupInitException;
@@ -17,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -37,7 +34,6 @@ public class FastRestApplication {
 			if (server != null) {
 				checkStaticServer();
 				runSessionTimeoutCheck();
-				runBatchSchedule();
 				logger.info("Start {} server success, port: {}", server.getServerName(), serverConfig.getPort());
 				server.start();
 			}
@@ -74,21 +70,6 @@ public class FastRestApplication {
 			Map<String, Session> sessionMap = HttpContext.getSessions();
 			HttpContext.getSessions().keySet().removeIf(sessionID -> sessionMap.get(sessionID).getLastAccessedTime() + serverConfig.getSessionTimeout() < System.currentTimeMillis());
 		}, Constants.SESSION_CHECK_FIXED_RATE, Constants.SESSION_CHECK_FIXED_RATE, TimeUnit.MILLISECONDS);
-	}
-
-	private static void runBatchSchedule() {
-		for (Method method : Setup.getBatchMethods()) {
-			Scheduled scheduled = method.getAnnotation(Scheduled.class);
-			long fixedRate = scheduled.fixedRate();
-			long fixedDelay = scheduled.fixedDelay();
-			ExecutorFactory.getScheduledTaskExecutor().scheduleAtFixedRate(() -> {
-				try {
-					method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()));
-				} catch (Exception e) {
-					logger.error("Batch method execute error", e);
-				}
-			}, fixedDelay == -1 ? 0 : fixedDelay, fixedRate, scheduled.timeUnit());
-		}
 	}
 
 	public static Class getRunClass() {

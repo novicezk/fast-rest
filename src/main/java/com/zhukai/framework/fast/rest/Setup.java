@@ -22,6 +22,7 @@ import com.zhukai.framework.fast.rest.event.ListenerTrigger;
 import com.zhukai.framework.fast.rest.exception.SetupInitException;
 import com.zhukai.framework.fast.rest.jdbc.DBConnectionPool;
 import com.zhukai.framework.fast.rest.jdbc.data.jpa.JpaUtil;
+import com.zhukai.framework.fast.rest.schedule.TaskTrigger;
 import com.zhukai.framework.fast.rest.util.PackageUtil;
 import com.zhukai.framework.fast.rest.util.ReflectUtil;
 import org.apache.commons.lang3.ArrayUtils;
@@ -44,7 +45,6 @@ import java.util.regex.Pattern;
 public class Setup {
 	private static final Logger logger = LoggerFactory.getLogger(Setup.class);
 
-	private static List<Method> batchMethods = new ArrayList<>();
 	private static List<Method> initMethods = new ArrayList<>();
 	private static List<Method> exceptionHandlerMethods = new ArrayList<>();
 	private static List<Method> aopMethods = new ArrayList<>();
@@ -121,12 +121,12 @@ public class Setup {
 				for (Method method : methods) {
 					if (method.isAnnotationPresent(ExceptionHandler.class)) {
 						exceptionHandlerMethods.add(method);
-					} else if (method.isAnnotationPresent(Scheduled.class)) {
-						batchMethods.add(method);
 					} else if (method.isAnnotationPresent(Initialize.class)) {
 						initMethods.add(method);
 					} else if (method.isAnnotationPresent(Around.class)) {
 						aopMethods.add(method);
+					} else if (method.isAnnotationPresent(Scheduled.class)) {
+						TaskTrigger.registerTask(method);
 					} else if (method.isAnnotationPresent(EventHandle.class)) {
 						ListenerTrigger.registerListener(method.getAnnotation(EventHandle.class).value(), method);
 					}
@@ -336,10 +336,6 @@ public class Setup {
 		for (Method method : initMethods) {
 			method.invoke(ComponentBeanFactory.getInstance().getBean(method.getDeclaringClass()));
 		}
-	}
-
-	static List<Method> getBatchMethods() {
-		return batchMethods;
 	}
 
 	public static List<Method> getExceptionHandlerMethods() {
