@@ -9,7 +9,6 @@ import com.zhukai.framework.fast.rest.Constants;
 
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-@Singleton
 public @interface Configure {
 
 	String value() default "";

@@ -163,7 +163,7 @@ public class Setup {
 		registerName = registerName.equals("") ? beanClass.getName() : registerName;
 		ComponentBean componentBean = new ComponentBean();
 		componentBean.setBeanClass(beanClass);
-		componentBean.setSingleton(ReflectUtil.existAnnotation(beanClass, Singleton.class));
+		componentBean.setSingleton(!ReflectUtil.existAnnotation(beanClass, UnSingleton.class));
 		List<ChildBean> children = new ArrayList<>();
 		Field[] fields = beanClass.getDeclaredFields();
 		for (Field field : fields) {
