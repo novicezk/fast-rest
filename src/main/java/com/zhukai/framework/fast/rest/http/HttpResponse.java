@@ -1,8 +1,8 @@
 package com.zhukai.framework.fast.rest.http;
 
-import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.common.HttpHeaderType;
 import com.zhukai.framework.fast.rest.common.HttpStatus;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.Cookie;
 import java.util.ArrayList;
@@ -20,7 +20,8 @@ public class HttpResponse {
 	private Object result;
 
 	public HttpResponse() {
-		charset = FastRestApplication.getServerConfig().getCharset();
+//		charset = FastRestApplication.getServerConfig().getCharset();
+		charset = "utf-8";
 		cookies = new ArrayList<>();
 		headers = new HashMap<>();
 		statusCode = 200;
@@ -49,7 +50,7 @@ public class HttpResponse {
 	}
 
 	public String getProtocol() {
-		return protocol;
+		return StringUtils.isBlank(protocol) ? "HTTP/1.1" : protocol;
 	}
 
 	public void setProtocol(String protocol) {
