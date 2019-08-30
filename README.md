@@ -1,17 +1,9 @@
 # 简介
-Fast Rest是个参考Spring Boot的轻量级Java框架，不依赖任何现有框架，本身实现的Spring和JPA等功能，可极快创建一个json数据传输的REST HTTP或HTTPS服务。
+Fast Rest是个使用javase实现的后台开发框架demo，包括了tomcat、ioc、aop、jpa、transactional、spring mvc、计划任务、事件、数据库连接池等基础功能，适合java初学者接触，以了解一些常用技术的实现。当然，这个项目是刚毕业那段时间做的，有些技术是想当然实现的，跟官方实现还是有很多不同。有兴趣的欢迎一起学习交流！～
 
-# 特点
-1. 使用注解代替xml文件
-2. 启动方便，不需要tomcat等服务器，在java环境下即可运行
-3. 框架封装较少，可简便定位问题
-4. 源代码可修改，使其更为契合项目开发
-
-# 框架使用
-1. 导入本地maven仓库，2种方式：
-+ 下载该项目，git clone或下载zip；进入fast-rest项目，执行`mvn install`
-+ 下载[本项目jar包](https://novicezk.github.io/fast-rest-1.3.jar)，进入下载目录，执行`mvn install:install-file -Dfile=fast-rest-1.3.jar -DgroupId=com.zhukai.framework -DartifactId=fast-rest -Dversion=1.3 -Dpackaging=jar`
-2. 新建maven项目，添加该框架jar包依赖，示例pom文件：
+# demo体验
+1. 下载该项目，新建maven项目，把本项目作为模块引入
+2. 添加该框架jar包依赖，示例pom文件：
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
