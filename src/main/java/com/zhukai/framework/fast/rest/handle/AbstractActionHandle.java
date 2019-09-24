@@ -3,7 +3,13 @@ package com.zhukai.framework.fast.rest.handle;
 import com.zhukai.framework.fast.rest.Constants;
 import com.zhukai.framework.fast.rest.FastRestApplication;
 import com.zhukai.framework.fast.rest.Setup;
-import com.zhukai.framework.fast.rest.annotation.web.*;
+import com.zhukai.framework.fast.rest.annotation.web.ExceptionHandler;
+import com.zhukai.framework.fast.rest.annotation.web.PathVariable;
+import com.zhukai.framework.fast.rest.annotation.web.RequestAttribute;
+import com.zhukai.framework.fast.rest.annotation.web.RequestBody;
+import com.zhukai.framework.fast.rest.annotation.web.RequestHeader;
+import com.zhukai.framework.fast.rest.annotation.web.RequestMapping;
+import com.zhukai.framework.fast.rest.annotation.web.RequestParam;
 import com.zhukai.framework.fast.rest.bean.component.ComponentBeanFactory;
 import com.zhukai.framework.fast.rest.common.FileEntity;
 import com.zhukai.framework.fast.rest.common.HttpHeaderType;
@@ -13,6 +19,7 @@ import com.zhukai.framework.fast.rest.exception.RequestNotAllowException;
 import com.zhukai.framework.fast.rest.http.HttpContext;
 import com.zhukai.framework.fast.rest.http.HttpParser;
 import com.zhukai.framework.fast.rest.http.HttpResponse;
+import com.zhukai.framework.fast.rest.http.Session;
 import com.zhukai.framework.fast.rest.http.request.HttpRequest;
 import com.zhukai.framework.fast.rest.util.JsonUtil;
 import com.zhukai.framework.fast.rest.util.Resources;
@@ -23,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpSession;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -191,7 +197,7 @@ public abstract class AbstractActionHandle implements Runnable {
 		if (HttpRequest.class.isAssignableFrom(parameter.getType())) {
 			return request;
 		}
-		if (HttpSession.class.isAssignableFrom(parameter.getType())) {
+		if (Session.class.isAssignableFrom(parameter.getType())) {
 			return request.getSession();
 		}
 		if (HttpResponse.class.isAssignableFrom(parameter.getType())) {

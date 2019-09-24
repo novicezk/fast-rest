@@ -25,6 +25,7 @@ public class MapperMethod<T> {
 	private Method method;
 	private Object[] args;
 	private ResultSet resultSet;
+	private PreparedStatement statement;
 	private Class<T> entityClass;
 	private boolean isTransactional = true;
 
@@ -38,6 +39,9 @@ public class MapperMethod<T> {
 	public void release() throws SQLException, InterruptedException {
 		if (conn != null && !isTransactional) {
 			DBConnectionPool.freeConnection(conn);
+		}
+		if (statement != null) {
+			statement.close();
 		}
 		if (resultSet != null) {
 			resultSet.close();
@@ -228,56 +232,24 @@ public class MapperMethod<T> {
 
 	private ResultSet executeQuery(String sql) throws SQLException {
 		logger.debug("Execute sql: {}", sql);
-		PreparedStatement statement = null;
-		try {
-			statement = conn.prepareStatement(sql);
-			return statement.executeQuery();
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			if (statement != null)
-				statement.close();
-		}
+		statement = conn.prepareStatement(sql);
+		return statement.executeQuery();
 	}
 
 	private ResultSet executeQuery(String sql, Object[] properties) throws SQLException {
-		PreparedStatement statement = null;
-		try {
-			statement = fillStatement(sql, properties);
-			return statement.executeQuery();
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			if (statement != null)
-				statement.close();
-		}
+		statement = fillStatement(sql, properties);
+		return statement.executeQuery();
 	}
 
 	private boolean executeUpdate(String sql) throws SQLException {
 		logger.debug("Execute sql: {}", sql);
-		PreparedStatement statement = null;
-		try {
-			statement = conn.prepareStatement(sql);
-			return statement.executeUpdate() >= 1;
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			if (statement != null)
-				statement.close();
-		}
+		statement = conn.prepareStatement(sql);
+		return statement.executeUpdate() >= 1;
 	}
 
 	private boolean executeUpdate(String sql, Object[] properties) throws SQLException {
-		PreparedStatement statement = null;
-		try {
-			statement = fillStatement(sql, properties);
-			return statement.executeUpdate() >= 1;
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			if (statement != null)
-				statement.close();
-		}
+		statement = fillStatement(sql, properties);
+		return statement.executeUpdate() >= 1;
 	}
 
 	private PreparedStatement fillStatement(String sql, Object[] properties) throws SQLException {
